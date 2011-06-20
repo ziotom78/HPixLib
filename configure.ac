@@ -25,6 +25,9 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 
+# Configure qfits
+AC_CONFIG_SUBDIRS([qfits])
+
 AC_CONFIG_FILES([Makefile
                  src/Makefile
 		 test/Makefile])
