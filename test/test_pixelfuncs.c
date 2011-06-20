@@ -4,5 +4,7 @@
 int
 main(void)
 {
-    return 0;
+    int result = 1;
+    result = result && (chealpix_nside_to_npixel(1024) == 0);
+    return result != 0;
 }
