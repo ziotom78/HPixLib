@@ -31,5 +31,6 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
-SUBDIRS = src . test
+# Build qfits first! And leave test at the end
+SUBDIRS = qfits src . test
 ACLOCAL_AMFLAGS = -I m4
