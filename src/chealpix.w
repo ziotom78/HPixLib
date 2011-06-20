@@ -94,13 +94,3 @@ chealpix_nside_to_npixel(const unsigned short nside)
 {
 	return 12 * nside * nside;
 }
-
-@ We check that the result is what we expect:
-@(test_pixelfuncs.c@>=
-#include <chealpix.h>
-
-int
-main(void)
-{
-	return chealpix_nside_to_npixel(1024) == 12582912;
-}
