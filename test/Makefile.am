@@ -31,8 +31,11 @@
 # Maurizio Tomasi.
 
 check_PROGRAMS = test_nside_to_npixel test_npixel_to_nside
-LDADD = $(top_srcdir)/src/libchealpix.la $(LIBOBJS)
+LDADD = $(top_srcdir)/src/libchealpix.la \
+	$(top_srcdir)/qfits/src/libqfits.la \
+	$(LIBOBJS)
 
-AM_CFLAGS = -I $(top_srcdir)/src
+AM_CPPFLAGS = -I $(top_srcdir)/src -I $(top_srcdir)/qfits/src
+AM_LDFLAGS = -L $(top_srcdir)/qfits/src
 
 TESTS = $(check_PROGRAMS)

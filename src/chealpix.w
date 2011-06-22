@@ -114,10 +114,13 @@ powerful way to document the code.
 extern "C" {
 #endif __cplusplus
 
+#include "qfits_table.h"
+
 #define CHEALPIX_VERSION "0.1"
 
 typedef unsigned long pixel_num_t;
 
+@<Definition of common data types@>
 @<Prototypes for generic pixel functions@>
 
 #ifdef __cplusplus
@@ -133,6 +136,46 @@ all} the functions defined by the library.
 #include <math.h>
 
 @<Generic pixel functions@>
+
+@* Common data types: maps, harmonic coefficients, power spectra. In
+this section we define a number of data structures that are used by
+the \.{chealpix} library.
+
+@ We start with the definition of |chealpix_map_t|, a structure that
+describes a Healpix map. The fields used by the original Healpix
+library to identify a map are:
+\numberedlist
+\li The values of each pixel, listed in a specified ordering scheme;
+
+\li The ordering scheme (either \.{RING} or \.{NESTED});
+
+\li The value of \.{NSIDE}, which is used to determine the number of
+pixels and the resolution of the map;
+
+\li The coordinate system used by the map (e.g. Galactic,
+Ecliptic\ldots).
+\endnumberedlist
+
+@<Definition of common data types@>=
+typedef enum {
+    CHEALPIX_ORDER_UNKNOWN,
+    CHEALPIX_ORDER_RING,
+    CHEALPIX_ODER_NEST
+} chealpix_ordering_t;
+
+typedef enum {
+    CHEALPIX_COORD_UNKNOWN,
+    CHEALPIX_COORD_ECLIPTIC,
+    CHEALPIX_COORD_GALACTIC
+} chealpix_coordinates_t;
+
+typedef struct {
+    chealpix_ordering_t    order;
+    chealpix_coordinates_t coord;
+    unsigned short         nside;
+    tfits_type             type;
+    void                   * pixels;
+} chealpix_map_t;
 
 
 @* Generic pixel functions.
@@ -186,3 +229,5 @@ In this section we implement a number of functions for reading and
 writing maps from and to FITS files. We rely on the \.{qfits} library,
 as it is small enough to be included in the source code of
 \.{chealpix} and is BSD-licensed.
+
+@ 
