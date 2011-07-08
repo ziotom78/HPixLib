@@ -39,7 +39,7 @@ main(void)
     int result = 1;
     unsigned short nside;
 
-    for(nside = 1; nside < 1024; nside <<= 1)
+    for(nside = 1; nside < 1024; nside *= 2)
     {
 	result = result && (chealpix_npixel_to_nside(nside * nside * 12) == nside);
     }
