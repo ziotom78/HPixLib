@@ -91,6 +91,7 @@ tesselation scheme, with the following advantages over the standard
 HEALPix library:
 
 \numberedlist
+
 \li Only the C language is supported. This reduces the size of
 the library and eases the development.
 
@@ -103,6 +104,8 @@ tool developed by Donald E.\ Knuth and Silvio Levy which provides a
 powerful way to document the code.
 
 \li The library supports {\tt pkg-config}.
+
+\endnumberedlist
 
 @ This is the only header of the library.
 
@@ -137,6 +140,7 @@ all} the functions defined by the library.
 
 @<Generic pixel functions@>
 
+
 @* Common data types: maps, harmonic coefficients, power spectra. In
 this section we define a number of data structures that are used by
 the \.{chealpix} library.
@@ -144,7 +148,9 @@ the \.{chealpix} library.
 @ We start with the definition of |chealpix_map_t|, a structure that
 describes a Healpix map. The fields used by the original Healpix
 library to identify a map are:
+
 \numberedlist
+
 \li The values of each pixel, listed in a specified ordering scheme;
 
 \li The ordering scheme (either \.{RING} or \.{NESTED});
@@ -152,8 +158,8 @@ library to identify a map are:
 \li The value of \.{NSIDE}, which is used to determine the number of
 pixels and the resolution of the map;
 
-\li The coordinate system used by the map (e.g. Galactic,
-Ecliptic\ldots).
+\li The coordinate system used by the map (e.g. Galactic).
+
 \endnumberedlist
 
 @<Definition of common data types@>=
@@ -230,4 +236,73 @@ writing maps from and to FITS files. We rely on the \.{qfits} library,
 as it is small enough to be included in the source code of
 \.{chealpix} and is BSD-licensed.
 
-@ 
+
+@* Drawing maps
+
+We are now ready to implement the trickiest part of the library, that
+is the code that produces a graphical representation of a map. To
+better understand the difficulties of such task, let us consider how
+this is accomplished by the standard Healpix library by Gorski {\it et
+al} and by Healpy. The ``standard'' Healpix implementation is able to
+plot maps in a number of ways:
+
+\unorderedlist
+
+\li The IDL library contains roughly 7\,600 lines of code
+which implement {\tt MOLLVIEW} and similar functions. Such functions
+are written in pure IDL and use the IDL plotting functions.
+
+\li A standalone program, {\tt map2gif}, converts a map saved in a
+FITS file into a GIF image. Such program is written in Fortran90 and
+is roughly 1\,200 lines of code, plus the source code of the {\tt
+gifdraw} library (roughly 12\,000 lines of code, in the directory {\tt
+src/f90/lib} of the tarball).
+
+\li A standalone program, {\tt map2tga}, does the same as {\tt
+map2gif}, but it is written in C++ and takes 800 lines of code. It
+uses no external graphics library to produce the plots.
+
+\endunorderedlist
+
+It is worth stressing that IDL is the only language binding that
+implements a set of functions for plotting maps. Both {\tt map2tga}
+and {\tt map2gif} are {\it standalone} programs and do not expose any
+facility to the library user for incorporating their functionality
+into a larger program (unless of couse the program calls them in
+background to produce a image file which is then read by the program
+itself).
+
+Because of this, the Healpy library implements a set of plotting
+routines from scratch. More than 2\,000 lines of code are needed to
+implement functions like {\tt mollview} and {\tt mollzoom}; they are
+based on the well-known {\tt matplotlib} library.
+
+Our approach is to implement a very generic interface for map plotting
+in cHealpix (i.e.\ that is agnostic to the tool actually used to draw
+the map: Quartz, Gtk+, Cairo\ldots). Depending on the graphics
+library, there are two possible approaches for drawing a map:
+
+\numberedlist
+
+\li The Healpix library produces bitmap graphics. The output of the
+process is a $N\times M$ matrix of pixels whose elements are
+calculated using a ray-tracing algorithm. The image has a fixed
+resolution, which implies that it shows poor results when enlarged.
+The ray-tracing algorithm has the advantage of being quite fast, and
+the bitmap can be displayed or saved quickly. When saved, the size of
+the file scales with the number of elements in the matrix, but it is
+completely independent of the number of pixels in the map.
+
+\li Vector graphics is not used by the Healpix library. It has the
+drawback of producing very large files when \.{NSIDE} is large, but
+vector maps scale very well when enlarged. The typical formats used to
+store such maps are Postscript and PDF.
+
+\endnumberedlist
+
+cHealpix provides two sets of functions to ease the production of
+bitmapped and vector maps. Such functions need to be wrapped with some
+glue code which actually writes the map on disk or display it on the
+screen.
+
+@
