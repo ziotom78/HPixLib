@@ -35,7 +35,7 @@ LDADD = $(top_srcdir)/src/libchealpix.la \
 	$(top_srcdir)/qfits/src/libqfits.la \
 	$(LIBOBJS)
 
-AM_CPPFLAGS = -I $(top_srcdir)/src -I $(top_srcdir)/qfits/src
-AM_LDFLAGS = -L $(top_srcdir)/qfits/src
+AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/qfits/src
+AM_LDFLAGS = -L$(top_srcdir)/qfits/src
 
 TESTS = $(check_PROGRAMS)

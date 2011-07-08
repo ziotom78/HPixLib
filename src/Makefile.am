@@ -35,7 +35,7 @@ lib_LTLIBRARIES = libchealpix.la
 libchealpix_la_SOURCES = chealpix.c
 include_HEADERS = chealpix.h
 
-AM_CPPFLAGS = -I $(top_srcdir)/qfits/src
+AM_CPPFLAGS = -I$(top_srcdir)/qfits/src
 EXTRA_DIST = chealpix.pdf
 
 chealpix.c chealpix.h: chealpix.w
