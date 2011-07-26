@@ -237,7 +237,7 @@ as it is small enough to be included in the source code of
 \.{chealpix} and is BSD-licensed.
 
 
-@* Drawing maps
+@* Drawing maps.
 
 We are now ready to implement the trickiest part of the library, that
 is the code that produces a graphical representation of a map. To
@@ -272,31 +272,33 @@ into a larger program (unless of couse the program calls them in
 background to produce a image file which is then read by the program
 itself).
 
-Because of this, the Healpy library implements a set of plotting
-routines from scratch. More than 2\,000 lines of code are needed to
-implement functions like {\tt mollview} and {\tt mollzoom}; they are
-based on the well-known {\tt matplotlib} library.
+Because of this situation, the creators of the Healpy Python library
+decided to implement a set of plotting routines from scratch. More
+than 2\,000 lines of code are needed to implement functions like {\tt
+mollview} and {\tt mollzoom}; they are based on the well-known {\tt
+matplotlib} library.
 
 Our approach is to implement a very generic interface for map plotting
-in cHealpix (i.e.\ that is agnostic to the tool actually used to draw
-the map: Quartz, Gtk+, Cairo\ldots). Depending on the graphics
+in cHealpix (i.e.\ one that is agnostic to the tool actually used to
+draw the map: Quartz, Gtk+, Cairo\dots). Depending on the graphics
 library, there are two possible approaches for drawing a map:
 
 \numberedlist
 
-\li The Healpix library produces bitmap graphics. The output of the
-process is a $N\times M$ matrix of pixels whose elements are
-calculated using a ray-tracing algorithm. The image has a fixed
-resolution, which implies that it shows poor results when enlarged.
-The ray-tracing algorithm has the advantage of being quite fast, and
-the bitmap can be displayed or saved quickly. When saved, the size of
-the file scales with the number of elements in the matrix, but it is
-completely independent of the number of pixels in the map.
+\li Generate a bitmap. (This is the approach followed by the Healpix
+library and by Healpy.) The output of the process is a $N\times M$
+matrix of pixels whose elements are calculated using a ray-tracing
+algorithm. The image has a fixed resolution, which implies that it
+shows poor results when enlarged. The ray-tracing algorithm has the
+advantage of being quite fast, and bitmaps can be displayed and saved
+quickly. When saved, the size of the file scales with the number of
+elements in the matrix, but it is independent of the number of pixels
+in the map.
 
-\li Vector graphics is not used by the Healpix library. It has the
-drawback of producing very large files when \.{NSIDE} is large, but
-vector maps scale very well when enlarged. The typical formats used to
-store such maps are Postscript and PDF.
+\li Generate a vector image. This solution has the drawback of
+producing very large files when \.{NSIDE} is large, but vector maps
+scale very well when enlarged. The typical formats used to store such
+maps are Postscript and PDF.
 
 \endnumberedlist
 
@@ -304,5 +306,9 @@ cHealpix provides two sets of functions to ease the production of
 bitmapped and vector maps. Such functions need to be wrapped with some
 glue code which actually writes the map on disk or display it on the
 screen.
+
+@ Generating bitmapped graphics.
+
+First.
 
 @
