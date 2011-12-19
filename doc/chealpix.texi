@@ -1,0 +1,374 @@
+\input texinfo @c -*- texinfo -*-
+@c %**start of header
+@setfilename chealpix.info
+@include version.texi
+@settitle CHealpix Manual @value{VERSION}
+@c %**end of header
+
+@copying
+This manual is for CHealpix (version @value{VERSION}, @value{UPDATED}),
+a C library which implements the Healpix spherical tesselation scheme
+described by G\'orsky et al. (The Astrophysical Journal, 622:759-771,
+2005).
+
+Copyright @copyright{} 2011 Maurizio Tomasi.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+@end quotation
+@end copying
+
+@titlepage
+@title CHealpix Manual
+@subtitle for version @value{VERSION}, @value{UPDATED}
+@author Maurizio Tomasi (@email{tomasi@@lambrate.inaf.it})
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top, Introduction, (dir), (dir)
+@top CHealpix
+
+This manual is for CHealpix (version @value{VERSION}, @value{UPDATED}).
+@end ifnottex
+
+@menu
+* Introduction::                Why CHealpix exists and what it does.
+* Installing CHealpix::         How to install the library.
+* Pixel functions::             Associating pixels with points on the sky sphere.
+* Drawing maps::                How to produce graphical representations of maps.
+* General-purpose Functions::   General-purpose functions are discussed here.
+* GNU Free Documentation License::  
+* Concept index::               
+@end menu
+
+
+@c *********************************************************************
+
+@node Introduction, Installing CHealpix, Top, Top
+@chapter Introduction
+
+@pindex introduction
+
+The CHealpix library provides a set of C functions which implement the
+HEALPix spherical tesselation library. Such tesselation scheme has been
+proposed in the article by K. M. G@'orski et al. (The Astrophysical
+Journal, 622:759-771, 2005). 
+
+The purpose of HEALPix is to divide a sphere into patches of equal area
+which have desirable properties for a number of calculations. It is
+mostly used in astrophysics and cosmology, e.g.:
+@itemize
+@item
+Computation of the spherical Fourier transforms for a random field on
+the sphere;
+
+@item
+Efficient nearest-neighbour searches of pixels.
+@end itemize
+
+Traditionally, there has always been @emph{one} implementation of the
+HEALPix tesselation scheme: the so-called ``standard'' HEALPix library.
+In the next paragraphs I will discuss its strenghts and weaknesses, in
+order to better characterize the purposes of CHealpix.
+
+@menu
+* The standard HEALPix implementation::  Characteristics of the HEALPix
+  library.
+* Purpose and significance of CHealpix::  
+@end menu
+
+@node The standard HEALPix implementation, Purpose and significance of CHealpix, Introduction, Introduction
+@section The standard HEALPix implementation
+
+The standard implementation of the HEALPix tesselation scheme is the
+HEALPix library developed by Gorski et al.
+(@url{http://healpix.jpl.nasa.gov/}). It provides a number of functions
+in Fortran, C, C++, IDL and Java and is so far the most complete and
+widely used implementation. Despite the fact that such library is
+stable, tested and maintained, I believe there is the need for an
+alternative library like CHealpix:
+@enumerate
+@item
+There are no connections among the language bindings. (In fact, instead
+of speaking of ``bindings'' --- which imply that there is one library
+and many interfaces that binds to it --- one would rather speak of four
+different libraries: one for each language.) This implies that if one
+wants to implement some alternative algorithm for a HEALPix routine, she
+has to code the algorithm once for each language supported.
+
+@item
+The separation of the language bindings has had the effect of reduce the
+momentum in developing some of them. The C bindings appear to be the
+most neglected, for there is no facility for reading/saving/doing
+calculations on @math{a_{\ell m}} coefficients. This is particularly
+limiting for those developers wanting to create bindings to other
+languages by exploiting Foreign Function Interfaces (FFIs), as C is the
+@emph{lingua franca} used for FFI.
+
+@item
+The C/C++ bindings of the library use Doxygen to produce the
+documentation. Although Doxygen is a powerful tool, the HEALPix function
+are usually poorly documented: there is no example of use for any of the
+C++ functions, and the description of each function is usually only a
+one-liner.
+
+@item
+The installation of HEALPix is not straightforward: the library requires
+the user to install CFITSIO first, which is a rather large library if
+compared with what Healpix uses (the largest part of the CFITSIO code
+implements functions for reading/writing images, while HEALPix only
+reads and write binary tables). Moreover, there is no standard facility
+for a program using HEALPix to find and link the Healpix library (i.e.
+no support for @command{pkg-config}).
+@end enumerate
+
+@node Purpose and significance of CHealpix,  , The standard HEALPix implementation, Introduction
+@section Purpose and significance of CHealpix
+
+CHealpix is meant to solve these issues. Of course, in order to do this
+I had to do a few compromises, so that a number of users of the
+G@'orski's library should stay with it. Here are the advantages of
+CHealpix:
+@enumerate
+@item
+Only the C language is supported, and functions are more ``low-level''.
+This reduces the size of the library and eases the development, at the
+expense of loosing Fortran/IDL developers (which are the majority of
+G@'orski's library users).
+
+@item
+It only supports maps of double values (the C++ bindings of the Healpix
+library use template and the user can therefore create maps of ints,
+booleans and so on). Since any 32-bit integer can be represented exactly
+in a 8-byte double, this means that precision is rarely an issue, but
+memory can be easily wasted.
+
+@item
+Although it is meant as a basis for creating bindings to other
+languages, CHealpix itself only provides C bindings (i.e. no Fortran/IDL
+support). Also, even if you can use CHealpix in a C++ program, the
+library is not going to use all those nice features of C++ like
+std::vector and templates.
+
+@item
+The library tries to support all the facilities provided by the standard
+HEALPix library, even those implemented in languages other than C (e.g.
+projecting maps to bitmapped images).
+
+@item
+The documentation (what you are reading) tries to be comprehensive and
+full of examples.
+
+@item
+The library uses the GNU Autotools to configure itself and supports 
+@command{pkg-config}.
+@end enumerate
+
+
+@c *********************************************************************
+
+@node Installing CHealpix, Pixel functions, Introduction, Top
+@chapter Installing CHealpix
+
+In this chapter I describe how to get the CHealpix source code, compile
+it and install it. At the end of the chapter there is also an example of
+how to compile your program so that they can use the library.
+
+@menu
+* Obtaining the library::       Where and how to download CHealpix.
+* Installing the library::      Compiling sources and copying files to your system.
+* Testing the library::         Does the library work properly on your computer?
+* Using the library::           How to link your program to CHealpix.
+@end menu
+
+@node Obtaining the library, Installing the library, Installing CHealpix, Installing CHealpix
+@section Obtaining the library
+
+The library is maintained on the SourceForge website, a web-based source
+code repository.
+
+@node Installing the library, Testing the library, Obtaining the library, Installing CHealpix
+@section Installing the library
+
+Run @command{configure}.
+
+@node Testing the library, Using the library, Installing the library, Installing CHealpix
+@section Testing the library
+
+Once you have built the library with @command{make}, you can run
+@command{make test} to execute a battery of tests. The purpose of such
+tests is to verify that the library produces correct results on your
+computer. If this is @emph{not} the case, you should report these
+failure as they indicate that there are bugs in the library.
+
+@node Using the library,  , Testing the library, Installing CHealpix
+@section Using the library in your programs
+
+Since CHealpix supports @command{pkg-config}
+(@url{http://www.freedesktop.org/wiki/Software/pkg-config}), you can
+compile your program @file{foo.c} using the following command:
+@example
+cc -o foo foo.c `pkg-config --cflags --libs chealpix`
+@end example
+
+
+@c *********************************************************************
+
+@node Pixel functions, Drawing maps, Installing CHealpix, Top
+@chapter Pixel functions
+
+In this section we describe the functions implemented by CHealpix that
+allow to associate points on the sky sphere with pixels in the HEALPix
+tessellation.
+
+@menu
+* Number of pixels::            Determining how many pixels are in the sky.
+@end menu
+
+
+@node Number of pixels,  , Pixel functions, Pixel functions
+@section Number of pixels
+
+@deftypefn {Library Function} pixel_num_t chpx_nside_to_npixel (const unsigned short @var{nside})
+Given a value for the @var{nside} parameter (any positive integer power
+of 2), the function returns the number of pixels the sky sphere is
+divided into. If @var{nside} is not valid, the function returns zero.
+@end deftypefn
+
+@deftypefn {Library Function} unsigned short chpx_npixel_to_nside (const pixel_num_t @var{num_of_pixels})
+Given the number of pixels in the sky sphere, this function returns the
+value of @var{nside} uniquely associated with it. The function does
+@emph{not} accept arbitrary values for @var{num_of_pixels}. Any invalid
+value for this parameter will make the function return zero.
+@end deftypefn
+
+
+@c *********************************************************************
+
+@node Drawing maps, General-purpose Functions, Pixel functions, Top
+@chapter Drawing maps
+
+In this section we describe the most complex part of the library, that
+is the code that produces a graphical representation of a map. To better
+understand the difficulties of such task, let us consider how this is
+accomplished by the standard HEALPix library and by Healpy, a Python
+wrapper to HEALPix (@url{https://github.com/healpy/healpy}). The
+``standard'' Healpix implementation is able to plot maps in a number of
+ways:
+
+@itemize
+@item
+The IDL library contains roughly 7\,600 lines of code which implement
+@code{MOLLVIEW} and similar functions. Such functions are written in
+pure IDL and use the IDL plotting functions.
+
+@item
+A standalone program, @command{map2gif}, converts a map saved in a FITS
+file into a GIF image. Such program is written in Fortran90 and is
+roughly 1\,200 lines of code, plus the source code of the
+@command{gifdraw} library (roughly 12\,000 lines of code, in the
+directory @file{\tt src/f90/lib} of the tarball).
+
+@item
+A standalone program, @command{map2tga}, does the same as
+@command{map2gif}, but it is written in C++ and takes 800 lines of code.
+It uses no external graphics library to produce the plots.
+@end itemize
+
+It is worth stressing that IDL is the only language binding that
+implements a set of functions for plotting maps. Both @command{map2tga}
+and @command{map2gif} are @emph{standalone} programs and do not expose
+any facility to the library user for incorporating their functionality
+into a larger program (unless of couse the program calls them in
+background to produce a image file which is then read by the program
+itself).
+
+Because of this situation, the creators of the Healpy Python library
+decided to implement a set of plotting routines from scratch. More than
+2\,000 lines of code are needed to implement functions like
+@code{mollview} and @code{mollzoom}; they are based on the well-known
+@command{matplotlib} library.
+
+Our approach is to implement a very generic interface for map plotting
+in CHealpix (i.e. one that is agnostic to the tool actually used to draw
+the map: Quartz, Gtk+, Cairo@dots{}). Depending on the graphics library,
+there are two possible approaches for drawing a map:
+@enumerate
+@item
+Generate a bitmap. (This is the approach followed by the Healpix
+library and by Healpy.) The output of the process is a $N\times M$
+matrix of pixels whose elements are calculated using a ray-tracing
+algorithm. The image has a fixed resolution, which implies that it
+shows poor results when enlarged. The ray-tracing algorithm has the
+advantage of being quite fast, and bitmaps can be displayed and saved
+quickly. When saved, the size of the file scales with the number of
+elements in the matrix, but it is independent of the number of pixels
+in the map.
+
+@item
+Generate a vector image. This solution has the drawback of
+producing very large files when @var{nside} is large, but vector maps
+scale very well when enlarged. The typical formats used to store such
+maps are Postscript and PDF.
+@end enumerate
+
+CHealpix provides two sets of functions to ease the production of
+bitmapped and vector maps. Such functions need to be wrapped with some
+glue code which actually writes the map on disk or display it on the
+screen.
+
+@menu
+* Generating bitmapped graphics::  
+@end menu
+
+@node Generating bitmapped graphics,  , Drawing maps, Drawing maps
+@section Generating bitmapped graphics
+
+The interface provided by CHealpix for the generation of bitmapped
+graphics clearly shows the ray-tracing algorithm on whom it is grounded.
+In the following discussion we shall try to prevent the ambiguity
+between a ``pixel'' in a Healpix map and a ``pixel'' in a bitmap by
+referring to the second as ``an element in the @math{N \times M} matrix,''
+or ``matrix element'' for short. All the functions implemented in this
+section have their name beginning with @code{chpx_bmp_}.
+
+The most important function used to draw bitmapped maps is
+@code{chpx_bmp_get_hits}. It searches for the pixels in the map which
+fall within one matrix element in the bitmap. (Note that, expecially for
+maps with high values of @var{nside}, one matrix element might contain
+many pixels.)
+
+
+@c *********************************************************************
+
+
+@node General-purpose Functions, GNU Free Documentation License, Drawing maps, Top
+@chapter General-purpose Functions
+
+In this chapter we will present a number of functions that have been
+defined by CHealpix and do not fit anywhere else in the documentation.
+
+
+@c *********************************************************************
+
+@node GNU Free Documentation License, Concept index, General-purpose Functions, Top
+@appendix GNU Free Documentation License
+
+@include fdl.texi
+
+@node Concept index,  , GNU Free Documentation License, Top
+@unnumbered Concept index
+
+@printindex cp
+
+@bye
