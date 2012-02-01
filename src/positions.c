@@ -70,8 +70,18 @@ chpx_3dvec_to_nest_pixel(chpx_nside_t nside,
 }
 
 void
-chpx_pixel_to_angle(chpx_nside_t nside,
-		    double * theta, double * phi)
+chpx_ring_pixel_to_angle(chpx_nside_t nside, chpx_pixel_num_t pixel,
+			 double * theta, double * phi)
+{
+    assert(theta && phi);
+
+    *theta = 0.0;
+    *phi = 0.0;
+}
+
+void
+chpx_nest_pixel_to_angle(chpx_nside_t nside, chpx_pixel_num_t pixel,
+			 double * theta, double * phi)
 {
     assert(theta && phi);
 

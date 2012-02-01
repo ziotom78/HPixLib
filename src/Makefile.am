@@ -32,17 +32,17 @@
 # Maurizio Tomasi.
 
 lib_LTLIBRARIES = libchealpix.la
-libchealpix_la_SOURCES = chealpix.c
-include_HEADERS = chealpix.h
+libchealpix_la_SOURCES = \
+	mem.c \
+	bitmap.c \
+	misc.c \
+	order_conversion.c \
+	map.c \
+	io.c \
+	positions.c \
+	query_disc.c
+
+include_HEADERS = chpx.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/qfits/src
-EXTRA_DIST = chealpix.pdf
-
-chealpix.c chealpix.h: chealpix.w
-	ctangle -bhp chealpix.w
-
-chealpix.pdf: chealpix.tex
-	pdftex $<
-
-chealpix.tex: chealpix.w
-	cweave $<
+AM_CFLAGS = --pedantic -Wall

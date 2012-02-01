@@ -25,11 +25,13 @@ chpx_load_fits_map(const char * file_name,
     return NULL;
 }
 
-void
+int
 chpx_save_fits_map(const char * file_name,
 		   const chpx_map_t * map,
+		   enum _TFITS_DATA_TYPE_ data_type,
 		   char ** error_status)
 {
+    return 0;
 }
 
 int
@@ -43,11 +45,13 @@ chpx_load_fits_pol_map(const char * file_name,
     return 0;
 }
 
-void
+int
 chpx_save_fits_pol_map(const char * file_name,
 		       const chpx_map_t * map_i,
 		       const chpx_map_t * map_q,
 		       const chpx_map_t * map_u,
+		       enum _TFITS_DATA_TYPE_ data_type,
 		       char ** error_status)
 {
+    return 0;
 }

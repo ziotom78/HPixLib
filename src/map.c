@@ -91,3 +91,9 @@ chpx_map_pixels(const chpx_map_t * map)
 {
     return map->pixels;
 }
+
+size_t
+chpx_num_of_pixels(const chpx_map_t * map)
+{
+    return chpx_nside_to_npixel(map->nside);
+}

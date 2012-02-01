@@ -20,7 +20,7 @@
 
 #ifdef __cplusplus
 extern"C"{
-#endif __cplusplus
+#endif /* __cplusplus */
 
 #include "qfits_table.h"
 
@@ -49,6 +49,9 @@ typedef struct {
     void               * pixels;
 } chpx_map_t;
 
+#define CHPX_GET_MAP_PIXEL(map, index, type) (*((type *) (((char *) map->pixels) \
+							  + (index) * map->pixel_size)))
+
 typedef struct {
     unsigned int       width;
     unsigned int       height;
@@ -66,6 +69,7 @@ void chpx_free(void * ptr);
 
 chpx_pixel_num_t chpx_nside_to_npixel(chpx_nside_t);
 chpx_nside_t chpx_npixel_to_nside(chpx_pixel_num_t);
+double chpx_max_pixel_radius(chpx_nside_t);
 
 /* Functions implemented in map.c */
 
@@ -88,15 +92,18 @@ size_t chpx_map_pixel_size(const chpx_map_t * map);
 
 void * chpx_map_pixels(const chpx_map_t * map);
 
+size_t chpx_num_of_pixels(const chpx_map_t * map);
+
 /* Functions implemented in io.c */
 
 chpx_map_t * chpx_load_fits_map(const char * file_name,
 				unsigned short hdu_number,
 				char ** error_status);
 
-void chpx_save_fits_map(const char * file_name,
-			const chpx_map_t * map,
-			char ** error_status);
+int chpx_save_fits_map(const char * file_name,
+		       const chpx_map_t * map,
+		       enum _TFITS_DATA_TYPE_ data_type,
+		       char ** error_status);
 
 int chpx_load_fits_pol_map(const char * file_name,
 			   unsigned short hdu_number,
@@ -105,11 +112,12 @@ int chpx_load_fits_pol_map(const char * file_name,
 			   chpx_map_t ** map_u,
 			   char ** error_status);
 
-void chpx_save_fits_pol_map(const char * file_name,
-			    const chpx_map_t * map_i,
-			    const chpx_map_t * map_q,
-			    const chpx_map_t * map_u,
-			    char ** error_status);
+int chpx_save_fits_pol_map(const char * file_name,
+			   const chpx_map_t * map_i,
+			   const chpx_map_t * map_q,
+			   const chpx_map_t * map_u,
+			   enum _TFITS_DATA_TYPE_ data_type,
+			   char ** error_status);
 
 /* Functions implemented in positions.c */
 
@@ -133,8 +141,11 @@ chpx_pixel_num_t chpx_3dvec_to_ring_pixel(chpx_nside_t nside,
 chpx_pixel_num_t chpx_3dvec_to_nest_pixel(chpx_nside_t nside,
 					  double x, double y, double z);
 
-void chpx_pixel_to_angle(chpx_nside_t nside,
-			 double * theta, double * phi);
+void chpx_ring_pixel_to_angle(chpx_nside_t nside, chpx_pixel_num_t pixel,
+			      double * theta, double * phi);
+
+void chpx_nest_pixel_to_angle(chpx_nside_t nside, chpx_pixel_num_t pixel,
+			      double * theta, double * phi);
 
 void chpx_ring_pixel_to_3dvec(chpx_nside_t nside,
 			      double * x, double * y, double * z);
@@ -161,7 +172,18 @@ chpx_ring_to_nest_idx(chpx_nside_t nside, chpx_pixel_num_t ring_index);
 void
 chpx_switch_order(chpx_map_t * map);
 
+/* Functions implemented in query_disc.c */
+
+void chpx_query_disc(double theta, double phi, double radius,
+		     chpx_pixel_num_t ** pixels,
+		     size_t * num_of_matches);
+
+void chpx_query_disc_inclusive(double theta, double phi, double radius,
+			       chpx_pixel_num_t ** pixels,
+			       size_t * num_of_matches);
+
+
 #ifdef __cplusplus
 };
-#endif __cplusplus
+#endif /* __cplusplus */
 #endif

@@ -13,9 +13,16 @@ chpx_nside_to_npixel(chpx_nside_t nside)
 chpx_nside_t
 chpx_npixel_to_nside(chpx_pixel_num_t npixels)
 {
-	unsigned short  nside_estimate = sqrt(npixels / 12.0);
-	if (chpx_nside_to_npixel(nside_estimate) != npixels)
-		return 0;
-	else
-		return nside_estimate;
+    unsigned short  nside_estimate = sqrt(npixels / 12.0);
+    if (chpx_nside_to_npixel(nside_estimate) != npixels)
+	return 0;
+    else
+	return nside_estimate;
 }
+
+double
+chpx_max_pixel_radius(chpx_nside_t nside)
+{
+    return 0.0;
+}
+
