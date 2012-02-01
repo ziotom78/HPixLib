@@ -18,20 +18,21 @@
 
 #include <chpx.h>
 #include <stdlib.h>
+#include "libtest.h"
 
 int
 main(void)
 {
-    int result = 1;
+    TEST_INIT;
 
     /* Check for some random numbers */
-    result = result && (chpx_ring_to_nest_idx( 64,    9010) ==    9632);
-    result = result && (chpx_ring_to_nest_idx(256,  324237) ==    1652);
-    result = result && (chpx_ring_to_nest_idx(512, 2800416) == 2966186);
+    TEST_EQUAL(chpx_ring_to_nest_idx( 64,    9010),    9632);
+    TEST_EQUAL(chpx_ring_to_nest_idx(256,  324237),    1652);
+    TEST_EQUAL(chpx_ring_to_nest_idx(512, 2800416), 2966186);
 
     /* Check for failures */
-    result = result && (chpx_ring_to_nest_idx(4, 1000000) == 0);
-    result = result && (chpx_ring_to_nest_idx(0, 1) == 0);
+    TEST_EQUAL(chpx_ring_to_nest_idx(4, 1000000), 0);
+    TEST_EQUAL(chpx_ring_to_nest_idx(0, 1),       0);
 
-    return result ? EXIT_SUCCESS : EXIT_FAILURE;
+    TEST_EXIT;
 }
