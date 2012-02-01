@@ -32,5 +32,5 @@
 # Maurizio Tomasi.
 
 # Build qfits first! And leave test at the end
-SUBDIRS = qfits src . test
+SUBDIRS = qfits src doc . test
 ACLOCAL_AMFLAGS = -I m4

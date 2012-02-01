@@ -30,7 +30,16 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
-check_PROGRAMS = test_nside_to_npixel test_npixel_to_nside
+check_PROGRAMS = \
+	test_nside_to_npixel \
+	test_npixel_to_nside \
+	test_nest_to_ring \
+	test_ring_to_nest \
+	test_switch_order \
+	test_angles_to_pixel \
+	test_pixel_to_angles \
+	test_map_io
+
 LDADD = $(top_srcdir)/src/libchealpix.la \
 	$(top_srcdir)/qfits/src/libqfits.la \
 	$(LIBOBJS)
