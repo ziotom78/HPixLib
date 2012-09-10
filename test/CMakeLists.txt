@@ -1,13 +1,13 @@
 set(LIST_OF_TESTS
-  test_angles_to_pixel
-  test_map_io
-  test_nest_to_ring
-  test_npixel_to_nside
-  test_nside_to_npixel
-  test_pixel_to_angles
-  test_query_disc
-  test_ring_to_nest
-  test_switch_order)
+  angles_to_pixel
+  map_io
+  nest_to_ring
+  npixel_to_nside
+  nside_to_npixel
+  pixel_to_angles
+  query_disc
+  ring_to_nest
+  switch_order)
 
 foreach(test ${LIST_OF_TESTS})
   include_directories(${cHealpix_SOURCE_DIR}/src)
