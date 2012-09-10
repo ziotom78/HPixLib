@@ -29,7 +29,7 @@
 	if(! (x))							\
 	{								\
 	    fprintf(stderr, "%s:%d: assertion failed: "			\
-		    #x " is not true\n"					\
+		    #x " is not true\n",				\
 		    __FILE__, __LINE__);				\
 	    test_result = EXIT_FAILURE;					\
 	}								\
