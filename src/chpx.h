@@ -49,8 +49,9 @@ typedef struct {
     void               * pixels;
 } chpx_map_t;
 
-#define CHPX_GET_MAP_PIXEL(map, index, type) (*((type *) (((char *) map->pixels) \
-							  + (index) * map->pixel_size)))
+#define CHPX_MAP_PIXEL(map, index, type)	\
+    (*((type *) (((char *) map->pixels)		\
+		 + (index) * map->pixel_size)))
 
 typedef struct {
     unsigned int       width;

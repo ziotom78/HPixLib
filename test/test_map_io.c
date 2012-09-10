@@ -52,8 +52,8 @@ main(void)
 
     for(index = 0; index < chpx_num_of_pixels(map_to_save); ++index)
     {
-	unsigned char pixel1 = CHPX_GET_MAP_PIXEL(map_to_save, index, unsigned char);
-	unsigned char pixel2 = CHPX_GET_MAP_PIXEL(loaded_map, index, unsigned char);
+	unsigned char pixel1 = CHPX_MAP_PIXEL(map_to_save, index, unsigned char);
+	unsigned char pixel2 = CHPX_MAP_PIXEL(loaded_map, index, unsigned char);
 
 	TEST_EQUAL(pixel1, pixel2);
     }
