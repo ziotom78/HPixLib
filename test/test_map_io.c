@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
+#include <fitsio.h>
 #include <chpx.h>
 #include <stdlib.h>
 #include "libtest.h"
@@ -38,7 +39,7 @@ main(void)
 
     /* Try to save this map */
     TEST_TRUE(chpx_save_fits_map(FILE_NAME, map_to_save,
-				 TFITS_BIN_TYPE_I, &error_status) != 0);
+				 TINT, &error_status) != 0);
     
     /* Load the map back again */
     TEST_TRUE((loaded_map = chpx_load_fits_map("test.fits", 1, &error_status)) == NULL);
