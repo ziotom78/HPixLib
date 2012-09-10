@@ -8,6 +8,8 @@ set(chealpix_sources
   positions.c
   query_disc.c)
 
+add_definitions(-Wall --pedantic)
+
 include_directories(${cHealpix_SOURCE_DIR}/src)
 link_directories(${cHealpix_BINARY_DIR}/src)
 
