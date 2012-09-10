@@ -1,0 +1,17 @@
+set(chealpix_sources
+  bitmap.c
+  io.c
+  map.c
+  mem.c
+  misc.c
+  order_conversion.c
+  positions.c
+  query_disc.c)
+
+include_directories(${cHealpix_SOURCE_DIR}/src)
+link_directories(${cHealpix_BINARY_DIR}/src)
+
+add_library(chealpix ${chealpix_sources})
+
+target_link_libraries(chealpix
+  cfitsio z pthread m)
