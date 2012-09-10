@@ -22,7 +22,7 @@
 extern"C"{
 #endif /* __cplusplus */
 
-#include "qfits_table.h"
+#include "fitsio.h"
 
 #define CHEALPIX_VERSION "0.1"
 
@@ -102,7 +102,7 @@ chpx_map_t * chpx_load_fits_map(const char * file_name,
 
 int chpx_save_fits_map(const char * file_name,
 		       const chpx_map_t * map,
-		       enum _TFITS_DATA_TYPE_ data_type,
+		       int data_type,
 		       char ** error_status);
 
 int chpx_load_fits_pol_map(const char * file_name,
@@ -116,7 +116,7 @@ int chpx_save_fits_pol_map(const char * file_name,
 			   const chpx_map_t * map_i,
 			   const chpx_map_t * map_q,
 			   const chpx_map_t * map_u,
-			   enum _TFITS_DATA_TYPE_ data_type,
+			   int data_type,
 			   char ** error_status);
 
 /* Functions implemented in positions.c */
