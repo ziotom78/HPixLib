@@ -57,8 +57,6 @@ const int y2pix[] = {
 	if(x <  0.)         x = x + 2.0 * M_PI;			\
     }
 
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-
 void
 chpx_angles_to_3dvec(double theta, double phi,
 		     double * x, double * y, double * z)

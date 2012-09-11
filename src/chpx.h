@@ -30,28 +30,27 @@ typedef unsigned short chpx_nside_t;
 typedef unsigned long chpx_pixel_num_t;
 
 typedef enum {
-    CHPX_ORDER_UNKNOWN,
     CHPX_ORDER_RING,
-    CHPX_ODER_NEST
+    CHPX_ORDER_NEST
 } chpx_ordering_t;
 
 typedef enum {
-    CHPX_COORD_UNKNOWN,
+    CHPX_COORD_CUSTOM,
     CHPX_COORD_ECLIPTIC,
-    CHPX_COORD_GALACTIC
+    CHPX_COORD_GALACTIC,
+    CHPX_COORD_CELESTIAL
 } chpx_coordinates_t;
 
 typedef struct {
     chpx_ordering_t    order;
     chpx_coordinates_t coord;
     chpx_nside_t       nside;
-    size_t             pixel_size;
-    void               * pixels;
+    double             * pixels;
 } chpx_map_t;
 
-#define CHPX_MAP_PIXEL(map, index, type)	\
-    (*((type *) (((char *) map->pixels)		\
-		 + (index) * map->pixel_size)))
+#define CHPX_MAP_PIXEL(map, index)				\
+    (*((double *) (((char *) map->pixels)			\
+		   + (index) * sizeof(map->pixels[0]))))
 
 typedef struct {
     unsigned int       width;
@@ -74,12 +73,11 @@ double chpx_max_pixel_radius(chpx_nside_t);
 
 /* Functions implemented in map.c */
 
-chpx_map_t * chpx_create_map(chpx_nside_t,
-			     size_t pixel_size);
+chpx_map_t * chpx_create_map(chpx_nside_t nside, chpx_ordering_t order);
 
-chpx_map_t * chpx_create_map_from_array(void * array,
+chpx_map_t * chpx_create_map_from_array(double * array,
 					size_t num_of_elements,
-					size_t pixel_size);
+                                        chpx_ordering_t order);
 
 void chpx_free_map(chpx_map_t * map);
 
@@ -89,41 +87,75 @@ chpx_coordinates_t chpx_map_coordinate_system(const chpx_map_t * map);
 
 chpx_nside_t chpx_map_nside(const chpx_map_t * map);
 
-size_t chpx_map_pixel_size(const chpx_map_t * map);
+double * chpx_map_pixels(const chpx_map_t * map);
 
-void * chpx_map_pixels(const chpx_map_t * map);
-
-size_t chpx_num_of_pixels(const chpx_map_t * map);
+size_t chpx_map_num_of_pixels(const chpx_map_t * map);
 
 /* Functions implemented in io.c */
 
-chpx_map_t * chpx_load_fits_map(const char * file_name,
-				unsigned short hdu_number,
-				char ** error_status);
+int
+chpx_load_component_from_fitsptr(fitsfile * fptr,
+				 unsigned short column_number,
+				 chpx_map_t ** map,
+				 int * status);
 
-int chpx_save_fits_map(const char * file_name,
-		       const chpx_map_t * map,
+int chpx_load_component_from_file(const char * file_name,
+				  unsigned short column_number,
+				  chpx_map_t ** map,
+				  int * status);
+
+int
+chpx_create_empty_fits_table_for_map(fitsfile * fptr,
+				     const chpx_map_t * template_map,
+				     unsigned short num_of_components,
+				     const char * measure_unit,
+				     int * status);
+
+int
+chpx_save_fits_component_to_fitsfile(fitsfile * fptr,
+				     const chpx_map_t * map,
+				     int data_type,
+				     const char * measure_unit,
+				     int * status);
+
+int
+chpx_load_fits_pol_fitsfile(fitsfile * fptr,
+			    chpx_map_t ** map_i,
+			    chpx_map_t ** map_q,
+			    chpx_map_t ** map_u,
+			    int * status);
+
+int
+chpx_load_fits_pol_map(const char * file_name,
+		       chpx_map_t ** map_i,
+		       chpx_map_t ** map_q,
+		       chpx_map_t ** map_u,
+		       int * status);
+
+int
+chpx_save_fits_pol_fitsfile(const char * file_name,
+			    const chpx_map_t * map_i,
+			    const chpx_map_t * map_q,
+			    const chpx_map_t * map_u,
+			    int data_type,
+			    const char * measure_unit,
+			    int * status);
+
+int
+chpx_save_fits_pol_map(const char * file_name,
+		       const chpx_map_t * map_i,
+		       const chpx_map_t * map_q,
+		       const chpx_map_t * map_u,
 		       int data_type,
-		       char ** error_status);
-
-int chpx_load_fits_pol_map(const char * file_name,
-			   unsigned short hdu_number,
-			   chpx_map_t ** map_i,
-			   chpx_map_t ** map_q,
-			   chpx_map_t ** map_u,
-			   char ** error_status);
-
-int chpx_save_fits_pol_map(const char * file_name,
-			   const chpx_map_t * map_i,
-			   const chpx_map_t * map_q,
-			   const chpx_map_t * map_u,
-			   int data_type,
-			   char ** error_status);
+		       const char * measure_unit,
+		       int * status);
 
 /* Functions implemented in positions.c */
 
 void chpx_angles_to_3dvec(double theta, double phi,
 			  double * x, double * y, double * z);
+
+typedef chpx_pixel_num_t chpx_angles_to_pixel_t(chpx_nside_t, double, double);
 
 chpx_pixel_num_t chpx_angles_to_ring_pixel(chpx_nside_t nside,
 					   double theta,
@@ -155,6 +187,12 @@ void chpx_nest_pixel_to_3dvec(chpx_nside_t nside,
 			      double * x, double * y, double * z);
 
 /* Functions implemented in bitmap.c */
+
+unsigned int
+chpx_projection_width(const chpx_bmp_projection_t * proj);
+
+unsigned int
+chpx_projection_height(const chpx_bmp_projection_t * proj);
 
 double *
 chpx_bmp_trace_bitmap(const chpx_bmp_projection_t * proj,

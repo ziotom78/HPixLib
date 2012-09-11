@@ -26,34 +26,37 @@
 int
 main(void)
 {
-    chpx_map_t * map_to_save = chpx_create_map(3, sizeof(unsigned char));
+    chpx_map_t * map_to_save = chpx_create_map(4, CHPX_ORDER_RING);
     chpx_map_t * loaded_map;
     size_t index;
-    char * error_status;
+    int status = 0;
 
     TEST_INIT;
 
     /* Initialize each pixel in the map with its own index */
-    for(index = 0; index < chpx_num_of_pixels(map_to_save); ++index)
-	*(((unsigned char *) map_to_save->pixels) + index) = index;
+    for(index = 0; index < chpx_map_num_of_pixels(map_to_save); ++index)
+	*(chpx_map_pixels(map_to_save) + index) = index;
 
     /* Try to save this map */
-    TEST_TRUE(chpx_save_fits_map(FILE_NAME, map_to_save,
-				 TINT, &error_status) != 0);
+    TEST_TRUE(chpx_save_fits_component_to_file(FILE_NAME, map_to_save,
+					       TULONG, "", &status) != 0);
     
     /* Load the map back again */
-    TEST_TRUE((loaded_map = chpx_load_fits_map("test.fits", 1, &error_status)) == NULL);
+    chpx_load_fits_component_from_file("test.fits", 1, &loaded_map, &status);
+    TEST_TRUE(loaded_map != NULL);
 
     /* Now check that the two maps (map_to_save and loaded_map) are
      * actually the same. Note that we use integer types (unsigned
      * char) so that every comparison is exact. */
 
-    TEST_EQUAL(map_to_save->nside, loaded_map->nside);
+    TEST_EQUAL(chpx_map_nside(map_to_save), chpx_map_nside(loaded_map));
 
-    for(index = 0; index < chpx_num_of_pixels(map_to_save); ++index)
+    for(index = 0; index < chpx_map_num_of_pixels(map_to_save); ++index)
     {
-	unsigned char pixel1 = CHPX_MAP_PIXEL(map_to_save, index, unsigned char);
-	unsigned char pixel2 = CHPX_MAP_PIXEL(loaded_map, index, unsigned char);
+	unsigned long pixel1 =
+	    (unsigned long) CHPX_MAP_PIXEL(map_to_save, index);
+	unsigned long pixel2 = 
+	    (unsigned long) CHPX_MAP_PIXEL(loaded_map, index);
 
 	TEST_EQUAL(pixel1, pixel2);
     }
