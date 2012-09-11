@@ -1,0 +1,7 @@
+Name: cHealpix
+Description: C-only implementation of the Healpix spherical pixelization scheme
+Version: @VERSION@
+
+Requires:
+Libs: -L${pkg_config_libdir} -L${pkg_config_sharedlibdir} -lchealpix
+Cflags: -I${pkg_config_includedir}

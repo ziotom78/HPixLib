@@ -17,3 +17,9 @@ add_library(chealpix ${chealpix_sources})
 
 target_link_libraries(chealpix
   cfitsio z pthread m)
+
+# Install directives
+install(TARGETS chealpix
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+install(FILES chpx.h DESTINATION include)
