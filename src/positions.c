@@ -192,8 +192,8 @@ chpx_angles_to_nest_pixel(chpx_nside_t nside,
 }
 
 void
-chpx_3dvec_to_angle(double x, double y, double z,
-		    double * theta, double * phi)
+chpx_3dvec_to_angles(double x, double y, double z,
+		     double * theta, double * phi)
 {
     assert(theta && phi);
 
@@ -216,8 +216,8 @@ chpx_3dvec_to_nest_pixel(chpx_nside_t nside,
 }
 
 void
-chpx_ring_pixel_to_angle(chpx_nside_t nside, chpx_pixel_num_t pixel,
-			 double * theta, double * phi)
+chpx_ring_pixel_to_angles(chpx_nside_t nside, chpx_pixel_num_t pixel,
+			  double * theta, double * phi)
 {
     assert(theta && phi);
 
@@ -226,8 +226,8 @@ chpx_ring_pixel_to_angle(chpx_nside_t nside, chpx_pixel_num_t pixel,
 }
 
 void
-chpx_nest_pixel_to_angle(chpx_nside_t nside, chpx_pixel_num_t pixel,
-			 double * theta, double * phi)
+chpx_nest_pixel_to_angles(chpx_nside_t nside, chpx_pixel_num_t pixel,
+			  double * theta, double * phi)
 {
     assert(theta && phi);
 
