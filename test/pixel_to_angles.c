@@ -28,7 +28,7 @@ main(void)
     TEST_INIT;
 
 #define CHECK_ANGLE(nside, schema, pixel, target_theta, target_phi)	\
-    chpx_ ## schema ## _pixel_to_angle(nside, pixel, &theta, &phi);	\
+    chpx_ ## schema ## _pixel_to_angles(nside, pixel, &theta, &phi);	\
     TEST_CLOSE(theta, target_theta);					\
     TEST_CLOSE(phi, target_phi);
 

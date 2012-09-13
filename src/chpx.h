@@ -176,17 +176,26 @@ chpx_pixel_num_t chpx_angles_to_nest_pixel(chpx_nside_t nside,
 void chpx_3dvec_to_angles(double x, double y, double z,
 			  double * theta, double * phi);
 
+typedef chpx_pixel_num_t chpx_3dvec_to_pixel_fn_t(chpx_nside_t,
+						  double, double, double);
+
 chpx_pixel_num_t chpx_3dvec_to_ring_pixel(chpx_nside_t nside,
 					  double x, double y, double z);
 
 chpx_pixel_num_t chpx_3dvec_to_nest_pixel(chpx_nside_t nside,
 					  double x, double y, double z);
 
+typedef void chpx_pixel_to_angles(chpx_nside_t, chpx_pixel_num_t,
+				  double *, double *);
+
 void chpx_ring_pixel_to_angles(chpx_nside_t nside, chpx_pixel_num_t pixel,
 			       double * theta, double * phi);
 
 void chpx_nest_pixel_to_angles(chpx_nside_t nside, chpx_pixel_num_t pixel,
 			       double * theta, double * phi);
+
+typedef void chpx_pixel_to_3dvec(chpx_nside_t, chpx_pixel_num_t,
+				 double *, double *, double *);
 
 void chpx_ring_pixel_to_3dvec(chpx_nside_t nside,
 			      double * x, double * y, double * z);
