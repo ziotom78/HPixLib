@@ -11,7 +11,7 @@ struct ___chpx_bmp_projection_t {
 };
 
 chpx_bmp_projection_t * 
-chpx_create_bmp_projection(unsigned int width, unsigned int height);
+chpx_create_bmp_projection(unsigned int width, unsigned int height)
 {
     chpx_bmp_projection_t * obj;
     obj = malloc(sizeof(chpx_bmp_projection_t));
