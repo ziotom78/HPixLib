@@ -4,6 +4,30 @@
 
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
+struct ___chpx_bmp_projection_t {
+    unsigned int       width;
+    unsigned int       height;
+    chpx_coordinates_t coordsys;
+};
+
+chpx_bmp_projection_t * 
+chpx_create_bmp_projection(unsigned int width, unsigned int height);
+{
+    chpx_bmp_projection_t * obj;
+    obj = malloc(sizeof(chpx_bmp_projection_t));
+    obj->width = width;
+    obj->height = height;
+
+    return obj;
+}
+
+void
+chpx_free_bmp_projection(chpx_bmp_projection_t * proj)
+{
+    if(proj)
+	free(proj);
+}
+
 unsigned int
 chpx_projection_width(const chpx_bmp_projection_t * proj)
 {
@@ -16,6 +40,18 @@ chpx_projection_height(const chpx_bmp_projection_t * proj)
 {
     assert(proj);
     return proj->height;
+}
+
+void
+chpx_set_projection_width(chpx_bmp_projection_t * proj,
+			  unsigned int width)
+{
+}
+
+void
+chpx_set_projection_height(chpx_bmp_projection_t * proj,
+			   unsigned int height)
+{
 }
 
 double *

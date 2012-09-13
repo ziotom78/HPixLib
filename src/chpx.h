@@ -45,18 +45,15 @@ typedef struct {
     chpx_ordering_t    order;
     chpx_coordinates_t coord;
     chpx_nside_t       nside;
-    double             * pixels;
+    double           * pixels;
 } chpx_map_t;
 
 #define CHPX_MAP_PIXEL(map, index)				\
     (*((double *) (((char *) map->pixels)			\
 		   + (index) * sizeof(map->pixels[0]))))
 
-typedef struct {
-    unsigned int       width;
-    unsigned int       height;
-    chpx_coordinates_t coordsys;
-} chpx_bmp_projection_t;
+struct ___chpx_bmp_projection_t;
+typedef struct ___chpx_bmp_projection_t chpx_bmp_projection_t;
 
 /* Functions implemented in mem.c */
 
@@ -205,11 +202,25 @@ void chpx_nest_pixel_to_3dvec(chpx_nside_t nside,
 
 /* Functions implemented in bitmap.c */
 
+chpx_bmp_projection_t * 
+chpx_create_bmp_projection(unsigned int width, unsigned int height);
+
+void
+chpx_free_bmp_projection(chpx_bmp_projection_t * proj);
+
 unsigned int
 chpx_projection_width(const chpx_bmp_projection_t * proj);
 
 unsigned int
 chpx_projection_height(const chpx_bmp_projection_t * proj);
+
+void
+chpx_set_projection_width(chpx_bmp_projection_t * proj,
+			  unsigned int width);
+
+void
+chpx_set_projection_height(chpx_bmp_projection_t * proj,
+			   unsigned int height);
 
 double *
 chpx_bmp_trace_bitmap(const chpx_bmp_projection_t * proj,
