@@ -119,18 +119,25 @@ chpx_save_fits_component_to_fitsfile(fitsfile * fptr,
 				     int * status);
 
 int
-chpx_load_fits_pol_fitsfile(fitsfile * fptr,
-			    chpx_map_t ** map_i,
-			    chpx_map_t ** map_q,
-			    chpx_map_t ** map_u,
-			    int * status);
+chpx_save_fits_component_to_file(const char * file_name,
+				 const chpx_map_t * map,
+				 int data_type,
+				 const char * measure_unit,
+				 int * status);
 
 int
-chpx_load_fits_pol_map(const char * file_name,
-		       chpx_map_t ** map_i,
-		       chpx_map_t ** map_q,
-		       chpx_map_t ** map_u,
-		       int * status);
+chpx_load_fits_pol_from_fitsfile(fitsfile * fptr,
+				 chpx_map_t ** map_i,
+				 chpx_map_t ** map_q,
+				 chpx_map_t ** map_u,
+				 int * status);
+
+int
+chpx_load_fits_pol_from_file(const char * file_name,
+			     chpx_map_t ** map_i,
+			     chpx_map_t ** map_q,
+			     chpx_map_t ** map_u,
+			     int * status);
 
 int
 chpx_save_fits_pol_fitsfile(const char * file_name,
@@ -155,7 +162,8 @@ chpx_save_fits_pol_map(const char * file_name,
 void chpx_angles_to_3dvec(double theta, double phi,
 			  double * x, double * y, double * z);
 
-typedef chpx_pixel_num_t chpx_angles_to_pixel_t(chpx_nside_t, double, double);
+typedef chpx_pixel_num_t chpx_angles_to_pixel_fn_t(chpx_nside_t,
+						   double, double);
 
 chpx_pixel_num_t chpx_angles_to_ring_pixel(chpx_nside_t nside,
 					   double theta,

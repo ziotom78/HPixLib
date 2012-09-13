@@ -30,7 +30,7 @@ chpx_bmp_trace_bitmap(const chpx_bmp_projection_t * proj,
     double center_y = chpx_projection_height(proj) / 2.0;
     double *bitmap;
     double *bitmap_ptr;
-    chpx_angles_to_pixel_t * angles_to_pixel_fn;
+    chpx_angles_to_pixel_fn_t * angles_to_pixel_fn;
     chpx_nside_t nside;
 
     assert(proj);
