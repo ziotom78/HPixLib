@@ -62,10 +62,10 @@ Loading and saving maps
 -----------------------
 
 The following functions are used to load and save Healpix maps into
-FITS files. Such files are fully compatible with the standard Healpix
-library.
+FITS files. Such files are fully compatible with those produced by the
+standard Healpix library.
 
-.. c:function:: int chpx_load_fits_component_from_fitsptr(fitsptr * fptr, unsigned short column_number, chpx_map_t ** map, char ** error_status)
+.. c:function:: int chpx_load_component_from_fitsptr(fitsptr * fptr, unsigned short column_number, chpx_map_t ** map, int * status)
 
   Load one component (I, Q, or U) from the FITS file specified by
   *fptr*, which must have been properly initialized using one of
@@ -81,18 +81,37 @@ library.
   Note that pixels marked as ``UNSEEN`` are converted to NaN. This is
   different from what the standard Healpix library does.
 
-.. c:function:: int chpx_load_fits_component_from_file(const char * file_name, unsigned short column_number, chpx_map_t ** map, char ** error_status)
+.. c:function:: int chpx_load_fits_component_from_file(const char * file_name, unsigned short column_number, chpx_map_t ** map, int * status)
 
   Wrapper to :c:func:`chpx_load_fits_component_from_fitsptr` which
   automatically opens the FITS file named *file_name* and moves to the
   first binary table HDU.
 
-.. c:function:: int chpx_save_fits_component_to_file(const char * file_name, const chpx_map_t * map, int data_type, char ** error_status)
+.. c:function:: int chpx_create_empty_fits_table_for_map(fitsfile * fptr, const chpx_map_t * template_map, unsigned short num_of_components, const char * measure_unit, int * status)
+
+  Create a new HDU in an already-opened FITS file pointed by *fptr*
+  and write a set of keywords that describe the shape of a map like
+  *template_map*. The parameter *num_of_components* tells how many
+  `TDOUBLE` columns the HDU will have: it must be a number between 1
+  and 3. (No checking is done on this.)
+
+  The parameter *measure_unit* should be a string identifying the unit
+  of measure of all the columns. You should use short names, e.g. `K`
+  instead of `Kelvin`.
+
+  If the function is successful, it returns nonzero. If there is an
+  error and *status* is not null, then it will be initialized with the
+  appropriate CFITSIO code.
+
+  Note that write-access must be granted to *fptr*, otherwise the
+  function will fail.
+
+.. c:function:: int chpx_save_fits_component_to_fitsfile(const char * file_name, const chpx_map_t * map, int data_type, int * status)
 
   Save *map* into a FITS file named *file_name*. The value of
   *data_type* is one of the possible types accepted by CFITSIO (e.g.
   ``TINT``, refer to the CFITSIO documentation for a full list).
-  
+
   As for :c:func:`chpx_load_fits_component_from_file()`, if something
   went wrong then the function returns zero and initializes
   *error_status* with a newly-created string describing the error. (In
@@ -102,6 +121,11 @@ library.
 
   If there are NaN values in the map pixels, they will be converted
   into the standard Healpix's ``UNSEEN`` value.
+
+.. c:function:: int chpx_save_fits_component_to_file(const char * file_name, const chpx_map_t * map, int data_type, int * status)
+
+  Wrapper to :c:func:`chpx_save_fits_component_to_fitsptr` which
+  automatically create a FITS file named *file_name*.
 
 .. c:function:: int chpx_load_fits_pol_from_file(const char * file_name, chpx_map_t ** map_i, chpx_map_t ** map_q, chpx_map_t ** map_u, char ** error_status)
 
@@ -117,25 +141,22 @@ library.
   If any error occurs, the function returns ``NULL``, otherwise it
   returns a new :c:type:`chpx_map_t` object that must be freed using
   :c:func:`chpx_free_map()` when it is no longer useful. Moreover, if
-  *error_status* is not null, then it will be initialized to a string
-  containing an explanation of what went wrong. (If an error occurs,
-  then you should free the string using :c:func:`chpx_free()`.)
+  *status* is not null, then it will be initialized with the
+  appropriate CFITSIO error code.
 
   Note that pixels marked as ``UNSEEN`` are converted to NaN. This is
   different from what the standard Healpix library does.
 
 .. c:function:: int chpx_save_fits_pol_to_file(const char * file_name, const chpx_map_t * map_i, const chpx_map_t * map_q, const chpx_map_t * map_u, int data_type, char ** error_status)
 
-  Save *map* into a FITS file named *file_name*. The value of
-  *data_type* is one of the possible types accepted by CFITSIO (e.g.
-  ``TINT``, refer to the CFITSIO documentation for a full list).
-  
+  Save the three I, Q, U maps into a FITS file named *file_name*. The
+  value of *data_type* is one of the possible types accepted by
+  CFITSIO (e.g. ``TINT``, refer to the CFITSIO documentation for a
+  full list).
+
   As for :c:func:`chpx_load_fits_pol_from_file()`, if something went
-  wrong then the function returns zero and initializes *error_status*
-  with a newly-created string describing the error. (In this case you
-  must free it using :c:func:`chpx_free()`.) Note that *error_status*
-  can be set to ``NULL``: in this case, no information about the error
-  type will be available.
+  wrong and *status* is not null, then it will be initialized with the
+  appropriate CFITSIO error code.
 
   If there are NaN values in the map pixels, they will be converted
   into the standard Healpix's ``UNSEEN`` value.
@@ -204,10 +225,10 @@ the command line.
     {
       if(isnan(pixels[idx]))
         continue;
-    
+
       if(min > pixels[idx])
         min = pixels[idx];
-    
+
       if(max < pixels[idx])
         max = pixels[idx];
     }
