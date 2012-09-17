@@ -1,5 +1,5 @@
-/* test_ring_to_nest.c -- check the implementation of
- * hpxlib_ring_to_nest_idx
+/* test_query_disc.c -- check the implementation of
+ * hpxlib_query_disc and hpxlib_query_disc_inclusive
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -18,21 +18,20 @@
 
 #include <hpxlib.h>
 #include <stdlib.h>
-#include "libtest.h"
 
 int
 main(void)
 {
-    TEST_INIT;
+    int result = 1;
 
     /* Check for some random numbers */
-    TEST_EQUAL(hpxlib_ring_to_nest_idx( 64,    9010),    9632);
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(256,  324237),    1652);
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(512, 2800416), 2966186);
+    result = result && (hpxlib_nest_to_ring_idx( 64,    9632) ==    9010);
+    result = result && (hpxlib_nest_to_ring_idx(256,    1652) ==  324237);
+    result = result && (hpxlib_nest_to_ring_idx(512, 2966186) == 2800416);
 
     /* Check for failures */
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(4, 1000000), 0);
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(0, 1),       0);
+    result = result && (hpxlib_nest_to_ring_idx(4, 1000000) == 0);
+    result = result && (hpxlib_nest_to_ring_idx(0, 1) == 0);
 
-    TEST_EXIT;
+    return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

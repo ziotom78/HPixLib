@@ -1,9 +1,26 @@
-#include <chpx.h>
+/* mem.c -- Allocation/deallocation routines
+ *
+ * Copyright 2011-2012 Maurizio Tomasi.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+
+#include <hpxlib.h>
 #include <stdlib.h>
 #include <assert.h>
 
 void *
-chpx_malloc(size_t size, size_t num)
+hpxlib_malloc(size_t size, size_t num)
 {
     if(size == 0)
 	return NULL;
@@ -12,7 +29,7 @@ chpx_malloc(size_t size, size_t num)
 }
 
 void *
-chpx_calloc(size_t size, size_t num)
+hpxlib_calloc(size_t size, size_t num)
 {
     if(size == 0)
 	return NULL;
@@ -21,14 +38,14 @@ chpx_calloc(size_t size, size_t num)
 }
 
 void *
-chpx_realloc(void * ptr, size_t size)
+hpxlib_realloc(void * ptr, size_t size)
 {
     assert(ptr);
     return realloc(ptr, size);
 }
 
 void
-chpx_free(void * ptr)
+hpxlib_free(void * ptr)
 {
     if(ptr != NULL)
 	free(ptr);

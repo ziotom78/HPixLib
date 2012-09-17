@@ -1,5 +1,6 @@
 set(LIST_OF_TESTS
   angles_to_pixel
+  bmp_projection
   map_io
   nest_to_ring
   npixel_to_nside
@@ -10,11 +11,11 @@ set(LIST_OF_TESTS
   switch_order)
 
 foreach(test ${LIST_OF_TESTS})
-  include_directories(${cHealpix_SOURCE_DIR}/src)
-  link_directories(${cHealpix_BINARY_DIR}/src)
+  include_directories(${PROJECT_SOURCE_DIR}/src)
+  link_directories(${PROJECT_BINARY_DIR}/src)
 
   add_executable(${test} ${test}.c)
-  target_link_libraries(${test} chealpix)
+  target_link_libraries(${test} hpxlib)
 
   add_test(${test} ${test})
 endforeach()

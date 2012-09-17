@@ -1,4 +1,4 @@
-/* chpx.h -- header file for the CHealpix library
+/* io.c -- Read/write maps into FITS files
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <chpx.h>
+#include <hpxlib.h>
 #include <fitsio.h>
 #include <assert.h>
 #include <math.h>
@@ -24,10 +24,10 @@
 /****************************************************************************/
 
 int
-chpx_load_fits_component_from_fitsptr(fitsfile * fptr,
-				      unsigned short column_number,
-				      chpx_map_t ** map,
-				      int * status)
+hpxlib_load_fits_component_from_fitsptr(fitsfile * fptr,
+					unsigned short column_number,
+					hpxlib_map_t ** map,
+					int * status)
 {
     /* Local Declarations */
     long row_idx;
@@ -37,7 +37,7 @@ chpx_load_fits_component_from_fitsptr(fitsfile * fptr,
     double * pixels;
     long nside;
     long elements_per_row;
-    chpx_coordinates_t coord_sys;
+    hpxlib_coordinates_t coord_sys;
 
     assert(fptr);
     assert(map);
@@ -61,7 +61,7 @@ chpx_load_fits_component_from_fitsptr(fitsfile * fptr,
     if(fits_read_key_lng(fptr, "NSIDE", &nside, NULL, status))
 	return 0;
 
-    assert(chpx_nside_to_npixel((chpx_nside_t) nside)
+    assert(hpxlib_nside_to_npixel((hpxlib_nside_t) nside)
 	   == num_of_rows * elements_per_row);
 
     if(fits_read_key(fptr, TSTRING, "COORDSYS", coord_sys_key, NULL, status))
@@ -73,14 +73,14 @@ chpx_load_fits_component_from_fitsptr(fitsfile * fptr,
     /* Read the array */
     switch(ordering_key[0])
     {
-    case 'G': coord_sys = CHPX_COORD_GALACTIC; break;
-    case 'E': coord_sys = CHPX_COORD_ECLIPTIC; break;
-    case 'Q': coord_sys = CHPX_COORD_CUSTOM; break;
-    default: coord_sys = CHPX_COORD_CELESTIAL; break;
+    case 'G': coord_sys = HPXLIB_COORD_GALACTIC; break;
+    case 'E': coord_sys = HPXLIB_COORD_ECLIPTIC; break;
+    case 'Q': coord_sys = HPXLIB_COORD_CUSTOM; break;
+    default: coord_sys = HPXLIB_COORD_CELESTIAL; break;
     }
 
-    *map = chpx_create_map(nside, coord_sys);
-    pixels = chpx_map_pixels(*map);
+    *map = hpxlib_create_map(nside, coord_sys);
+    pixels = hpxlib_map_pixels(*map);
     for (row_idx = 0; row_idx < num_of_rows; ++row_idx)
     {
 	if(fits_read_col_dbl(fptr, column_number,
@@ -89,7 +89,7 @@ chpx_load_fits_component_from_fitsptr(fitsfile * fptr,
 			     &pixels[row_idx * elements_per_row],
 			     NULL, status))
 	{
-	    chpx_free_map(*map);
+	    hpxlib_free_map(*map);
 	    map = NULL;
 	    return 0;
 	}
@@ -103,10 +103,10 @@ chpx_load_fits_component_from_fitsptr(fitsfile * fptr,
 
 
 int
-chpx_load_fits_component_from_file(const char * file_name,
-				   unsigned short column_number,
-				   chpx_map_t ** map,
-				   int * status)
+hpxlib_load_fits_component_from_file(const char * file_name,
+				     unsigned short column_number,
+				     hpxlib_map_t ** map,
+				     int * status)
 {
     /* Local Declarations */
     fitsfile *fptr;
@@ -119,7 +119,7 @@ chpx_load_fits_component_from_file(const char * file_name,
     if(fits_open_table(&fptr, file_name, READONLY, status))
 	return 0;
 
-    if(! chpx_load_fits_component_from_fitsptr(fptr, column_number, map, status))
+    if(! hpxlib_load_fits_component_from_fitsptr(fptr, column_number, map, status))
     {
 	fits_close_file(fptr, NULL);
 	return 0;
@@ -127,7 +127,7 @@ chpx_load_fits_component_from_file(const char * file_name,
 
     if(fits_close_file(fptr, status))
     {
-	chpx_free_map(*map);
+	hpxlib_free_map(*map);
 	return 0;
     }
 
@@ -139,11 +139,11 @@ chpx_load_fits_component_from_file(const char * file_name,
 
 
 int
-chpx_create_empty_fits_table_for_map(fitsfile * fptr,
-				     const chpx_map_t * template_map,
-				     unsigned short num_of_components,
-				     const char * measure_unit,
-				     int * status)
+hpxlib_create_empty_fits_table_for_map(fitsfile * fptr,
+				       const hpxlib_map_t * template_map,
+				       unsigned short num_of_components,
+				       const char * measure_unit,
+				       int * status)
 {
     int bitpix = SHORT_IMG;
     long naxis = 0;
@@ -160,18 +160,18 @@ chpx_create_empty_fits_table_for_map(fitsfile * fptr,
     long nside;
 
     tunit[0] = tunit[1] = tunit[2] = (char *) measure_unit;
-    nside = chpx_map_nside(template_map);
-    num_of_pixels = chpx_map_num_of_pixels(template_map);
-    if (chpx_map_ordering(template_map) == CHPX_ORDER_NEST)
+    nside = hpxlib_map_nside(template_map);
+    num_of_pixels = hpxlib_map_num_of_pixels(template_map);
+    if (hpxlib_map_ordering(template_map) == HPXLIB_ORDER_NEST)
 	strcpy(ordering_key, "NESTED");
     else
 	strcpy(ordering_key, "RING");
 
-    switch(chpx_map_coordinate_system(template_map))
+    switch(hpxlib_map_coordinate_system(template_map))
     {
-    case CHPX_COORD_ECLIPTIC: coord_sys_key[0] = 'E'; break;
-    case CHPX_COORD_GALACTIC: coord_sys_key[0] = 'G'; break;
-    case CHPX_COORD_CUSTOM: coord_sys_key[0] = 'Q'; break;
+    case HPXLIB_COORD_ECLIPTIC: coord_sys_key[0] = 'E'; break;
+    case HPXLIB_COORD_GALACTIC: coord_sys_key[0] = 'G'; break;
+    case HPXLIB_COORD_CUSTOM: coord_sys_key[0] = 'Q'; break;
     default: coord_sys_key[0] = 'C';
     }
 
@@ -204,21 +204,21 @@ chpx_create_empty_fits_table_for_map(fitsfile * fptr,
 
 
 int
-chpx_save_fits_component_to_fitsptr(fitsfile * fptr,
-				    const chpx_map_t * map,
-				    int data_type,
-				    const char * measure_unit,
-				    int * status)
+hpxlib_save_fits_component_to_fitsptr(fitsfile * fptr,
+				      const hpxlib_map_t * map,
+				      int data_type,
+				      const char * measure_unit,
+				      int * status)
 {
     assert(fptr);
     assert(map);
 
-    if(! chpx_create_empty_fits_table_for_map(fptr, map, 1,
-					      measure_unit, status))
+    if(! hpxlib_create_empty_fits_table_for_map(fptr, map, 1,
+						measure_unit, status))
 	return 0;
 
-    if(fits_write_col(fptr, TDOUBLE, 1, 1, 1, chpx_map_num_of_pixels(map),
-		      chpx_map_pixels(map), status))
+    if(fits_write_col(fptr, TDOUBLE, 1, 1, 1, hpxlib_map_num_of_pixels(map),
+		      hpxlib_map_pixels(map), status))
 	return 0;
 
     return 1;
@@ -228,11 +228,11 @@ chpx_save_fits_component_to_fitsptr(fitsfile * fptr,
 
 
 int
-chpx_save_fits_component_to_file(const char * file_name,
-				 const chpx_map_t * map,
-				 int data_type,
-				 const char * measure_unit,
-				 int * status)
+hpxlib_save_fits_component_to_file(const char * file_name,
+				   const hpxlib_map_t * map,
+				   int data_type,
+				   const char * measure_unit,
+				   int * status)
 {
     fitsfile * fptr = NULL;
 
@@ -243,8 +243,8 @@ chpx_save_fits_component_to_file(const char * file_name,
     if (fits_create_file(&fptr, file_name, status))
 	return 0;
 
-    if(! chpx_save_fits_component_to_fitsptr(fptr, map, data_type,
-					     measure_unit, status))
+    if(! hpxlib_save_fits_component_to_fitsptr(fptr, map, data_type,
+					       measure_unit, status))
     {
 	fits_close_file(fptr, NULL);
 	return 0;
@@ -260,11 +260,11 @@ chpx_save_fits_component_to_file(const char * file_name,
 
 
 int
-chpx_load_fits_pol_from_fitsptr(fitsfile * fptr,
-				chpx_map_t ** map_i,
-				chpx_map_t ** map_q,
-				chpx_map_t ** map_u,
-				int * status)
+hpxlib_load_fits_pol_from_fitsptr(fitsfile * fptr,
+				  hpxlib_map_t ** map_i,
+				  hpxlib_map_t ** map_q,
+				  hpxlib_map_t ** map_u,
+				  int * status)
 {
     assert(fptr);
     assert(map_i);
@@ -273,32 +273,32 @@ chpx_load_fits_pol_from_fitsptr(fitsfile * fptr,
 
     *map_i = *map_q = *map_u = NULL;
 
-    if(! chpx_load_fits_component_from_fitsptr(fptr, 1, map_i, status))
+    if(! hpxlib_load_fits_component_from_fitsptr(fptr, 1, map_i, status))
     {
 	*map_i = NULL;
 	return 0;
     }
 
-    if(! chpx_load_fits_component_from_fitsptr(fptr, 2, map_q, status))
+    if(! hpxlib_load_fits_component_from_fitsptr(fptr, 2, map_q, status))
     {
-	chpx_free_map(*map_i);
+	hpxlib_free_map(*map_i);
 	*map_i = NULL;
 	return 0;
     }
 
-    if(! chpx_load_fits_component_from_fitsptr(fptr, 3, map_u, status))
+    if(! hpxlib_load_fits_component_from_fitsptr(fptr, 3, map_u, status))
     {
-	chpx_free_map(*map_i);
-	chpx_free_map(*map_q);
+	hpxlib_free_map(*map_i);
+	hpxlib_free_map(*map_q);
 	*map_i = *map_q = NULL;
 	return 0;
     }
 
     if(fits_close_file(fptr, status))
     {
-	chpx_free_map(*map_i);
-	chpx_free_map(*map_q);
-	chpx_free_map(*map_u);
+	hpxlib_free_map(*map_i);
+	hpxlib_free_map(*map_q);
+	hpxlib_free_map(*map_u);
 	return 0;
     }
 
@@ -310,11 +310,11 @@ chpx_load_fits_pol_from_fitsptr(fitsfile * fptr,
 
 
 int
-chpx_load_fits_pol_from_file(const char * file_name,
-			     chpx_map_t ** map_i,
-			     chpx_map_t ** map_q,
-			     chpx_map_t ** map_u,
-			     int * status)
+hpxlib_load_fits_pol_from_file(const char * file_name,
+			       hpxlib_map_t ** map_i,
+			       hpxlib_map_t ** map_q,
+			       hpxlib_map_t ** map_u,
+			       int * status)
 {
     /* Local Declarations */
     fitsfile *fptr;
@@ -329,7 +329,7 @@ chpx_load_fits_pol_from_file(const char * file_name,
 	return 0;
     }
 
-    if(! chpx_load_fits_pol_from_fitsptr(fptr, map_i, map_q, map_u, status))
+    if(! hpxlib_load_fits_pol_from_fitsptr(fptr, map_i, map_q, map_u, status))
     {
 	fits_close_file(fptr, NULL);
 	return 0;
@@ -337,9 +337,9 @@ chpx_load_fits_pol_from_file(const char * file_name,
 
     if(fits_close_file(fptr, status))
     {
-	chpx_free_map(*map_i);
-	chpx_free_map(*map_q);
-	chpx_free_map(*map_u);
+	hpxlib_free_map(*map_i);
+	hpxlib_free_map(*map_q);
+	hpxlib_free_map(*map_u);
 	*map_i = *map_q = *map_u = NULL;
 	return 0;
     }
@@ -352,13 +352,13 @@ chpx_load_fits_pol_from_file(const char * file_name,
 
 
 int
-chpx_save_fits_pol_to_fitsptr(fitsfile * fptr,
-			      const chpx_map_t * map_i,
-			      const chpx_map_t * map_q,
-			      const chpx_map_t * map_u,
-			      int data_type,
-			      const char * measure_unit,
-			      int * status)
+hpxlib_save_fits_pol_to_fitsptr(fitsfile * fptr,
+				const hpxlib_map_t * map_i,
+				const hpxlib_map_t * map_q,
+				const hpxlib_map_t * map_u,
+				int data_type,
+				const char * measure_unit,
+				int * status)
 {
     long num_of_pixels;
 
@@ -367,20 +367,20 @@ chpx_save_fits_pol_to_fitsptr(fitsfile * fptr,
     assert(map_q);
     assert(map_u);
 
-    assert(chpx_map_nside(map_i) == chpx_map_nside(map_q));
-    assert(chpx_map_nside(map_i) == chpx_map_nside(map_u));
+    assert(hpxlib_map_nside(map_i) == hpxlib_map_nside(map_q));
+    assert(hpxlib_map_nside(map_i) == hpxlib_map_nside(map_u));
 
-    if(! chpx_create_empty_fits_table_for_map(fptr, map_i, 3,
-					      measure_unit, status))
+    if(! hpxlib_create_empty_fits_table_for_map(fptr, map_i, 3,
+						measure_unit, status))
 	return 0;
 
-    num_of_pixels = (long) chpx_map_num_of_pixels(map_i);
+    num_of_pixels = (long) hpxlib_map_num_of_pixels(map_i);
     if(fits_write_col(fptr, TDOUBLE, 1, 1, 1, num_of_pixels,
-		      chpx_map_pixels(map_i), status)
+		      hpxlib_map_pixels(map_i), status)
        || fits_write_col(fptr, TDOUBLE, 2, 1, 1, num_of_pixels,
-			 chpx_map_pixels(map_q), status)
+			 hpxlib_map_pixels(map_q), status)
        || fits_write_col(fptr, TDOUBLE, 3, 1, 1, num_of_pixels,
-			 chpx_map_pixels(map_u), status))
+			 hpxlib_map_pixels(map_u), status))
 	return 0;
 
     return 1;
@@ -390,13 +390,13 @@ chpx_save_fits_pol_to_fitsptr(fitsfile * fptr,
 
 
 int
-chpx_save_fits_pol_to_file(const char * file_name,
-			   const chpx_map_t * map_i,
-			   const chpx_map_t * map_q,
-			   const chpx_map_t * map_u,
-			   int data_type,
-			   const char * measure_unit,
-			   int * status)
+hpxlib_save_fits_pol_to_file(const char * file_name,
+			     const hpxlib_map_t * map_i,
+			     const hpxlib_map_t * map_q,
+			     const hpxlib_map_t * map_u,
+			     int data_type,
+			     const char * measure_unit,
+			     int * status)
 {
     fitsfile * fptr = NULL;
 
@@ -409,7 +409,7 @@ chpx_save_fits_pol_to_file(const char * file_name,
     if (fits_create_file(&fptr, file_name, status))
 	return 0;
 
-    if(! chpx_save_fits_pol_to_fitsptr(fptr, map_i, map_q, map_u,
+    if(! hpxlib_save_fits_pol_to_fitsptr(fptr, map_i, map_q, map_u,
 				       data_type, measure_unit, status))
     {
 	fits_close_file(fptr, NULL);

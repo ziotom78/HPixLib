@@ -1,8 +1,8 @@
 Introduction
 ============
 
-This manual describes cHealpix, a C library that implements the
-Healpix spherical tesselation scheme described by Górski et al. (The
+This manual describes HPixLib, a C library that implements the Healpix
+spherical tesselation scheme described by Górski et al. (The
 Astrophysical Journal, 622:759-771, 2005).
 
 The purpose of HEALPix is to divide a sphere into patches of equal area
@@ -26,7 +26,7 @@ HEALPix library developed by Gorski et al.
 Fortran, C, C++, IDL and Java and is so far the most complete and
 widely used implementation. Despite the fact that such library is
 stable, tested and maintained, I believe there is the need for an
-alternative library like CHealpix:
+alternative library like HPixLib:
 
 * There are no connections among the language bindings. (In fact,
   instead of speaking of "bindings" -- which imply that there is one
@@ -59,13 +59,13 @@ alternative library like CHealpix:
   standard facility for a program using HEALPix to find and link the
   Healpix library (i.e. no support for pkg-config).
 
-Purpose of cHealpix with respect to Healpix
--------------------------------------------
+Purpose of HPixLib with respect to Healpix
+------------------------------------------
 
-cHealpix is meant to solve these issues. Of course, in order to do
-this I had to do a few compromises, so that a number of users of the
+HPixLib is meant to solve these issues. Of course, in order to do this
+I had to do a few compromises, so that a number of users of the
 Górski's library should stay with it. Here are the advantages of
-CHealpix:
+HPixLib:
 
 * Only the C language is supported, and functions are more
   "low-level". This reduces the size of the library and eases its
@@ -79,8 +79,8 @@ CHealpix:
   rarely an issue, but memory can be easily wasted.
 
 * Although it is meant as a basis for creating bindings to other
-  languages, CHealpix itself only provides C bindings (i.e. no
-  Fortran/IDL support). Also, even if you can use CHealpix in a C++
+  languages, HPixLib itself only provides C bindings (i.e. no
+  Fortran/IDL support). Also, even if you can use HPixLib in a C++
   program, the library is not going to use all those nice features of
   C++ like std::vector and templates.
 

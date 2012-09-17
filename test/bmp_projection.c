@@ -1,5 +1,5 @@
-/* test_ring_to_nest.c -- check the implementation of
- * hpxlib_ring_to_nest_idx
+/* bmp_projection.c -- check the accessor functions for
+ * chpx_bmp_projection_t
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -23,16 +23,19 @@
 int
 main(void)
 {
+    hpxlib_bmp_projection_t * proj;
     TEST_INIT;
 
-    /* Check for some random numbers */
-    TEST_EQUAL(hpxlib_ring_to_nest_idx( 64,    9010),    9632);
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(256,  324237),    1652);
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(512, 2800416), 2966186);
+    proj = hpxlib_create_bmp_projection(10, 20);
+    TEST_EQUAL(hpxlib_bmp_projection_width(proj), 10);
+    TEST_EQUAL(hpxlib_bmp_projection_height(proj), 20);
 
-    /* Check for failures */
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(4, 1000000), 0);
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(0, 1),       0);
+    hpxlib_set_bmp_projection_width(proj, 15);
+    hpxlib_set_bmp_projection_height(proj, 25);
+    TEST_EQUAL(hpxlib_bmp_projection_width(proj), 15);
+    TEST_EQUAL(hpxlib_bmp_projection_height(proj), 25);
+
+    hpxlib_free_bmp_projection(proj);
 
     TEST_EXIT;
 }

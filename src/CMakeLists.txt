@@ -1,4 +1,4 @@
-set(chealpix_sources
+set(hpxlib_sources
   bitmap.c
   io.c
   map.c
@@ -10,16 +10,16 @@ set(chealpix_sources
 
 add_definitions(-Wall --pedantic)
 
-include_directories(${cHealpix_SOURCE_DIR}/src)
-link_directories(${cHealpix_BINARY_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src)
+link_directories(${PROJECT_BINARY_DIR}/src)
 
-add_library(chealpix ${chealpix_sources})
+add_library(hpxlib ${hpxlib_sources})
 
-target_link_libraries(chealpix
+target_link_libraries(hpxlib
   cfitsio z pthread m)
 
 # Install directives
-install(TARGETS chealpix
+install(TARGETS hpxlib
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
-install(FILES chpx.h DESTINATION include)
+install(FILES hpxlib.h DESTINATION include)

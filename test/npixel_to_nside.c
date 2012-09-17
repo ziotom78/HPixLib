@@ -1,5 +1,5 @@
 /* test_npixel_to_nside.c -- check the implementation of
- * chpx_npixel_to_nside
+ * hpxlib_npixel_to_nside
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <chpx.h>
+#include <hpxlib.h>
 #include <stdlib.h>
 
 int
@@ -27,11 +27,11 @@ main(void)
 
     for(nside = 1; nside < 1024; nside *= 2)
     {
-	result = result && (chpx_npixel_to_nside(nside * nside * 12) == nside);
+	result = result && (hpxlib_npixel_to_nside(nside * nside * 12) == nside);
     }
 
     /* Check for failures */
-    result = result && (chpx_npixel_to_nside(11) == 0);
+    result = result && (hpxlib_npixel_to_nside(11) == 0);
 
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

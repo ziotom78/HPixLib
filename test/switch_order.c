@@ -1,5 +1,5 @@
 /* test_switch_order.c -- check the implementation of
- * chpx_switch_order
+ * hpxlib_switch_order
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <chpx.h>
+#include <hpxlib.h>
 #include <stdlib.h>
 
 int

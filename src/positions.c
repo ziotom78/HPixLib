@@ -15,41 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include "chpx.h"
+#include <hpxlib.h>
 #include <assert.h>
 #include <math.h>
 
-/* Vectors `x2pix` and `y2pix` are used by `ang2pix_nest`. */
-
-const int x2pix[] = {
-       0,     1,     4,     5,    16,    17,    20,    21,    64,    65,
-      68,    69,    80,    81,    84,    85,   256,   257,   260,   261,
-     272,   273,   276,   277,   320,   321,   324,   325,   336,   337,
-     340,   341,  1024,  1025,  1028,  1029,  1040,  1041,  1044,  1045,
-    1088,  1089,  1092,  1093,  1104,  1105,  1108,  1109,  1280,  1281,
-    1284,  1285,  1296,  1297,  1300,  1301,  1344,  1345,  1348,  1349,
-    1360,  1361,  1364,  1365,  4096,  4097,  4100,  4101,  4112,  4113,
-    4116,  4117,  4160,  4161,  4164,  4165,  4176,  4177,  4180,  4181,
-    4352,  4353,  4356,  4357,  4368,  4369,  4372,  4373,  4416,  4417,
-    4420,  4421,  4432,  4433,  4436,  4437,  5120,  5121,  5124,  5125,
-    5136,  5137,  5140,  5141,  5184,  5185,  5188,  5189,  5200,  5201,
-    5204,  5205,  5376,  5377,  5380,  5381,  5392,  5393,  5396,  5397,
-    5440,  5441,  5444,  5445,  5456,  5457,  5460,  5461, };
-
-const int y2pix[] = {
-        0,     2,     8,    10,    32,    34,    40,    42,   128,   130,
-      136,   138,   160,   162,   168,   170,   512,   514,   520,   522,
-      544,   546,   552,   554,   640,   642,   648,   650,   672,   674,
-      680,   682,  2048,  2050,  2056,  2058,  2080,  2082,  2088,  2090,
-     2176,  2178,  2184,  2186,  2208,  2210,  2216,  2218,  2560,  2562,
-     2568,  2570,  2592,  2594,  2600,  2602,  2688,  2690,  2696,  2698,
-     2720,  2722,  2728,  2730,  8192,  8194,  8200,  8202,  8224,  8226,
-     8232,  8234,  8320,  8322,  8328,  8330,  8352,  8354,  8360,  8362,
-     8704,  8706,  8712,  8714,  8736,  8738,  8744,  8746,  8832,  8834,
-     8840,  8842,  8864,  8866,  8872,  8874, 10240, 10242, 10248, 10250,
-    10272, 10274, 10280, 10282, 10368, 10370, 10376, 10378, 10400, 10402,
-    10408, 10410, 10752, 10754, 10760, 10762, 10784, 10786, 10792, 10794,
-    10880, 10882, 10888, 10890, 10912, 10914, 10920, 10922, };
+#include "xy2pix.c"
 
 #define NORMALIZE_ANGLE(x)					\
     {								\
@@ -58,8 +28,8 @@ const int y2pix[] = {
     }
 
 void
-chpx_angles_to_3dvec(double theta, double phi,
-		     double * x, double * y, double * z)
+hpxlib_angles_to_3dvec(double theta, double phi,
+		       double * x, double * y, double * z)
 {
     assert(x && y && z);
 
@@ -68,10 +38,10 @@ chpx_angles_to_3dvec(double theta, double phi,
     *z = 0.0;
 }
 
-chpx_pixel_num_t
-chpx_angles_to_ring_pixel(chpx_nside_t nside,
-			  double theta,
-			  double phi)
+hpxlib_pixel_num_t
+hpxlib_angles_to_ring_pixel(hpxlib_nside_t nside,
+			    double theta,
+			    double phi)
 {
     int nl2, nl4, ncap, npix;
     int jp, jm, ipix1;
@@ -124,10 +94,10 @@ chpx_angles_to_ring_pixel(chpx_nside_t nside,
     return ipix1 - 1;
 }
 
-chpx_pixel_num_t
-chpx_angles_to_nest_pixel(chpx_nside_t nside,
-			  double theta,
-			  double phi)
+hpxlib_pixel_num_t
+hpxlib_angles_to_nest_pixel(hpxlib_nside_t nside,
+			    double theta,
+			    double phi)
 {
     double z, z_abs, tt, tp, tmp;
     int    face_num,jp,jm;
@@ -188,12 +158,12 @@ chpx_angles_to_nest_pixel(chpx_nside_t nside,
     ipf = (x2pix[ix_hi]  + y2pix[iy_hi]) * (128 * 128)
 	+ (x2pix[ix_low] + y2pix[iy_low]);
     ipf = (long) (ipf / pow(ns_max / nside, 2));
-    return (chpx_pixel_num_t) (ipf + face_num * nside * nside);
+    return (hpxlib_pixel_num_t) (ipf + face_num * nside * nside);
 }
 
 void
-chpx_3dvec_to_angles(double x, double y, double z,
-		     double * theta, double * phi)
+hpxlib_3dvec_to_angles(double x, double y, double z,
+		       double * theta, double * phi)
 {
     assert(theta && phi);
 
@@ -201,23 +171,23 @@ chpx_3dvec_to_angles(double x, double y, double z,
     *phi = 0.0;
 }
 
-chpx_pixel_num_t
-chpx_3dvec_to_ring_pixel(chpx_nside_t nside,
-			 double x, double y, double z)
+hpxlib_pixel_num_t
+hpxlib_3dvec_to_ring_pixel(hpxlib_nside_t nside,
+			   double x, double y, double z)
 {
     return 0;
 }
 
-chpx_pixel_num_t
-chpx_3dvec_to_nest_pixel(chpx_nside_t nside,
-			 double x, double y, double z)
+hpxlib_pixel_num_t
+hpxlib_3dvec_to_nest_pixel(hpxlib_nside_t nside,
+			   double x, double y, double z)
 {
     return 0;
 }
 
 void
-chpx_ring_pixel_to_angles(chpx_nside_t nside, chpx_pixel_num_t pixel,
-			  double * theta, double * phi)
+hpxlib_ring_pixel_to_angles(hpxlib_nside_t nside, hpxlib_pixel_num_t pixel,
+			    double * theta, double * phi)
 {
     assert(theta && phi);
 
@@ -226,8 +196,8 @@ chpx_ring_pixel_to_angles(chpx_nside_t nside, chpx_pixel_num_t pixel,
 }
 
 void
-chpx_nest_pixel_to_angles(chpx_nside_t nside, chpx_pixel_num_t pixel,
-			  double * theta, double * phi)
+hpxlib_nest_pixel_to_angles(hpxlib_nside_t nside, hpxlib_pixel_num_t pixel,
+			    double * theta, double * phi)
 {
     assert(theta && phi);
 
@@ -236,8 +206,8 @@ chpx_nest_pixel_to_angles(chpx_nside_t nside, chpx_pixel_num_t pixel,
 }
 
 void
-chpx_ring_pixel_to_3dvec(chpx_nside_t nside,
-			 double * x, double * y, double * z)
+hpxlib_ring_pixel_to_3dvec(hpxlib_nside_t nside,
+			   double * x, double * y, double * z)
 {
     assert(x && y && z);
 
@@ -247,8 +217,8 @@ chpx_ring_pixel_to_3dvec(chpx_nside_t nside,
 }
 
 void
-chpx_nest_pixel_to_3dvec(chpx_nside_t nside,
-			 double * x, double * y, double * z)
+hpxlib_nest_pixel_to_3dvec(hpxlib_nside_t nside,
+			   double * x, double * y, double * z)
 {
     assert(x && y && z);
 

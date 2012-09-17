@@ -1,11 +1,11 @@
-Installing cHealpix
-===================
+Installing HPixLib
+==================
 
-cHealpix uses CMake for compiling its sources, so you have to install
-it if you want to compile cHealpix. Once you've extracted the tarball,
+HPixLib uses CMake for compiling its sources, so you have to install
+it if you want to compile HPixLib. Once you've extracted the tarball,
 enter the cHealpix directory and run the following commands::
 
-    cd cHealpix-0.0.1
+    cd hpixlib-0.0.1
     mkdir build
     cd build
     cmake .. && make
