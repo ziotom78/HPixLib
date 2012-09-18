@@ -16,14 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <stdlib.h>
 #include <assert.h>
 
 void
-hpxlib_query_disc(double theta, double phi, double radius,
-		  hpxlib_pixel_num_t ** pixels,
-		  size_t * num_of_matches)
+hpix_query_disc(double theta, double phi, double radius,
+		hpix_pixel_num_t ** pixels,
+		size_t * num_of_matches)
 {
     assert(pixels != NULL);
     assert(num_of_matches != NULL);
@@ -33,9 +33,9 @@ hpxlib_query_disc(double theta, double phi, double radius,
 }
 
 void
-hpxlib_query_disc_inclusive(double theta, double phi, double radius,
-			    hpxlib_pixel_num_t ** pixels,
-			    size_t * num_of_matches)
+hpix_query_disc_inclusive(double theta, double phi, double radius,
+			  hpix_pixel_num_t ** pixels,
+			  size_t * num_of_matches)
 {
     assert(pixels != NULL);
     assert(num_of_matches != NULL);

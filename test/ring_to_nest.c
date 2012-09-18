@@ -1,5 +1,5 @@
 /* test_ring_to_nest.c -- check the implementation of
- * hpxlib_ring_to_nest_idx
+ * hpix_ring_to_nest_idx
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <stdlib.h>
 #include "libtest.h"
 
@@ -26,13 +26,13 @@ main(void)
     TEST_INIT;
 
     /* Check for some random numbers */
-    TEST_EQUAL(hpxlib_ring_to_nest_idx( 64,    9010),    9632);
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(256,  324237),    1652);
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(512, 2800416), 2966186);
+    TEST_EQUAL(hpix_ring_to_nest_idx( 64,    9010),    9632);
+    TEST_EQUAL(hpix_ring_to_nest_idx(256,  324237),    1652);
+    TEST_EQUAL(hpix_ring_to_nest_idx(512, 2800416), 2966186);
 
     /* Check for failures */
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(4, 1000000), 0);
-    TEST_EQUAL(hpxlib_ring_to_nest_idx(0, 1),       0);
+    TEST_EQUAL(hpix_ring_to_nest_idx(4, 1000000), 0);
+    TEST_EQUAL(hpix_ring_to_nest_idx(0, 1),       0);
 
     TEST_EXIT;
 }

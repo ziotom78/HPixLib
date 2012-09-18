@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <fitsio.h>
 #include <stdlib.h>
 #include "libtest.h"
@@ -26,43 +26,43 @@
 int
 main(void)
 {
-    hpxlib_map_t * map_to_save = hpxlib_create_map(4, HPXLIB_ORDER_RING);
-    hpxlib_map_t * loaded_map;
+    hpix_map_t * map_to_save = hpix_create_map(4, HPXLIB_ORDER_RING);
+    hpix_map_t * loaded_map;
     size_t index;
     int status = 0;
 
     TEST_INIT;
 
     /* Initialize each pixel in the map with its own index */
-    for(index = 0; index < hpxlib_map_num_of_pixels(map_to_save); ++index)
-	*(hpxlib_map_pixels(map_to_save) + index) = index;
+    for(index = 0; index < hpix_map_num_of_pixels(map_to_save); ++index)
+	*(hpix_map_pixels(map_to_save) + index) = index;
 
     /* Try to save this map */
-    TEST_TRUE(hpxlib_save_fits_component_to_file(FILE_NAME, map_to_save,
-						 TULONG, "", &status) != 0);
+    TEST_TRUE(hpix_save_fits_component_to_file(FILE_NAME, map_to_save,
+					       TULONG, "", &status) != 0);
     
     /* Load the map back again */
-    hpxlib_load_fits_component_from_file("test.fits", 1, &loaded_map, &status);
+    hpix_load_fits_component_from_file("test.fits", 1, &loaded_map, &status);
     TEST_TRUE(loaded_map != NULL);
 
     /* Now check that the two maps (map_to_save and loaded_map) are
      * actually the same. Note that we use integer types (unsigned
      * char) so that every comparison is exact. */
 
-    TEST_EQUAL(hpxlib_map_nside(map_to_save), hpxlib_map_nside(loaded_map));
+    TEST_EQUAL(hpix_map_nside(map_to_save), hpix_map_nside(loaded_map));
 
-    for(index = 0; index < hpxlib_map_num_of_pixels(map_to_save); ++index)
+    for(index = 0; index < hpix_map_num_of_pixels(map_to_save); ++index)
     {
 	unsigned long pixel1 =
-	    (unsigned long) HPXLIB_MAP_PIXEL(map_to_save, index);
+	    (unsigned long) HPIX_MAP_PIXEL(map_to_save, index);
 	unsigned long pixel2 = 
-	    (unsigned long) HPXLIB_MAP_PIXEL(loaded_map, index);
+	    (unsigned long) HPIX_MAP_PIXEL(loaded_map, index);
 
 	TEST_EQUAL(pixel1, pixel2);
     }
 
-    hpxlib_free_map(map_to_save);
-    hpxlib_free_map(loaded_map);
+    hpix_free_map(map_to_save);
+    hpix_free_map(loaded_map);
 
     TEST_EXIT;
 }

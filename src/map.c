@@ -1,4 +1,4 @@
-/* map.c -- Functions dealing with the hpxlib_map_t type
+/* map.c -- Functions dealing with the hpix_map_t type
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -15,79 +15,79 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <assert.h>
 
-hpxlib_map_t *
-hpxlib_create_map(hpxlib_nside_t nside, hpxlib_ordering_t ordering)
+hpix_map_t *
+hpix_create_map(hpix_nside_t nside, hpix_ordering_t ordering)
 {
-    hpxlib_map_t * map = (hpxlib_map_t *) hpxlib_malloc(sizeof(hpxlib_map_t), 1);
+    hpix_map_t * map = (hpix_map_t *) hpix_malloc(sizeof(hpix_map_t), 1);
 
     map->order = HPXLIB_ORDER_RING;
     map->coord = HPXLIB_COORD_GALACTIC;
     map->nside = nside;
-    map->pixels = hpxlib_calloc(sizeof(map->pixels[0]),
-			      hpxlib_nside_to_npixel(nside));
+    map->pixels = hpix_calloc(sizeof(map->pixels[0]),
+			      hpix_nside_to_npixel(nside));
 
     return map;
 }
 
-hpxlib_map_t *
-hpxlib_create_map_from_array(double * array,
-			     size_t num_of_elements,
-			     hpxlib_ordering_t ordering)
+hpix_map_t *
+hpix_create_map_from_array(double * array,
+			   size_t num_of_elements,
+			   hpix_ordering_t ordering)
 {
-    hpxlib_map_t * map = (hpxlib_map_t *) hpxlib_malloc(sizeof(hpxlib_map_t), 1);
+    hpix_map_t * map = (hpix_map_t *) hpix_malloc(sizeof(hpix_map_t), 1);
 
     map->order = ordering;
     map->coord = HPXLIB_COORD_GALACTIC;
-    map->nside = hpxlib_npixel_to_nside(num_of_elements);
+    map->nside = hpix_npixel_to_nside(num_of_elements);
     map->pixels = array;
 
     return map;
 }
 
 void
-hpxlib_free_map(hpxlib_map_t * map)
+hpix_free_map(hpix_map_t * map)
 {
     if(map == NULL)
 	return;
 
-    hpxlib_free(map->pixels);
-    hpxlib_free(map);
+    hpix_free(map->pixels);
+    hpix_free(map);
 }
 
-hpxlib_ordering_t
-hpxlib_map_ordering(const hpxlib_map_t * map)
+hpix_ordering_t
+hpix_map_ordering(const hpix_map_t * map)
 {
     assert(map);
     return map->order;
 }
 
-hpxlib_coordinates_t
-hpxlib_map_coordinate_system(const hpxlib_map_t * map)
+hpix_coordinates_t
+hpix_map_coordinate_system(const hpix_map_t * map)
 {
     assert(map);
     return map->coord;
 }
 
-hpxlib_nside_t
-hpxlib_map_nside(const hpxlib_map_t * map)
+hpix_nside_t
+hpix_map_nside(const hpix_map_t * map)
 {
     assert(map);
     return map->nside;
 }
 
 double *
-hpxlib_map_pixels(const hpxlib_map_t * map)
+hpix_map_pixels(const hpix_map_t * map)
 {
     assert(map);
     return map->pixels;
 }
 
 size_t
-hpxlib_map_num_of_pixels(const hpxlib_map_t * map)
+hpix_map_num_of_pixels(const hpix_map_t * map)
 {
     assert(map);
-    return hpxlib_nside_to_npixel(map->nside);
+    return hpix_nside_to_npixel(map->nside);
 }

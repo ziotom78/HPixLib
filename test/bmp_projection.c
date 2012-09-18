@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <stdlib.h>
 #include "libtest.h"
 
 int
 main(void)
 {
-    hpxlib_bmp_projection_t * proj;
+    hpix_bmp_projection_t * proj;
     TEST_INIT;
 
-    proj = hpxlib_create_bmp_projection(10, 20);
-    TEST_EQUAL(hpxlib_bmp_projection_width(proj), 10);
-    TEST_EQUAL(hpxlib_bmp_projection_height(proj), 20);
+    proj = hpix_create_bmp_projection(10, 20);
+    TEST_EQUAL(hpix_bmp_projection_width(proj), 10);
+    TEST_EQUAL(hpix_bmp_projection_height(proj), 20);
 
-    hpxlib_set_bmp_projection_width(proj, 15);
-    hpxlib_set_bmp_projection_height(proj, 25);
-    TEST_EQUAL(hpxlib_bmp_projection_width(proj), 15);
-    TEST_EQUAL(hpxlib_bmp_projection_height(proj), 25);
+    hpix_set_bmp_projection_width(proj, 15);
+    hpix_set_bmp_projection_height(proj, 25);
+    TEST_EQUAL(hpix_bmp_projection_width(proj), 15);
+    TEST_EQUAL(hpix_bmp_projection_height(proj), 25);
 
-    hpxlib_free_bmp_projection(proj);
+    hpix_free_bmp_projection(proj);
 
     TEST_EXIT;
 }

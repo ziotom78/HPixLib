@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <stdlib.h>
 #include "libtest.h"
 
@@ -28,7 +28,7 @@ main(void)
     TEST_INIT;
 
 #define CHECK_ANGLE(nside, schema, pixel, target_theta, target_phi)	\
-    hpxlib_ ## schema ## _pixel_to_angles(nside, pixel, &theta, &phi);	\
+    hpix_ ## schema ## _pixel_to_angles(nside, pixel, &theta, &phi);	\
     TEST_CLOSE(theta, target_theta);					\
     TEST_CLOSE(phi, target_phi);
 

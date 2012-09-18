@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <math.h>
 
-hpxlib_pixel_num_t
-hpxlib_nside_to_npixel(hpxlib_nside_t nside)
+hpix_pixel_num_t
+hpix_nside_to_npixel(hpix_nside_t nside)
 {
     if (nside > 0)
 	return 12 * nside * nside;
@@ -27,18 +27,18 @@ hpxlib_nside_to_npixel(hpxlib_nside_t nside)
 	return 0;
 }
 
-hpxlib_nside_t
-hpxlib_npixel_to_nside(hpxlib_pixel_num_t npixels)
+hpix_nside_t
+hpix_npixel_to_nside(hpix_pixel_num_t npixels)
 {
     unsigned short  nside_estimate = sqrt(npixels / 12.0);
-    if (hpxlib_nside_to_npixel(nside_estimate) != npixels)
+    if (hpix_nside_to_npixel(nside_estimate) != npixels)
 	return 0;
     else
 	return nside_estimate;
 }
 
 double
-hpxlib_max_pixel_radius(hpxlib_nside_t nside)
+hpix_max_pixel_radius(hpix_nside_t nside)
 {
     return 0.0;
 }

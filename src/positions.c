@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <assert.h>
 #include <math.h>
 
@@ -28,8 +28,8 @@
     }
 
 void
-hpxlib_angles_to_3dvec(double theta, double phi,
-		       double * x, double * y, double * z)
+hpix_angles_to_3dvec(double theta, double phi,
+		     double * x, double * y, double * z)
 {
     assert(x && y && z);
 
@@ -38,10 +38,10 @@ hpxlib_angles_to_3dvec(double theta, double phi,
     *z = 0.0;
 }
 
-hpxlib_pixel_num_t
-hpxlib_angles_to_ring_pixel(hpxlib_nside_t nside,
-			    double theta,
-			    double phi)
+hpix_pixel_num_t
+hpix_angles_to_ring_pixel(hpix_nside_t nside,
+			  double theta,
+			  double phi)
 {
     int nl2, nl4, ncap, npix;
     int jp, jm, ipix1;
@@ -94,10 +94,10 @@ hpxlib_angles_to_ring_pixel(hpxlib_nside_t nside,
     return ipix1 - 1;
 }
 
-hpxlib_pixel_num_t
-hpxlib_angles_to_nest_pixel(hpxlib_nside_t nside,
-			    double theta,
-			    double phi)
+hpix_pixel_num_t
+hpix_angles_to_nest_pixel(hpix_nside_t nside,
+			  double theta,
+			  double phi)
 {
     double z, z_abs, tt, tp, tmp;
     int    face_num,jp,jm;
@@ -158,12 +158,12 @@ hpxlib_angles_to_nest_pixel(hpxlib_nside_t nside,
     ipf = (x2pix[ix_hi]  + y2pix[iy_hi]) * (128 * 128)
 	+ (x2pix[ix_low] + y2pix[iy_low]);
     ipf = (long) (ipf / pow(ns_max / nside, 2));
-    return (hpxlib_pixel_num_t) (ipf + face_num * nside * nside);
+    return (hpix_pixel_num_t) (ipf + face_num * nside * nside);
 }
 
 void
-hpxlib_3dvec_to_angles(double x, double y, double z,
-		       double * theta, double * phi)
+hpix_3dvec_to_angles(double x, double y, double z,
+		     double * theta, double * phi)
 {
     assert(theta && phi);
 
@@ -171,23 +171,23 @@ hpxlib_3dvec_to_angles(double x, double y, double z,
     *phi = 0.0;
 }
 
-hpxlib_pixel_num_t
-hpxlib_3dvec_to_ring_pixel(hpxlib_nside_t nside,
-			   double x, double y, double z)
+hpix_pixel_num_t
+hpix_3dvec_to_ring_pixel(hpix_nside_t nside,
+			 double x, double y, double z)
 {
     return 0;
 }
 
-hpxlib_pixel_num_t
-hpxlib_3dvec_to_nest_pixel(hpxlib_nside_t nside,
-			   double x, double y, double z)
+hpix_pixel_num_t
+hpix_3dvec_to_nest_pixel(hpix_nside_t nside,
+			 double x, double y, double z)
 {
     return 0;
 }
 
 void
-hpxlib_ring_pixel_to_angles(hpxlib_nside_t nside, hpxlib_pixel_num_t pixel,
-			    double * theta, double * phi)
+hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
+			  double * theta, double * phi)
 {
     assert(theta && phi);
 
@@ -196,8 +196,8 @@ hpxlib_ring_pixel_to_angles(hpxlib_nside_t nside, hpxlib_pixel_num_t pixel,
 }
 
 void
-hpxlib_nest_pixel_to_angles(hpxlib_nside_t nside, hpxlib_pixel_num_t pixel,
-			    double * theta, double * phi)
+hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
+			  double * theta, double * phi)
 {
     assert(theta && phi);
 
@@ -206,8 +206,8 @@ hpxlib_nest_pixel_to_angles(hpxlib_nside_t nside, hpxlib_pixel_num_t pixel,
 }
 
 void
-hpxlib_ring_pixel_to_3dvec(hpxlib_nside_t nside,
-			   double * x, double * y, double * z)
+hpix_ring_pixel_to_3dvec(hpix_nside_t nside,
+			 double * x, double * y, double * z)
 {
     assert(x && y && z);
 
@@ -217,8 +217,8 @@ hpxlib_ring_pixel_to_3dvec(hpxlib_nside_t nside,
 }
 
 void
-hpxlib_nest_pixel_to_3dvec(hpxlib_nside_t nside,
-			   double * x, double * y, double * z)
+hpix_nest_pixel_to_3dvec(hpix_nside_t nside,
+			 double * x, double * y, double * z)
 {
     assert(x && y && z);
 

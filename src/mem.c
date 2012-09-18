@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <stdlib.h>
 #include <assert.h>
 
 void *
-hpxlib_malloc(size_t size, size_t num)
+hpix_malloc(size_t size, size_t num)
 {
     if(size == 0)
 	return NULL;
@@ -29,7 +29,7 @@ hpxlib_malloc(size_t size, size_t num)
 }
 
 void *
-hpxlib_calloc(size_t size, size_t num)
+hpix_calloc(size_t size, size_t num)
 {
     if(size == 0)
 	return NULL;
@@ -38,14 +38,14 @@ hpxlib_calloc(size_t size, size_t num)
 }
 
 void *
-hpxlib_realloc(void * ptr, size_t size)
+hpix_realloc(void * ptr, size_t size)
 {
     assert(ptr);
     return realloc(ptr, size);
 }
 
 void
-hpxlib_free(void * ptr)
+hpix_free(void * ptr)
 {
     if(ptr != NULL)
 	free(ptr);

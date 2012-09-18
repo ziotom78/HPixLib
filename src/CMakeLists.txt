@@ -13,13 +13,13 @@ add_definitions(-Wall --pedantic)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 link_directories(${PROJECT_BINARY_DIR}/src)
 
-add_library(hpxlib ${hpxlib_sources})
+add_library(hpix ${hpxlib_sources})
 
-target_link_libraries(hpxlib
+target_link_libraries(hpix
   cfitsio z pthread m)
 
 # Install directives
-install(TARGETS hpxlib
+install(TARGETS hpix
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib)
-install(FILES hpxlib.h DESTINATION include)
+install(FILES hpix.h DESTINATION include)

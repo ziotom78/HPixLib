@@ -4,7 +4,7 @@ set(pkg_config_libdir ${CMAKE_INSTALL_PREFIX}/lib)
 set(pkg_config_sharedlibdir ${CMAKE_INSTALL_PREFIX}/lib)
 set(pkg_config_includedir ${CMAKE_INSTALL_PREFIX}/include)
 
-configure_file(libchealpix.pc.in libchealpix.pc @ONLY)
+configure_file(libhpix.pc.in libhpix.pc @ONLY)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libchealpix.pc
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libhpix.pc
   DESTINATION lib/pkgconfig)

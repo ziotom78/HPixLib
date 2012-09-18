@@ -15,7 +15,7 @@ foreach(test ${LIST_OF_TESTS})
   link_directories(${PROJECT_BINARY_DIR}/src)
 
   add_executable(${test} ${test}.c)
-  target_link_libraries(${test} hpxlib)
+  target_link_libraries(${test} hpix)
 
   add_test(${test} ${test})
 endforeach()

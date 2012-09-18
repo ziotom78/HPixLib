@@ -1,5 +1,5 @@
 /* test_query_disc.c -- check the implementation of
- * hpxlib_query_disc and hpxlib_query_disc_inclusive
+ * hpix_query_disc and hpix_query_disc_inclusive
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <stdlib.h>
 
 int
@@ -25,13 +25,13 @@ main(void)
     int result = 1;
 
     /* Check for some random numbers */
-    result = result && (hpxlib_nest_to_ring_idx( 64,    9632) ==    9010);
-    result = result && (hpxlib_nest_to_ring_idx(256,    1652) ==  324237);
-    result = result && (hpxlib_nest_to_ring_idx(512, 2966186) == 2800416);
+    result = result && (hpix_nest_to_ring_idx( 64,    9632) ==    9010);
+    result = result && (hpix_nest_to_ring_idx(256,    1652) ==  324237);
+    result = result && (hpix_nest_to_ring_idx(512, 2966186) == 2800416);
 
     /* Check for failures */
-    result = result && (hpxlib_nest_to_ring_idx(4, 1000000) == 0);
-    result = result && (hpxlib_nest_to_ring_idx(0, 1) == 0);
+    result = result && (hpix_nest_to_ring_idx(4, 1000000) == 0);
+    result = result && (hpix_nest_to_ring_idx(0, 1) == 0);
 
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

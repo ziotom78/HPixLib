@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpxlib.h>
+#include <hpix.h>
 #include <assert.h>
 #include <math.h>
 
@@ -27,14 +27,14 @@ static const int jrll[12] = { 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4 };
 static const int jpll[12] = { 1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7 };
 
 
-hpxlib_pixel_num_t
-hpxlib_nest_to_ring_idx(hpxlib_nside_t nside, hpxlib_pixel_num_t nest_index)
+hpix_pixel_num_t
+hpix_nest_to_ring_idx(hpix_nside_t nside, hpix_pixel_num_t nest_index)
 {
     int npix, npface, face_num, ncap, n_before;
     int ipf, ip_low, ip_trunc, ip_med, ip_hi;
     int ix, iy, jrt, jr, nr, jpt, jp, kshift, nl4;
 
-    npix = hpxlib_nside_to_npixel(nside);
+    npix = hpix_nside_to_npixel(nside);
     ncap = 2 * nside * (nside - 1);
     nl4 = 4 * nside;
     npface = nside * nside;
@@ -73,8 +73,8 @@ hpxlib_nest_to_ring_idx(hpxlib_nside_t nside, hpxlib_pixel_num_t nest_index)
     return n_before + jp - 1;
 }
 
-hpxlib_pixel_num_t
-hpxlib_ring_to_nest_idx(hpxlib_nside_t nside, hpxlib_pixel_num_t ring_index)
+hpix_pixel_num_t
+hpix_ring_to_nest_idx(hpix_nside_t nside, hpix_pixel_num_t ring_index)
 {
     double fihip, hip;
     int npix, nl2, nl4, ncap, ip, iphi, ipt, ring_index1;
@@ -84,7 +84,7 @@ hpxlib_ring_to_nest_idx(hpxlib_nside_t nside, hpxlib_pixel_num_t ring_index)
 
     nl2 = 2 * nside;
     nl4 = 4 * nside;
-    npix = hpxlib_nside_to_npixel(nside);
+    npix = hpix_nside_to_npixel(nside);
     ncap = 2 * nside * (nside - 1);
     ring_index1 = ring_index + 1;
 
@@ -148,11 +148,11 @@ hpxlib_ring_to_nest_idx(hpxlib_nside_t nside, hpxlib_pixel_num_t ring_index)
     return ipf + face_num * nside * nside;
 }
 
-typedef hpxlib_pixel_num_t conversion_fn_t(hpxlib_nside_t nside,
-					   hpxlib_pixel_num_t ring_index);
+typedef hpix_pixel_num_t conversion_fn_t(hpix_nside_t nside,
+					 hpix_pixel_num_t ring_index);
 
 void
-hpxlib_switch_order(hpxlib_map_t * map)
+hpix_switch_order(hpix_map_t * map)
 {
     conversion_fn_t * conversion_fn;
     assert(map);
