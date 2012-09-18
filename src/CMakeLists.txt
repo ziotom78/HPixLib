@@ -8,7 +8,9 @@ set(hpxlib_sources
   positions.c
   query_disc.c)
 
-add_definitions(-Wall --pedantic)
+if(GCC)
+  add_definitions(-Wall --pedantic)
+endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 link_directories(${PROJECT_BINARY_DIR}/src)
