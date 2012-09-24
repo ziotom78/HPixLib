@@ -7,5 +7,6 @@ set(VERSION 0.1)
 
 add_subdirectory(./src)
 add_subdirectory(./test)
+add_subdirectory(./utilities)
 add_subdirectory(./pkgconfig)
 
