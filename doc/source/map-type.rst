@@ -65,7 +65,7 @@ The following functions are used to load and save Healpix maps into
 FITS files. Such files are fully compatible with those produced by the
 standard Healpix library.
 
-.. c:function:: int hpxlib_load_component_from_fitsptr(fitsptr * fptr, unsigned short column_number, hpxlib_map_t ** map, int * status)
+.. c:function:: int hpxlib_load_fits_component_from_fitsptr(fitsptr * fptr, unsigned short column_number, hpxlib_map_t ** map, int * status)
 
   Load one component (I, Q, or U) from the FITS file specified by
   *fptr*, which must have been properly initialized using one of

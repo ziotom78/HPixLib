@@ -97,9 +97,9 @@ hpix_load_component_from_fitsptr(fitsfile * fptr,
 				   int * status);
 
 int hpix_load_component_from_file(const char * file_name,
-				    unsigned short column_number,
-				    hpix_map_t ** map,
-				    int * status);
+				  unsigned short column_number,
+				  hpix_map_t ** map,
+				  int * status);
 
 int
 hpix_create_empty_fits_table_for_map(fitsfile * fptr,
@@ -224,9 +224,9 @@ hpix_set_bmp_projection_height(hpix_bmp_projection_t * proj,
 
 double *
 hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
-			const hpix_map_t * map,
-			double * min_value,
-			double * max_value);
+		      const hpix_map_t * map,
+		      double * min_value,
+		      double * max_value);
 
 /* Functions implemented in order_conversion.c */
 
