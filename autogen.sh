@@ -1,3 +1,3 @@
 #!/bin/sh
 
-libtoolize && aclocal && autoheader && autoconf && automake --add-missing
+touch README & libtoolize && aclocal && autoheader && autoconf && automake --add-missing
