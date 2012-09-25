@@ -1,4 +1,6 @@
 #include <hpixlib/hpix.h>
+#include <assert.h>
+#include <math.h>
 #include <memory.h>
 #include <limits.h>
 #include <stdio.h>
@@ -8,11 +10,16 @@
 
 #define VERSION "0.1"
 
+#define MSG_HEADER   "map2fig: "
+
 const unsigned int bitmap_width = 800;
 const unsigned int bitmap_height = 640;
 
 /* Should we draw a color bar? Set by `-b`, `--draw-color-bar` */
 int draw_color_bar_flag = 0;
+
+/* Should we produce a number of diagnostic messages? Set by `--verbose` */
+int verbose_flag = 0;
 
 /* String to append to the measure unit, set by `-m`, `--measure-unit` */
 const char * measure_unit = NULL;
@@ -29,7 +36,7 @@ const char * number_format = "%g";
 const char * input_file_name = NULL;
 
 /* Number of the column to display, set by `-c`, `--column` */
-unsigned short column_number;
+unsigned short column_number = 1;
 
 /* Relative height of the title and of the color bar. Together with
  * the height of the map, their sum is 1.0 */
@@ -69,9 +76,11 @@ parse_command_line(int argc, const char ** argv)
 		  gopt_start(
 		      gopt_option('h', 0, gopt_shorts('h', '?'), gopt_longs("help")),
 		      gopt_option('v', 0, gopt_shorts('v'), gopt_longs("version")),
+		      gopt_option('V', 0, gopt_shorts(0), gopt_longs("verbose")),
 		      gopt_option('b', 0, gopt_shorts('b'), gopt_longs("draw-color-bar")),
 		      gopt_option('c', 0, gopt_shorts('c'), gopt_longs("column")),	
 		      gopt_option('m', GOPT_ARG, gopt_shorts('m'), gopt_longs("measure-unit")),
+		      gopt_option('o', GOPT_ARG, gopt_shorts('o'), gopt_longs("output")),
 		      gopt_option('_', GOPT_ARG, gopt_shorts(0), gopt_longs("min")),
 		      gopt_option('^', GOPT_ARG, gopt_shorts(0), gopt_longs("max")),
 		      gopt_option('t', GOPT_ARG, gopt_shorts('t'), gopt_longs("title")),
@@ -89,6 +98,9 @@ parse_command_line(int argc, const char ** argv)
 	exit(EXIT_SUCCESS);
     }
 
+    if(gopt(options, 'V'))
+	verbose_flag = 1;
+
     if(gopt(options, 'b'))
 	draw_color_bar_flag = 1;
 
@@ -100,7 +112,7 @@ parse_command_line(int argc, const char ** argv)
 	   column_number == 0 ||
 	   column_number > USHRT_MAX)
 	{
-	    fprintf(stderr, "map2fig: invalid column number '%s'\n",
+	    fprintf(stderr, MSG_HEADER "invalid column number '%s'\n",
 		    column_str);
 	    exit(EXIT_FAILURE);
 	}
@@ -110,20 +122,22 @@ parse_command_line(int argc, const char ** argv)
     gopt_arg(options, 'm', &measure_unit);
     gopt_arg(options, 't', &title);
     gopt_arg(options, 'f', &number_format);
+    gopt_arg(options, 'o', &output_file_name);
 
     gopt_free(options);
 
     if(argc > 2)
     {
-	fputs("map2fig: too many command-line arguments (hint: use --help)\n",
+	fputs(MSG_HEADER "too many command-line arguments (hint: use --help)\n",
 	      stderr);
 	exit(EXIT_FAILURE);
     }
 
     if(argc < 2)
     {
-	fprintf(stderr, "map2fig: reading maps from stdin is not supported yet\n"
-		"map2fig: (hint: specify the name of a FITS file to be read)\n");
+	fprintf(stderr,
+		MSG_HEADER "reading maps from stdin is not supported yet\n"
+		MSG_HEADER "(hint: specify the name of a FITS file to be read)\n");
 	exit(EXIT_FAILURE);
     }
 
@@ -143,7 +157,7 @@ load_map(void)
 					    column_number,
 					    &result, &status))
     {
-	fprintf(stderr, "map2fig: unable to load file '%s'\n",
+	fprintf(stderr, MSG_HEADER "unable to load file '%s'\n",
 		input_file_name);
 	exit(EXIT_FAILURE);
     }
@@ -248,23 +262,25 @@ plot_bitmap_to_cairo_surface(cairo_t * cairo_context,
 			     double origin_x, double origin_y,
 			     double size_x, double size_y,
 			     double map_min, double map_max,
-			     const float * bitmap,
+			     const double * bitmap,
 			     unsigned int bitmap_width,
 			     unsigned int bitmap_height)
 {
     const double pixel_width  = size_x / bitmap_width;
     const double pixel_height = size_y / bitmap_height;
     const double dynamic_range = map_max - map_min;
-    const float * cur_pixel = bitmap;
+    const double * cur_pixel = bitmap;
+    unsigned int cur_y_plus_one;
 
-    unsigned int cur_y;
+    assert(bitmap);
 
-    for(cur_y = bitmap_height; cur_y > 0; --cur_y)
+    for(cur_y_plus_one = bitmap_height; cur_y_plus_one > 0; --cur_y_plus_one)
     {
 	unsigned int cur_x;
+	unsigned int cur_y = cur_y_plus_one - 1;
 	for(cur_x = 0; cur_x < bitmap_width; ++cur_x)
 	{
-	    double value = *bitmap++;
+	    double value = *cur_pixel++;
 	    color_t color;
 
 	    if(isinf(value))
@@ -298,26 +314,32 @@ void
 paint_map(const hpix_map_t * map)
 {
     cairo_surface_t * surface;
-    cairo_context_t * context;
+    cairo_t * context;
     hpix_bmp_projection_t * projection;
     double * bitmap;
     double min, max;
 
+    find_map_extrema(map, &min, &max);
+    if(verbose_flag)
+	fprintf(stderr,
+		MSG_HEADER "map extrema are %g and %g," 
+		"with a range of %g\n",
+		min, max, max - min);
+
     projection = hpix_create_bmp_projection(640, 480);
     bitmap = hpix_bmp_trace_bitmap(projection, map, NULL, NULL);
     hpix_free_bmp_projection(projection);
-
-    find_map_extrema(map, &min, &max);
 
     surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					 bitmap_width,
 					 bitmap_height);
     context = cairo_create(surface);
 
-    cairo_rectangle(context, 0.0, 0.0, width, height);
+    cairo_rectangle(context, 0.0, 0.0, bitmap_width, bitmap_height);
     cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
     cairo_fill(context);
 
+    fputs("going to call plot_bitmap_*\n", stderr);
     plot_bitmap_to_cairo_surface(context, 0.0, 0.0,
 				 bitmap_width, bitmap_height,
 				 min, max,
@@ -327,7 +349,7 @@ paint_map(const hpix_map_t * map)
     if(cairo_surface_write_to_png(surface, output_file_name)
        != CAIRO_STATUS_SUCCESS)
     {
-	fprintf(stderr, "map2fig: unable to write to file '%s'\n",
+	fprintf(stderr, MSG_HEADER "unable to write to file '%s'\n",
 		output_file_name);
 	exit(EXIT_FAILURE);
     }
@@ -342,8 +364,17 @@ main(int argc, const char ** argv)
     hpix_map_t * map;
 
     parse_command_line(argc, argv);
+
+    if(verbose_flag)
+	fprintf(stderr, MSG_HEADER "loading map `%s'\n", input_file_name);
     map = load_map();
+    if(verbose_flag)
+	fprintf(stderr, MSG_HEADER "map loaded\n");
+
+    if(verbose_flag)
+	fprintf(stderr, MSG_HEADER "painting map\n");
     paint_map(map);
+
     hpix_free_map(map);
 
     return 0;
