@@ -361,7 +361,6 @@ paint_map(const hpix_map_t * map)
     if(! isnan(max_value))
 	max = max_value;
 
-
     if(verbose_flag)
 	fprintf(stderr,
 		MSG_HEADER "map extrema are %g and %g, " 
@@ -381,7 +380,6 @@ paint_map(const hpix_map_t * map)
     cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
     cairo_fill(context);
 
-    fputs("going to call plot_bitmap_*\n", stderr);
     plot_bitmap_to_cairo_surface(context, 0.0, 0.0,
 				 bitmap_width, bitmap_height,
 				 min, max,
