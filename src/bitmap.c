@@ -90,6 +90,7 @@ hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
     hpix_angles_to_pixel_fn_t * angles_to_pixel_fn;
     hpix_nside_t nside;
     int minmax_flag = 0;
+    double * pixels;
 
     assert(proj);
     assert(map);
@@ -106,6 +107,7 @@ hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
     bitmap = hpix_malloc(sizeof(bitmap[0]), proj->width * proj->height);
     bitmap_ptr = bitmap;
 
+    pixels = hpix_map_pixels(map);
     for (y = 0; y < proj->height; ++y)
     {
 	for (x = 0; x < proj->width; ++x)
@@ -127,8 +129,8 @@ hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
 				   v * sqrt((1 - v) * (1 + v))));
 	    phi = -M_PI_2 * u / MAX(sqrt((1 - v) * (1 + v)), 1e-6);
 	    pixel_idx = angles_to_pixel_fn(nside, theta, phi);
-	    *bitmap_ptr = hpix_map_pixels(map)[pixel_idx];
-	    
+	    *bitmap_ptr = pixels[pixel_idx];
+
 	    if(! minmax_flag)
 	    {
 		minmax_flag = 1;
