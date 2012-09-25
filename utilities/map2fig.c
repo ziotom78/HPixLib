@@ -41,7 +41,7 @@ unsigned short column_number = 1;
 /* Relative height of the title and of the color bar. Together with
  * the height of the map, their sum is 1.0 */
 const float title_height_fraction = 0.1;
-const float colorbar_height_fraction = 0.2;
+const float colorbar_height_fraction = 0.1;
 
 /* Extrema of the color bar, set by `--min` and `--max` */
 double min_value = NAN;
@@ -347,6 +347,30 @@ plot_bitmap_to_cairo_surface(cairo_t * cairo_context,
 
 
 void
+paint_title(cairo_t * context, double start_x, double start_y,
+	    double width, double height)
+{
+    cairo_rectangle(context, start_x, start_y, width, height);
+    cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
+    cairo_stroke(context);
+}
+
+/******************************************************************************/
+
+
+void
+paint_colorbar(cairo_t * context, double start_x, double start_y,
+	       double width, double height)
+{
+    cairo_rectangle(context, start_x, start_y, width, height);
+    cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
+    cairo_stroke(context);
+}
+
+/******************************************************************************/
+
+
+void
 paint_map(const hpix_map_t * map)
 {
     cairo_surface_t * surface;
@@ -354,6 +378,16 @@ paint_map(const hpix_map_t * map)
     hpix_bmp_projection_t * projection;
     double * bitmap;
     double min, max;
+
+    const double title_start_y = 0.0;
+    const double map_start_y = title_height_fraction * bitmap_height;
+    const double colorbar_start_y = bitmap_height
+	* (1 - colorbar_height_fraction);
+
+    const double title_height = map_start_y;
+    const double map_height = bitmap_height
+	* (1 - title_height_fraction - colorbar_height_fraction);
+    const double colorbar_height = bitmap_height * colorbar_height_fraction;
 
     find_map_extrema(map, &min, &max);
     if(! isnan(min_value))
@@ -367,24 +401,35 @@ paint_map(const hpix_map_t * map)
 		"with a range of %g\n",
 		min, max, max - min);
 
-    projection = hpix_create_bmp_projection(bitmap_width, bitmap_height);
-    bitmap = hpix_bmp_trace_bitmap(projection, map, NULL, NULL);
-    hpix_free_bmp_projection(projection);
-
     surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					 bitmap_width,
 					 bitmap_height);
     context = cairo_create(surface);
 
+    /* Draw the background */
     cairo_rectangle(context, 0.0, 0.0, bitmap_width, bitmap_height);
     cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
     cairo_fill(context);
 
-    plot_bitmap_to_cairo_surface(context, 0.0, 0.0,
-				 bitmap_width, bitmap_height,
+    paint_title(context,
+		0.0, title_start_y,
+		bitmap_width, title_height);
+
+    /* Plot the map */
+    projection = hpix_create_bmp_projection(bitmap_width, (int) map_height);
+    bitmap = hpix_bmp_trace_bitmap(projection, map, NULL, NULL);
+    plot_bitmap_to_cairo_surface(context,
+				 0.0, map_start_y,
+				 bitmap_width, map_height,
 				 min, max,
 				 bitmap,
-				 bitmap_width, bitmap_height);
+				 hpix_bmp_projection_width(projection),
+				 hpix_bmp_projection_height(projection));
+    hpix_free_bmp_projection(projection);
+
+    paint_colorbar(context,
+		   0.0, colorbar_start_y,
+		   bitmap_width, colorbar_height);
 
     if(cairo_surface_write_to_png(surface, output_file_name)
        != CAIRO_STATUS_SUCCESS)
