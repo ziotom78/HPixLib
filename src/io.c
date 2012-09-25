@@ -32,8 +32,8 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     /* Local Declarations */
     long row_idx;
     long num_of_rows;
-    char coord_sys_key[FLEN_KEYWORD];
-    char ordering_key[FLEN_KEYWORD];
+    char coord_sys_key[FLEN_KEYWORD] = "";
+    char ordering_key[FLEN_KEYWORD] = "";
     double * pixels;
     long nside;
     long elements_per_row;
@@ -64,11 +64,11 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     assert(hpix_nside_to_npixel((hpix_nside_t) nside)
 	   == num_of_rows * elements_per_row);
 
-    if(fits_read_key(fptr, TSTRING, "COORDSYS", coord_sys_key, NULL, status))
-	status = 0;
+    if(fits_read_key(fptr, TSTRING, "COORDSYS", &coord_sys_key[0], NULL, status))
+	*status = 0;
 
-    if(fits_read_key(fptr, TSTRING, "ORDERING", ordering_key, NULL, status))
-	status = 0;
+    if(fits_read_key(fptr, TSTRING, "ORDERING", &ordering_key[0], NULL, status))
+	*status = 0;
 
     /* Read the array */
     switch(ordering_key[0])
