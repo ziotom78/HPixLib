@@ -1,4 +1,4 @@
-#include <hpix.h>
+#include <hpixlib/hpix.h>
 #include <memory.h>
 #include <limits.h>
 #include <stdio.h>

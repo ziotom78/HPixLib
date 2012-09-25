@@ -208,7 +208,7 @@ the command line.
   #include <stdio.h>
   #include <stdlib.h>
   #include <math.h>
-  #include <chpx.h>
+  #include <hpixlib/hpix.h>
 
   /* Compute the peak-to-peak variation */
   double peak_to_peak_amplitude(const hpxlib_map_t * map)

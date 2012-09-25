@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpix.h>
+#include <hpixlib/hpix.h>
 #include <math.h>
 #include <assert.h>
 

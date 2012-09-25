@@ -1,4 +1,3 @@
-# -*- automake -*-
 # Copyright 2011 Maurizio Tomasi. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,5 +41,7 @@ libhpix_la_SOURCES = \
 	positions.c \
 	query_disc.c
 
-include_HEADERS = chpx.h
+libhpix_la_LDFLAGS = -version-info 0:0:0
+
+include_HEADERS = hpixlib/hpix.h
 

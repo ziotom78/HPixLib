@@ -31,14 +31,20 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
-TESTS = angles_to_pixel.c \
-	bmp_projection.c \
-	map_io.c \
-	nest_to_ring.c \
-	npixel_to_nside.c \
-	nside_to_npixel.c \
-	pixel_to_angles.c \
-	query_disc.c \
-	ring_to_nest.c \
-	switch_order.c
+check_PROGRAMS = \
+	angles_to_pixel \
+	bmp_projection \
+	map_io \
+	nest_to_ring \
+	npixel_to_nside \
+	nside_to_npixel \
+	pixel_to_angles \
+	query_disc \
+	ring_to_nest \
+	switch_order
 
+AM_CPPFLAGS = -I$(top_srcdir)/src
+
+LDADD = ../src/libhpix.la $(LIBOBJS) -lcfitsio
+
+TESTS = $(check_PROGRAMS)
