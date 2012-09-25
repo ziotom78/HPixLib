@@ -18,7 +18,7 @@
 
 #define MSG_HEADER   "map2fig: "
 
-typedef enum { FMT_NULL, FMT_PNG, FMT_PS, FMT_PDF, FMT_SVG }
+typedef enum { FMT_NULL, FMT_PNG, FMT_PS, FMT_EPS, FMT_PDF, FMT_SVG }
     output_format_code_t;
 
 typedef struct {
@@ -32,6 +32,7 @@ output_format_t list_of_output_formats[] = {
     { "png", "PNG 24-bit bitmap", FMT_PNG },
 #if CAIRO_HAS_PS_SURFACE
     { "ps", "PostScript", FMT_PS },
+    { "eps", "Encapsulated PostScript", FMT_EPS },
 #endif
 #if CAIRO_HAS_PDF_SURFACE
     { "pdf", "Adobe Portable Document Format", FMT_PDF },
@@ -52,10 +53,10 @@ int draw_color_bar_flag = 0;
 int verbose_flag = 0;
 
 /* String to append to the measure unit, set by `-m`, `--measure-unit` */
-const char * measure_unit_str = NULL;
+const char * measure_unit_str = "";
 
 /* Title to be drawn above the map, set by `-t`, `--title` */
-const char * title_str = NULL;
+const char * title_str = "";
 
 /* Name of the output file name, set by `-o`, `--output` */
 const char * output_file_name = NULL;
@@ -84,8 +85,8 @@ double image_width;
 double image_height;
 
 /* Number of pixels in the bitmapped representation of the map. */
-double bitmap_width = 600;
-double bitmap_height = 400;
+double bitmap_columns = 600;
+double bitmap_rows = 400;
 
 
 /******************************************************************************/
@@ -385,54 +386,69 @@ get_palette_color(double level, color_t * color_ptr)
 /******************************************************************************/
 
 
-void
-plot_bitmap_to_cairo_surface(cairo_t * cairo_context,
-			     double origin_x, double origin_y,
-			     double size_x, double size_y,
-			     double map_min, double map_max,
+cairo_surface_t *
+plot_bitmap_to_cairo_surface(double map_min, double map_max,
 			     const double * bitmap,
-			     unsigned int image_width,
-			     unsigned int image_height)
+			     unsigned int width,
+			     unsigned int height)
 {
-    const double pixel_width  = size_x / image_width * 1.05;
-    const double pixel_height = size_y / image_height * 1.05;
     const double dynamic_range = map_max - map_min;
     const double * cur_pixel = bitmap;
-    unsigned int cur_y_plus_one;
+    unsigned char * image_data;
+    unsigned int cur_y;
+    unsigned int stride;
+    cairo_surface_t * surface;
 
     assert(bitmap);
+    fprintf(stderr, MSG_HEADER "plotting the map on a %ux%u bitmap\n",
+	    width, height);
+    surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
+					 width, height);
+    image_data = cairo_image_surface_get_data(surface);
+    stride = cairo_image_surface_get_stride(surface);
 
-    for(cur_y_plus_one = image_height; cur_y_plus_one > 0; --cur_y_plus_one)
+    for(cur_y = 0; cur_y < height; ++cur_y)
     {
 	unsigned int cur_x;
-	unsigned int cur_y = cur_y_plus_one - 1;
-	for(cur_x = 0; cur_x < image_width; ++cur_x)
+	unsigned char * row = image_data + (height - cur_y - 1) * stride;
+	for(cur_x = 0; cur_x < width; ++cur_x)
 	{
 	    double value = *cur_pixel++;
 	    color_t color;
 
+	    /* Not sure if this works on big-endian machines... */
+#define SET_PIXEL(a,r,g,b) {	      \
+		int base = cur_x * 4; \
+		row[base]     = b;    \
+		row[base + 1] = g;    \
+		row[base + 2] = r;    \
+		row[base + 3] = a;    \
+	    }
+
 	    if(isinf(value))
-		continue;
+	    {
+		/* Transparent pixel */
+		SET_PIXEL(0, 255, 255, 255);
+	    }
 	    else if (isnan(value) || value < -1.6e+30)
-		color.red = color.green = color.blue = 0.5;
+	    {
+		/* Opaque pixel with a gray shade */
+		SET_PIXEL(255, 128, 128, 128);
+	    }
 	    else
 	    {
 		double normalized_value = (value - map_min) / dynamic_range;
 		get_palette_color(normalized_value, &color);
+		SET_PIXEL(255, /* This makes the pixel fully opaque */
+			  (int) (255 * color.red),
+			  (int) (255 * color.green),
+			  (int) (255 * color.blue));
 	    }
-
-	    cairo_rectangle(cairo_context,
-			    origin_x + (cur_x * size_x) / image_width,
-			    origin_y + (cur_y * size_y) / image_height,
-			    pixel_width,
-			    pixel_height);
-	    cairo_set_source_rgb(cairo_context,
-				 color.red,
-				 color.green,
-				 color.blue);
-	    cairo_fill(cairo_context);
+#undef SET_PIXEL
 	}
     }
+
+    return surface;
 }
 
 /******************************************************************************/
@@ -558,13 +574,58 @@ paint_colorbar(cairo_t * context,
 /******************************************************************************/
 
 
+cairo_surface_t *
+create_surface(double width, double height)
+{
+    cairo_surface_t * surface;
+
+    switch(output_format)
+    {
+    case FMT_PNG:
+	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
+					     width, height);
+	bitmap_columns = width;
+	break;
+
+#if CAIRO_HAS_PS_SURFACE
+    case FMT_PS:
+    case FMT_EPS:
+	surface = cairo_ps_surface_create(output_file_name,
+					     width, height);
+	if(output_format == FMT_EPS)
+	    cairo_ps_surface_set_eps(surface, TRUE);
+	break;
+#endif
+
+#if CAIRO_HAS_PDF_SURFACE
+    case FMT_PDF:
+	surface = cairo_pdf_surface_create(output_file_name,
+					     width, height);
+	break;
+#endif
+
+#if CAIRO_HAS_SVG_SURFACE
+    case FMT_SVG:
+	surface = cairo_svg_surface_create(output_file_name,
+					     width, height);
+	break;
+#endif
+    default:
+	assert(0);
+    }
+
+    return surface;
+}
+
+/******************************************************************************/
+
+
 void
 paint_map(const hpix_map_t * map)
 {
     cairo_surface_t * surface;
     cairo_t * context;
     hpix_bmp_projection_t * projection;
-    double * bitmap;
     double min, max;
 
     const double title_start_y = 0.0;
@@ -589,71 +650,74 @@ paint_map(const hpix_map_t * map)
 		"with a range of %g\n",
 		min, max, max - min);
 
-    switch(output_format)
-    {
-    case FMT_PNG:
-	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-					     image_width,
-					     image_height);
-	bitmap_height = map_height;
-	break;
-
-#if CAIRO_HAS_PS_SURFACE
-    case FMT_PS:
-	surface = cairo_ps_surface_create(output_file_name,
-					  image_width,
-					  image_height);
-	break;
-#endif
-
-#if CAIRO_HAS_PDF_SURFACE
-    case FMT_PDF:
-	surface = cairo_pdf_surface_create(output_file_name,
-					   image_width,
-					   image_height);
-	break;
-#endif
-
-#if CAIRO_HAS_SVG_SURFACE
-    case FMT_SVG:
-	surface = cairo_svg_surface_create(output_file_name,
-					   image_width,
-					   image_height);
-	break;
-#endif
-    default:
-	assert(0);
-    }
-
+    surface = create_surface(image_width, image_height);
     context = cairo_create(surface);
 
-    /* Draw the background */
-    cairo_rectangle(context, 0.0, 0.0, image_width, image_height);
-    cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
-    cairo_fill(context);
+    if(output_format == FMT_PNG)
+	bitmap_rows = map_height;
 
+    /* Draw the background */
+    cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
+    cairo_paint(context);
+
+    /* Draw the title */
     paint_title(context,
 		0.0, title_start_y,
 		image_width, title_height);
 
     /* Plot the map */
-    projection = hpix_create_bmp_projection(bitmap_width, (int) bitmap_height);
-    bitmap = hpix_bmp_trace_bitmap(projection, map, NULL, NULL);
-    plot_bitmap_to_cairo_surface(context,
-				 0.0, map_start_y,
-				 image_width, map_height,
-				 min, max,
-				 bitmap,
-				 hpix_bmp_projection_width(projection),
-				 hpix_bmp_projection_height(projection));
-    hpix_free_bmp_projection(projection);
+    {
+	cairo_surface_t * map_surface;
+	double * map_bitmap;
+	const double reduce_factor = 1.02;
 
-    if(output_format == FMT_PNG)
-	cairo_set_font_size(context, 16);
+	/* First produce a cairo image surface with the map in it */
+	projection = hpix_create_bmp_projection((int) (bitmap_columns + .5),
+						(int) (bitmap_rows + .5));
+	map_bitmap = hpix_bmp_trace_bitmap(projection, map, NULL, NULL);
+	map_surface =
+	    plot_bitmap_to_cairo_surface(min, max,
+					 map_bitmap,
+					 hpix_bmp_projection_width(projection),
+					 hpix_bmp_projection_height(projection));
+	hpix_free(map_bitmap);
 
+	/* Now copy the cairo surface into the surface we're currently
+	 * using to draw the figure */
+	cairo_save(context);
+
+	/* These transformations are useful for the map containing the
+	 * bitmap (i.e. the source in the copy operation). */
+	cairo_translate(context, 0.0, map_start_y);
+	cairo_scale(context,
+		    image_width / cairo_image_surface_get_width(map_surface),
+		    map_height  / cairo_image_surface_get_height(map_surface));
+	cairo_set_source_surface(context, map_surface,
+	  0.0, 0.0);
+
+	/* Now we need two more transformations in order to draw an
+	 * ellipse out of `cairo_arc'. */
+	cairo_translate(context,
+			cairo_image_surface_get_width(map_surface) / 2.0,
+			cairo_image_surface_get_height(map_surface) / 2.0);
+	cairo_scale(context,
+		    cairo_image_surface_get_width(map_surface) / 2.0,
+		    cairo_image_surface_get_height(map_surface) / 2.0);
+
+	/* Fill an ellipse with the content of `map_surface'. */
+	cairo_arc(context, 0.0, 0.0, 1.0, 0.0, 2 * M_PI);
+	cairo_fill(context);
+	cairo_restore(context);
+
+	/* Cleanup */
+	cairo_surface_destroy(map_surface);
+	hpix_free_bmp_projection(projection);
+    }
+
+    cairo_set_font_size(context, colorbar_height * 0.8);
     paint_colorbar(context,
-		   0.0, colorbar_start_y,
-		   image_width, colorbar_height,
+		   0.01 * image_width, colorbar_start_y,
+		   image_width * 0.98, colorbar_height,
 		   min, max);
 
     if(output_format == FMT_PNG)
@@ -700,10 +764,11 @@ main(int argc, const char ** argv)
 	break;
 
     case FMT_PS:
+    case FMT_EPS:
     case FMT_PDF:
     case FMT_SVG:
-	image_width = 7.5;
-	image_height = 5.0;
+	image_width = 7.5 * 72;
+	image_height = 5.0 * 72;
 	break;
 
     default:
