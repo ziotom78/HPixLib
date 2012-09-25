@@ -18,6 +18,7 @@ Contents:
    pixel-funcs.rst
    map-type.rst
    drawing.rst
+   utilities.rst
 
 Indices and tables
 ==================

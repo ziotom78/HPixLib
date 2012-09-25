@@ -70,52 +70,52 @@ grounded. In the following discussion we try to prevent the ambiguity
 between a "pixel" in a Healpix map and a "pixel" in a bitmap by
 referring to the second as "an element in the :math:`N \times M`
 matrix," or "matrix element" for short. All the functions implemented
-in this section have their name beginning with ``hpxlib_bmp_``.
+in this section have their name beginning with ``hpix_bmp_``.
 
-.. c:type:: hpxlib_bmp_projection_t
+.. c:type:: hpix_bmp_projection_t
 
    This type contains all the information needed to transform a
    Healpix map into a bi-dimensional bitmapped projection. It is an
    opaque structure, which means that you are not allowed to directly
    access/modify its members: you need to rely on functions defined in
-   this section, like e.g. :c:func:`hpxlib_projection_width` and
-   :c:func:`hpxlib_set_projection_width`.
+   this section, like e.g. :c:func:`hpix_projection_width` and
+   :c:func:`hpix_set_projection_width`.
 
-.. c:function:: hpxlib_bmp_projection_t * hpxlib_create_bmp_projection(unsigned int width, unsigned int height)
+.. c:function:: hpix_bmp_projection_t * hpix_create_bmp_projection(unsigned int width, unsigned int height)
 
-   Create a new :c:type:`hpxlib_bmp_projection_t` object and initialize
+   Create a new :c:type:`hpix_bmp_projection_t` object and initialize
    its width and height. This object must be deallocated using
-   :c:func:`hpxlib_free_bmp_projection`.
+   :c:func:`hpix_free_bmp_projection`.
 
-.. c:function:: void hpxlib_free_bmp_projection(hpxlib_bmp_projection_t * proj)
+.. c:function:: void hpix_free_bmp_projection(hpix_bmp_projection_t * proj)
 
 Projection properties
 ---------------------
 
-As said above, :c:type:`hpxlib_bmp_projection_t` is an opaque structure
+As said above, :c:type:`hpix_bmp_projection_t` is an opaque structure
 and as such you cannot read/modify its members directly: you have to
 use the facilities provided by the library.his.
 
-.. c:function:: unsigned int hpxlib_projection_width(const hpxlib_bmp_projection_t * proj)
+.. c:function:: unsigned int hpix_projection_width(const hpix_bmp_projection_t * proj)
 
    Return the width of the bitmap, i.e. the number of columns.
 
-.. c:function:: unsigned int hpxlib_projection_height(const hpxlib_bmp_projection_t * proj)
+.. c:function:: unsigned int hpix_projection_height(const hpix_bmp_projection_t * proj)
 
    Return the height of the bitmap, i.e. the number of rows.
 
-.. c:function:: void hpxlib_set_projection_width(hpxlib_bmp_projection_t * proj, unsigned int width)
+.. c:function:: void hpix_set_projection_width(hpix_bmp_projection_t * proj, unsigned int width)
 
    Change the width of the bitmap.
 
-.. c:function:: void hpxlib_set_projection_height(hpxlib_bmp_projection_t * proj, unsigned int height)
+.. c:function:: void hpix_set_projection_height(hpix_bmp_projection_t * proj, unsigned int height)
 
    Change the height of the bitmap.
 
 Painting functions
 ------------------
 
-.. c:function:: double * hpxlib_bmp_trace_bitmap(const hpxlib_bmp_projection_t * proj, const hpxlib_map_t * map, double * min_value, double * max_value)
+.. c:function:: double * hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj, const hpix_map_t * map, double * min_value, double * max_value)
 
    This function creates a bitmap (rectangular array of numbers)
    representing *map*. The details of the projection are specified by
@@ -126,7 +126,7 @@ Painting functions
    bitmap will be measured in Kelvin as well).
   
    When the bitmap returned by this function is no longer useful, you
-   must free it using :c:func:`hpxlib_free`.
+   must free it using :c:func:`hpix_free`.
   
    The typical usage is to produce a bitmap, then use *min_value* and
    *max_value* to scale it from the map measure unit into a color
@@ -138,19 +138,19 @@ Painting functions
 
 .. code-block:: c
 
-   hpxlib_bmp_projection_t * proj;
+   hpix_bmp_projection_t * proj;
    double * bitmap;
    double * cur_pixel;
    double min, max;
    size_t i, x, y; 
   
-   proj = hpxlib_new_projection(640, 480, COORD_GALACTIC);
-   bitmap = hpxlib_bmp_trace_bitmap(proj, map, &min, &max);
+   proj = hpix_new_projection(640, 480, COORD_GALACTIC);
+   bitmap = hpix_bmp_trace_bitmap(proj, map, &min, &max);
   
    cur_pixel = bitmap;
-   for(y = 0; y < hpxlib_projection_height(proj); ++y)
+   for(y = 0; y < hpix_projection_height(proj); ++y)
    {
-       for(x = 0; x < hpxlib_projection_width(proj); ++x)
+       for(x = 0; x < hpix_projection_width(proj); ++x)
        {
            float red, green, blue;
            level_to_RGB((cur_pixel++ - min) / (max - min),
@@ -159,8 +159,8 @@ Painting functions
        }
    }
   
-   hpxlib_free(bitmap);
-   hpxlib_free_projection(proj);
+   hpix_free(bitmap);
+   hpix_free_projection(proj);
 
 
 Vector graphics
