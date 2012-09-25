@@ -83,8 +83,8 @@ hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
 {
     unsigned int x;
     unsigned int y;
-    double center_x = proj->width / 2.0;
-    double center_y = proj->height / 2.0;
+    double center_x;
+    double center_y;
     double *bitmap;
     double *bitmap_ptr;
     hpix_angles_to_pixel_fn_t * angles_to_pixel_fn;
@@ -93,6 +93,9 @@ hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
 
     assert(proj);
     assert(map);
+
+    center_x = proj->width / 2.0;
+    center_y = proj->height / 2.0;
 
     nside = hpix_map_nside(map);
 
