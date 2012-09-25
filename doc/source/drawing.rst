@@ -20,13 +20,6 @@ ways:
   directory :file:`src/f90/lib` of the tarball). The same figures
   apply to map2tga as well.
 
-It is worth stressing that IDL is the only language binding that
-implements a set of functions for plotting maps. Both map2tga and
-map2gif are *standalone* programs and do not expose any facility to
-the library user for incorporating their functionality into a larger
-program (unless of couse the program calls them in background to
-produce a image file which is then read by the program itself).
-
 Because of this situation, the creators of the Healpy Python library
 decided to implement a set of plotting routines from scratch. More
 than 2,000 lines of code are needed to implement functions like
@@ -58,6 +51,15 @@ HPixLib provides two sets of functions to ease the production of
 bitmapped and vector maps. Such functions need to be wrapped with some
 glue code which actually writes the map on disk or display it on the
 screen.
+
+The library provides a program, map2fig, which is similar to the two
+programs provided in the Healpix distribution, map2gif and map2tga.
+However, being based on the Cairo graphics library, it allows to save
+maps in vector format as well. (The map itself is a bitmapped image
+embedded in the EPS/PDF/SVG file, but the title, the color bar and
+every other element is a vector.) This allows e.g. to modify these
+maps within vector drawing programs like Inkscape or Adobe
+Illustrator.
 
 Bitmapped graphics
 ------------------
