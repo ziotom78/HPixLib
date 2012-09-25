@@ -186,7 +186,10 @@ find_map_extrema(const hpix_map_t * map, double * min, double * max)
 	    continue;
 
 	if (! are_minmax_initialized)
+	{
 	    *min = *max = *cur_pixel;
+	    are_minmax_initialized = 1;
+	}
 	else
 	{
 	    if(*min > *cur_pixel)
@@ -326,7 +329,7 @@ paint_map(const hpix_map_t * map)
 		"with a range of %g\n",
 		min, max, max - min);
 
-    projection = hpix_create_bmp_projection(640, 480);
+    projection = hpix_create_bmp_projection(bitmap_width, bitmap_height);
     bitmap = hpix_bmp_trace_bitmap(projection, map, NULL, NULL);
     hpix_free_bmp_projection(projection);
 
