@@ -1,16 +1,25 @@
 Installing HPixLib
 ==================
 
-HPixLib uses CMake for compiling its sources, so you have to install
-it if you want to compile HPixLib. Once you've extracted the tarball,
-enter the cHealpix directory and run the following commands::
+HPixLib uses the GNU Autotools for compiling its sources
+(http://en.wikipedia.org/wiki/GNU_build_system), so there are
+relatively little dependencies to satisfy in order to bootstrap the
+compilation.
 
-    cd hpixlib-0.0.1
-    mkdir build
-    cd build
-    cmake .. && make
+If you obtained a .tar.gz file, you should simply untar it somewhere
+in your home, enter the directory :file:`hpixlib-???` (where `???` is
+the version number) and run the following commands:
 
-Once the library has been built, you can check that the code works by
-running a battery of tests on it::
+    ./configure
+    make && sudo make install
 
-    make test
+If you have cloned the Git repository
+(https://github.com/ziotom78/hpixlib), then you first have to run
+autogen.sh:
+
+    ./autogen.sh
+    ./configure
+    make && sudo make install
+
+This step requires your system to have the autotools (i.e. autoconf,
+automake, libtool and m4) already installed.
