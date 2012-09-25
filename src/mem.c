@@ -25,7 +25,7 @@ hpix_malloc(size_t size, size_t num)
     if(size == 0)
 	return NULL;
 
-    return malloc(size);
+    return malloc(size * num);
 }
 
 void *
