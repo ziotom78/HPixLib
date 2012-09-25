@@ -5,15 +5,45 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include <cairo.h>
+#include <cairo-ps.h>
+#include <cairo-pdf.h>
+#include <cairo-svg.h>
+
 #include "gopt.h"
 
 #define VERSION "0.1"
 
 #define MSG_HEADER   "map2fig: "
 
-const unsigned int bitmap_width = 800;
-const unsigned int bitmap_height = 640;
+typedef enum { FMT_NULL, FMT_PNG, FMT_PS, FMT_PDF, FMT_SVG }
+    output_format_code_t;
+
+typedef struct {
+    const char * name;
+    const char * description;
+    output_format_code_t code;
+} output_format_t;
+
+output_format_t list_of_output_formats[] = {
+    /* The Cairo documentation guarantees that PNG is always available */
+    { "png", "PNG 24-bit bitmap", FMT_PNG },
+#if CAIRO_HAS_PS_SURFACE
+    { "ps", "PostScript", FMT_PS },
+#endif
+#if CAIRO_HAS_PDF_SURFACE
+    { "pdf", "Adobe Portable Document Format", FMT_PDF },
+#endif
+#if CAIRO_HAS_SVG_SURFACE
+    { "svg", "Scalable Vector Graphics", FMT_SVG },
+#endif
+    { NULL, FMT_NULL }
+};
+
+/* Output format to use */
+output_format_code_t output_format = FMT_PNG;
 
 /* Should we draw a color bar? Set by `-b`, `--draw-color-bar` */
 int draw_color_bar_flag = 0;
@@ -47,6 +77,17 @@ const float colorbar_height_fraction = 0.05;
 double min_value = NAN;
 double max_value = NAN;
 
+/* Size of the image. Depending on the output format, these number can
+ * be pixels (PNG) or inches (PS, PDF, SVG). Therefore, they are set
+ * once the format has been decided. */
+double image_width;
+double image_height;
+
+/* Number of pixels in the bitmapped representation of the map. */
+double bitmap_width = 600;
+double bitmap_height = 400;
+
+
 /******************************************************************************/
 
 
@@ -58,6 +99,8 @@ print_usage(const char * program_name)
     puts("  -b, --draw-color-bar      Draw a color bar");
     puts("  -c, --column=NUM          Number of the column to display");
     puts("  -f, --format=STRING       C-like formatting string for numbers");
+    puts("  --list-formats            Print a list of the formats that can");
+    puts("                            be specified with --format");
     puts("  -m, --measure-unit=STRING Measure unit to use.");
     puts("  --min=VALUE, --max=VALUE  Minimum and maximum value to be used");
     puts("                            at the extrema of the color bar");
@@ -65,6 +108,45 @@ print_usage(const char * program_name)
     puts("  -t, --title=TITLE         Title to be written");
     puts("  -v, --version             Print version number and exit");
     puts("  -h, --help                Print this help");
+}
+
+/******************************************************************************/
+
+
+void
+print_list_of_available_formats(void)
+{
+    int idx;
+    for(idx = 0; list_of_output_formats[idx].name != NULL; ++idx)
+    {
+	output_format_t * format = &list_of_output_formats[idx];
+	assert(format != NULL);
+	printf("%s\t%s\n", format->name, format->description);
+    }
+}
+
+/******************************************************************************/
+
+
+void
+parse_format_specification(const char * format_str)
+{
+    int idx;
+    for(idx = 0; list_of_output_formats[idx].name != NULL; ++idx)
+    {
+	output_format_t * format = &list_of_output_formats[idx];
+	assert(format != NULL);
+	if(strcmp(format->name, format_str) == 0)
+	{
+	    output_format = format->code;
+	    return;
+	}
+    }
+
+    fprintf(stderr,
+	    MSG_HEADER "unknown format `%s', get a list of the available\n"
+	    MSG_HEADER "formats using `--list-formats'\n",
+	    format_str);
 }
 
 /******************************************************************************/
@@ -83,6 +165,7 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('V', 0, gopt_shorts(0), gopt_longs("verbose")),
 		      gopt_option('b', 0, gopt_shorts('b'), gopt_longs("draw-color-bar")),
 		      gopt_option('c', 0, gopt_shorts('c'), gopt_longs("column")),	
+		      gopt_option('F', 0, gopt_shorts(0), gopt_longs("list-formats")),
 		      gopt_option('m', GOPT_ARG, gopt_shorts('m'), gopt_longs("measure-unit")),
 		      gopt_option('o', GOPT_ARG, gopt_shorts('o'), gopt_longs("output")),
 		      gopt_option('_', GOPT_ARG, gopt_shorts(0), gopt_longs("min")),
@@ -99,6 +182,12 @@ parse_command_line(int argc, const char ** argv)
     if(gopt(options, 'v'))
     {
 	puts("map2fig version " VERSION " - Copyright(c) 2011-2012 Maurizio Tomasi");
+	exit(EXIT_SUCCESS);
+    }
+
+    if(gopt(options, 'F'))
+    {
+	print_list_of_available_formats();
 	exit(EXIT_SUCCESS);
     }
 
@@ -122,6 +211,9 @@ parse_command_line(int argc, const char ** argv)
 	    exit(EXIT_FAILURE);
 	}
     }
+
+    if(gopt_arg(options, 'f', &value_str))
+	parse_format_specification(value_str);
 
     if(gopt_arg(options, '_', &value_str))
     {
@@ -299,22 +391,22 @@ plot_bitmap_to_cairo_surface(cairo_t * cairo_context,
 			     double size_x, double size_y,
 			     double map_min, double map_max,
 			     const double * bitmap,
-			     unsigned int bitmap_width,
-			     unsigned int bitmap_height)
+			     unsigned int image_width,
+			     unsigned int image_height)
 {
-    const double pixel_width  = size_x / bitmap_width;
-    const double pixel_height = size_y / bitmap_height;
+    const double pixel_width  = size_x / image_width * 1.05;
+    const double pixel_height = size_y / image_height * 1.05;
     const double dynamic_range = map_max - map_min;
     const double * cur_pixel = bitmap;
     unsigned int cur_y_plus_one;
 
     assert(bitmap);
 
-    for(cur_y_plus_one = bitmap_height; cur_y_plus_one > 0; --cur_y_plus_one)
+    for(cur_y_plus_one = image_height; cur_y_plus_one > 0; --cur_y_plus_one)
     {
 	unsigned int cur_x;
 	unsigned int cur_y = cur_y_plus_one - 1;
-	for(cur_x = 0; cur_x < bitmap_width; ++cur_x)
+	for(cur_x = 0; cur_x < image_width; ++cur_x)
 	{
 	    double value = *cur_pixel++;
 	    color_t color;
@@ -330,8 +422,8 @@ plot_bitmap_to_cairo_surface(cairo_t * cairo_context,
 	    }
 
 	    cairo_rectangle(cairo_context,
-			    origin_x + (cur_x * size_x) / bitmap_width,
-			    origin_y + (cur_y * size_y) / bitmap_height,
+			    origin_x + (cur_x * size_x) / image_width,
+			    origin_y + (cur_y * size_y) / image_height,
 			    pixel_width,
 			    pixel_height);
 	    cairo_set_source_rgb(cairo_context,
@@ -377,7 +469,12 @@ paint_colorbar(cairo_t * context,
     double bar_start_x, bar_start_y;
     double bar_width, bar_height;
     const double text_margin_factor = 1.1;
-    const double tick_height = 6.0;
+    double tick_height;
+
+    if(output_format == FMT_PNG)
+	tick_height = 6.0;
+    else
+	tick_height = 0.1;
 
     if(measure_unit_str != NULL
        && measure_unit_str[0] != '\0')
@@ -471,14 +568,14 @@ paint_map(const hpix_map_t * map)
     double min, max;
 
     const double title_start_y = 0.0;
-    const double map_start_y = title_height_fraction * bitmap_height;
-    const double colorbar_start_y = bitmap_height
+    const double map_start_y = title_height_fraction * image_height;
+    const double colorbar_start_y = image_height
 	* (1 - colorbar_height_fraction);
 
     const double title_height = map_start_y;
-    const double map_height = bitmap_height
+    const double map_height = image_height
 	* (1 - title_height_fraction - colorbar_height_fraction);
-    const double colorbar_height = bitmap_height * colorbar_height_fraction;
+    const double colorbar_height = image_height * colorbar_height_fraction;
 
     find_map_extrema(map, &min, &max);
     if(! isnan(min_value))
@@ -492,48 +589,91 @@ paint_map(const hpix_map_t * map)
 		"with a range of %g\n",
 		min, max, max - min);
 
-    surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-					 bitmap_width,
-					 bitmap_height);
+    switch(output_format)
+    {
+    case FMT_PNG:
+	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
+					     image_width,
+					     image_height);
+	bitmap_height = map_height;
+	break;
+
+#if CAIRO_HAS_PS_SURFACE
+    case FMT_PS:
+	surface = cairo_ps_surface_create(output_file_name,
+					  image_width,
+					  image_height);
+	break;
+#endif
+
+#if CAIRO_HAS_PDF_SURFACE
+    case FMT_PDF:
+	surface = cairo_pdf_surface_create(output_file_name,
+					   image_width,
+					   image_height);
+	break;
+#endif
+
+#if CAIRO_HAS_SVG_SURFACE
+    case FMT_SVG:
+	surface = cairo_svg_surface_create(output_file_name,
+					   image_width,
+					   image_height);
+	break;
+#endif
+    default:
+	assert(0);
+    }
+
     context = cairo_create(surface);
 
     /* Draw the background */
-    cairo_rectangle(context, 0.0, 0.0, bitmap_width, bitmap_height);
+    cairo_rectangle(context, 0.0, 0.0, image_width, image_height);
     cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
     cairo_fill(context);
 
     paint_title(context,
 		0.0, title_start_y,
-		bitmap_width, title_height);
+		image_width, title_height);
 
     /* Plot the map */
-    projection = hpix_create_bmp_projection(bitmap_width, (int) map_height);
+    projection = hpix_create_bmp_projection(bitmap_width, (int) bitmap_height);
     bitmap = hpix_bmp_trace_bitmap(projection, map, NULL, NULL);
     plot_bitmap_to_cairo_surface(context,
 				 0.0, map_start_y,
-				 bitmap_width, map_height,
+				 image_width, map_height,
 				 min, max,
 				 bitmap,
 				 hpix_bmp_projection_width(projection),
 				 hpix_bmp_projection_height(projection));
     hpix_free_bmp_projection(projection);
 
-    cairo_set_font_size(context, 16);
+    if(output_format == FMT_PNG)
+	cairo_set_font_size(context, 16);
+
     paint_colorbar(context,
 		   0.0, colorbar_start_y,
-		   bitmap_width, colorbar_height,
+		   image_width, colorbar_height,
 		   min, max);
 
-    fprintf(stderr, MSG_HEADER "writing the file to `%s'\n",
-	    output_file_name);
-    if(cairo_surface_write_to_png(surface, output_file_name)
-       != CAIRO_STATUS_SUCCESS)
+    if(output_format == FMT_PNG)
     {
-	fprintf(stderr, MSG_HEADER "unable to write to file '%s'\n",
+	fprintf(stderr, MSG_HEADER "writing the file to `%s'\n",
 		output_file_name);
-	exit(EXIT_FAILURE);
+	if(cairo_surface_write_to_png(surface, output_file_name)
+	   != CAIRO_STATUS_SUCCESS)
+	{
+	    fprintf(stderr, MSG_HEADER "unable to write to file '%s'\n",
+		    output_file_name);
+	    exit(EXIT_FAILURE);
+	}
+	fputs(MSG_HEADER "file has been written successfully\n", stderr);
+    } else {
+	cairo_show_page(context);
     }
-    fputs(MSG_HEADER "file has been written successfully\n", stderr);
+
+    cairo_destroy(context);
+    cairo_surface_destroy(surface);
 }
 
 /******************************************************************************/
@@ -551,6 +691,24 @@ main(int argc, const char ** argv)
     map = load_map();
     if(verbose_flag)
 	fprintf(stderr, MSG_HEADER "map loaded\n");
+
+    switch(output_format)
+    {
+    case FMT_PNG:
+	image_width = 750;
+	image_height = 500;
+	break;
+
+    case FMT_PS:
+    case FMT_PDF:
+    case FMT_SVG:
+	image_width = 7.5;
+	image_height = 5.0;
+	break;
+
+    default:
+	assert(0);
+    }
 
     if(verbose_flag)
 	fprintf(stderr, MSG_HEADER "painting map\n");
