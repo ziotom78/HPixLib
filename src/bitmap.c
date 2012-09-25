@@ -120,7 +120,7 @@ hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
 
 	    if(u*u/4 + v*v >= 1)
 	    {
-		bitmap_ptr++; /* Skip the pixel */
+		*bitmap_ptr++ = INFINITY; /* Skip the pixel */
 		continue;
 	    }
 
@@ -129,7 +129,10 @@ hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
 				   v * sqrt((1 - v) * (1 + v))));
 	    phi = -M_PI_2 * u / MAX(sqrt((1 - v) * (1 + v)), 1e-6);
 	    pixel_idx = angles_to_pixel_fn(nside, theta, phi);
-	    *bitmap_ptr = pixels[pixel_idx];
+	    if(pixels[pixel_idx] > -1.6e+30)
+		*bitmap_ptr = pixels[pixel_idx];
+	    else
+		*bitmap_ptr = NAN;
 
 	    if(! minmax_flag)
 	    {
