@@ -91,15 +91,15 @@ size_t hpix_map_num_of_pixels(const hpix_map_t * map);
 /* Functions implemented in io.c */
 
 int
-hpix_load_component_from_fitsptr(fitsfile * fptr,
-				   unsigned short column_number,
-				   hpix_map_t ** map,
-				   int * status);
+hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
+				      unsigned short column_number,
+				      hpix_map_t ** map,
+				      int * status);
 
-int hpix_load_component_from_file(const char * file_name,
-				  unsigned short column_number,
-				  hpix_map_t ** map,
-				  int * status);
+int hpix_load_fits_component_from_file(const char * file_name,
+				       unsigned short column_number,
+				       hpix_map_t ** map,
+				       int * status);
 
 int
 hpix_create_empty_fits_table_for_map(fitsfile * fptr,
