@@ -43,6 +43,10 @@ unsigned short column_number = 1;
 const float title_height_fraction = 0.1;
 const float colorbar_height_fraction = 0.2;
 
+/* Extrema of the color bar, set by `--min` and `--max` */
+double min_value = NAN;
+double max_value = NAN;
+
 /******************************************************************************/
 
 
@@ -69,7 +73,7 @@ print_usage(const char * program_name)
 void
 parse_command_line(int argc, const char ** argv)
 {
-    const char * column_str;
+    const char * value_str;
     char * tail_ptr;
     void * options =
 	gopt_sort(&argc, argv,
@@ -104,16 +108,45 @@ parse_command_line(int argc, const char ** argv)
     if(gopt(options, 'b'))
 	draw_color_bar_flag = 1;
 
-    if(gopt_arg(options, 'c', &column_str))
+    if(gopt_arg(options, 'c', &value_str))
     {
-	column_number = strtoul(column_str, &tail_ptr, 10);
+	tail_ptr = NULL;
+	column_number = strtoul(value_str, &tail_ptr, 10);
 	if(! tail_ptr ||
-	   *tail_ptr == '\x0' ||
+	   *tail_ptr != '\x0' ||
 	   column_number == 0 ||
 	   column_number > USHRT_MAX)
 	{
 	    fprintf(stderr, MSG_HEADER "invalid column number '%s'\n",
-		    column_str);
+		    value_str);
+	    exit(EXIT_FAILURE);
+	}
+    }
+
+    if(gopt_arg(options, '_', &value_str))
+    {
+	tail_ptr = NULL;
+	min_value = strtod(value_str, &tail_ptr);
+	if(! tail_ptr ||
+	   *tail_ptr != '\x0')
+	{
+	    fprintf(stderr,
+		    MSG_HEADER "invalid minimum '%s' specified with --min\n",
+		    value_str);
+	    exit(EXIT_FAILURE);
+	}
+    }
+
+    if(gopt_arg(options, '^', &value_str))
+    {
+	tail_ptr = NULL;
+	max_value = strtod(value_str, &tail_ptr);
+	if(! tail_ptr ||
+	   *tail_ptr != '\x0')
+	{
+	    fprintf(stderr,
+		    MSG_HEADER "invalid maximum '%s' specified with --max\n",
+		    value_str);
 	    exit(EXIT_FAILURE);
 	}
     }
@@ -323,9 +356,15 @@ paint_map(const hpix_map_t * map)
     double min, max;
 
     find_map_extrema(map, &min, &max);
+    if(! isnan(min_value))
+	min = min_value;
+    if(! isnan(max_value))
+	max = max_value;
+
+
     if(verbose_flag)
 	fprintf(stderr,
-		MSG_HEADER "map extrema are %g and %g," 
+		MSG_HEADER "map extrema are %g and %g, " 
 		"with a range of %g\n",
 		min, max, max - min);
 
