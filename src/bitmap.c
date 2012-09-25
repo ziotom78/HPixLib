@@ -112,8 +112,8 @@ hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
     {
 	for (x = 0; x < proj->width; ++x)
 	{
-	    double u = 2.0 * (x - center_x) / (center_x / 1.02);
-	    double v = (y - center_y) / (center_y / 1.02);
+	    double u = 2.0 * (x - center_x) / center_x;
+	    double v = (y - center_y) / center_y;
 	    double theta;
 	    double phi;
 	    hpix_pixel_num_t pixel_idx;
