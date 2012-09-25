@@ -22,10 +22,10 @@ int draw_color_bar_flag = 0;
 int verbose_flag = 0;
 
 /* String to append to the measure unit, set by `-m`, `--measure-unit` */
-const char * measure_unit = NULL;
+const char * measure_unit_str = NULL;
 
 /* Title to be drawn above the map, set by `-t`, `--title` */
-const char * title = NULL;
+const char * title_str = NULL;
 
 /* Name of the output file name, set by `-o`, `--output` */
 const char * output_file_name = NULL;
@@ -41,7 +41,7 @@ unsigned short column_number = 1;
 /* Relative height of the title and of the color bar. Together with
  * the height of the map, their sum is 1.0 */
 const float title_height_fraction = 0.1;
-const float colorbar_height_fraction = 0.1;
+const float colorbar_height_fraction = 0.05;
 
 /* Extrema of the color bar, set by `--min` and `--max` */
 double min_value = NAN;
@@ -152,8 +152,8 @@ parse_command_line(int argc, const char ** argv)
     }
 
     /* Save the option passed to `--measure-unit` into variable MEASURE_UNIT. */
-    gopt_arg(options, 'm', &measure_unit);
-    gopt_arg(options, 't', &title);
+    gopt_arg(options, 'm', &measure_unit_str);
+    gopt_arg(options, 't', &title_str);
     gopt_arg(options, 'f', &number_format);
     gopt_arg(options, 'o', &output_file_name);
 
@@ -350,21 +350,112 @@ void
 paint_title(cairo_t * context, double start_x, double start_y,
 	    double width, double height)
 {
-    cairo_rectangle(context, start_x, start_y, width, height);
+    cairo_text_extents_t title_te;
+    const double title_font_size = height * 0.9;
+
+    cairo_set_font_size(context, title_font_size);
+    cairo_text_extents(context, title_str, &title_te);
+    cairo_move_to(context, 0.5 * (width - title_te.width),
+		  title_font_size);
     cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
-    cairo_stroke(context);
+    cairo_show_text(context, title_str);
 }
 
 /******************************************************************************/
 
 
 void
-paint_colorbar(cairo_t * context, double start_x, double start_y,
-	       double width, double height)
+paint_colorbar(cairo_t * context,
+	       double start_x, double start_y,
+	       double width, double height,
+	       double min_level, double max_level)
 {
-    cairo_rectangle(context, start_x, start_y, width, height);
+    cairo_pattern_t * linear;
+    size_t idx;
+    char label_min[20], label_max[20];
+    cairo_text_extents_t min_te, max_te;
+    double bar_start_x, bar_start_y;
+    double bar_width, bar_height;
+    const double text_margin_factor = 1.1;
+    const double tick_height = 6.0;
+
+    if(measure_unit_str != NULL
+       && measure_unit_str[0] != '\0')
+    {
+	sprintf(label_min, "%.4g %s", min_level, measure_unit_str);
+	sprintf(label_max, "%.4g %s", max_level, measure_unit_str);
+    } else {
+	sprintf(label_min, "%.4g", min_level);
+	sprintf(label_max, "%.4g", max_level);
+    }
+
+    cairo_text_extents (context, label_min, &min_te);
+    cairo_text_extents (context, label_max, &max_te);
+
+    bar_start_x = start_x;
+    bar_start_y = start_y;
+    bar_width = width;
+    bar_height = height;
+
+    /* If zero is within the range, plot a small thick around it */
+    if(max_level > 0.0 && min_level < 0.0)
+    {
+	double zero_pos = 
+	    start_x + width * (0.0 - min_level) / (max_level - min_level);
+	cairo_move_to(context, zero_pos, start_y);
+	cairo_line_to(context, zero_pos, start_y + height);
+	cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
+	cairo_stroke(context);
+    }
+
+    /* Now plot the gradient */
+    bar_start_x += min_te.width * text_margin_factor;
+    bar_width -= (min_te.width + max_te.width) * text_margin_factor;
+    linear = cairo_pattern_create_linear (bar_start_x, 0.0,
+					  bar_start_x + bar_width, 0.0);
+
+    for(idx = 0; idx < num_of_levels; ++idx)
+    {
+	cairo_pattern_add_color_stop_rgb(linear, levels[idx],
+					 colors[idx].red,
+					 colors[idx].green,
+					 colors[idx].blue);
+    }
+
+    cairo_rectangle(context,
+		    bar_start_x, bar_start_y + tick_height,
+		    bar_width, bar_height - 2 * tick_height);
+
+    /* Draw the gradient */
+    cairo_set_source(context, linear);
+    cairo_fill_preserve(context);
+
+    cairo_pattern_destroy(linear);
+
+    /* Draw the border */
     cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
     cairo_stroke(context);
+
+    /* Draw the labels */
+    {
+	double baseline;
+	baseline =
+	    start_y
+	    + height * 0.5 
+	    - min_te.y_bearing 
+	    - min_te.height * 0.5;
+	cairo_move_to(context, start_x, baseline);
+	cairo_show_text(context, label_min);
+
+	 baseline =
+	     start_y
+	     + height * 0.5 
+	     - max_te.y_bearing 
+	     - max_te.height * 0.5;
+	 cairo_move_to(context, start_x + width - max_te.width,
+		       baseline);
+	 cairo_show_text(context, label_max);
+    }
 }
 
 /******************************************************************************/
@@ -427,10 +518,14 @@ paint_map(const hpix_map_t * map)
 				 hpix_bmp_projection_height(projection));
     hpix_free_bmp_projection(projection);
 
+    cairo_set_font_size(context, 16);
     paint_colorbar(context,
 		   0.0, colorbar_start_y,
-		   bitmap_width, colorbar_height);
+		   bitmap_width, colorbar_height,
+		   min, max);
 
+    fprintf(stderr, MSG_HEADER "writing the file to `%s'\n",
+	    output_file_name);
     if(cairo_surface_write_to_png(surface, output_file_name)
        != CAIRO_STATUS_SUCCESS)
     {
@@ -438,6 +533,7 @@ paint_map(const hpix_map_t * map)
 		output_file_name);
 	exit(EXIT_FAILURE);
     }
+    fputs(MSG_HEADER "file has been written successfully\n", stderr);
 }
 
 /******************************************************************************/
