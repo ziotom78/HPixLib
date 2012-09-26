@@ -37,7 +37,7 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     double * pixels;
     long nside;
     long elements_per_row;
-    hpix_coordinates_t coord_sys;
+    hpix_ordering_t ordering;
 
     assert(fptr);
     assert(map);
@@ -73,13 +73,11 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     /* Read the array */
     switch(ordering_key[0])
     {
-    case 'G': coord_sys = HPXLIB_COORD_GALACTIC; break;
-    case 'E': coord_sys = HPXLIB_COORD_ECLIPTIC; break;
-    case 'Q': coord_sys = HPXLIB_COORD_CUSTOM; break;
-    default: coord_sys = HPXLIB_COORD_CELESTIAL; break;
+    case 'N': ordering = HPXLIB_ORDER_NEST;
+    default: ordering = HPXLIB_ORDER_RING; break;
     }
 
-    *map = hpix_create_map(nside, coord_sys);
+    *map = hpix_create_map(nside, ordering);
     pixels = hpix_map_pixels(*map);
     for (row_idx = 0; row_idx < num_of_rows; ++row_idx)
     {
