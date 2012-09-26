@@ -48,19 +48,32 @@
 
 #define VERSION "0.1"
 
+/* Used to print information/error/warning messages */
 #define MSG_HEADER   "map2fig: "
 
+/* Available file formats */
 typedef enum { FMT_NULL, FMT_PNG, FMT_PS, FMT_EPS, FMT_PDF, FMT_SVG }
     output_format_code_t;
 
+/* This structure holds information about one file format. It is only
+ * used to parse the `--format` command-line flag and to implement the
+ * `--list-formats` command. */
 typedef struct {
+    /* Short name, used to parse the keyword after `--format` */
     const char * name;
+    /* Description, used by `--list-formats` */
     const char * description;
+    /* Code, used to initialize the global variable `output_format` */
     output_format_code_t code;
 } output_format_t;
 
+/* Here is the list of the actual formats supported by the program.
+ * The entries to be put in the list are decided at compilation time,
+ * depending on the capabilities of the Cairo library found on the
+ * system. */
 output_format_t list_of_output_formats[] = {
-    /* The Cairo documentation guarantees that PNG is always available */
+    /* The Cairo documentation guarantees that PNG is always
+     * available */
     { "png", "PNG 24-bit bitmap", FMT_PNG },
 #if CAIRO_HAS_PS_SURFACE
     { "ps", "PostScript", FMT_PS },
@@ -75,7 +88,7 @@ output_format_t list_of_output_formats[] = {
     { NULL, FMT_NULL }
 };
 
-/* Output format to use */
+/* Output format to use, see above */
 output_format_code_t output_format = FMT_PNG;
 
 /* Should we draw a color bar? Set by `-b`, `--draw-color-bar` */
@@ -93,7 +106,7 @@ const char * title_str = "";
 /* Name of the output file name, set by `-o`, `--output` */
 const char * output_file_name = NULL;
 
-/* C-like format string for numbers, set by `-f`, `--format` */
+/* C-like format string for numbers, currently unused */
 const char * number_format = "%g";
 
 const char * input_file_name = NULL;
@@ -102,21 +115,28 @@ const char * input_file_name = NULL;
 unsigned short column_number = 1;
 
 /* Relative height of the title and of the color bar. Together with
- * the height of the map, their sum is 1.0 */
+ * the height of the map, their sum is 1.0. It would be nice to make
+ * these numbers customizable via command-line switches. */
 const float title_height_fraction = 0.1;
 const float colorbar_height_fraction = 0.05;
 
-/* Extrema of the color bar, set by `--min` and `--max` */
+/* Extrema of the color bar, optinally set by `--min` and `--max`. If
+ * the user does not specify them, they will be initialized to NAN. In
+ * this case, the code will use the extrema of the map. */
 double min_value;
 double max_value;
 
 /* Size of the image. Depending on the output format, these number can
- * be pixels (PNG) or inches (PS, PDF, SVG). Therefore, they are set
- * once the format has been decided. */
+ * be pixels (PNG) or points (1/72 inch, used by PS, PDF, SVG).
+ * Therefore, they are set once the format has been decided. */
 double image_width;
 double image_height;
 
-/* Number of pixels in the bitmapped representation of the map. */
+/* Number of pixels in the bitmapped representation of the map. Unlike
+ * `image_width` and `image_height`, these numbers are always
+ * expressed in pixel units. They provide the resolution of the bitmap
+ * file containing the Mollview projection which is to be included in
+ * e.g. the SVG file. */
 double bitmap_columns = 600;
 double bitmap_rows = 400;
 
@@ -131,9 +151,9 @@ print_usage(const char * program_name)
     puts("OPTIONS can be one or more of the following:");
     puts("  -b, --draw-color-bar      Draw a color bar");
     puts("  -c, --column=NUM          Number of the column to display");
-    puts("  -f, --format=STRING       C-like formatting string for numbers");
-    puts("  --list-formats            Print a list of the formats that can");
-    puts("                            be specified with --format");
+    puts("  -f, --format=STRING       Format of the output image file");
+    puts("  --list-formats            Print a list of the file formats that");
+    puts("                            can be specified with --format");
     puts("  -m, --measure-unit=STRING Measure unit to use.");
     puts("  --min=VALUE, --max=VALUE  Minimum and maximum value to be used");
     puts("                            at the extrema of the color bar");
@@ -185,6 +205,9 @@ parse_format_specification(const char * format_str)
 /******************************************************************************/
 
 
+/* This code uses the `gopt` library to parse the command-line
+ * options. It initializes a number of global variables declared at
+ * the beginning of this file. */
 void
 parse_command_line(int argc, const char ** argv)
 {
@@ -206,30 +229,35 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('t', GOPT_ARG, gopt_shorts('t'), gopt_longs("title")),
 		      gopt_option('f', GOPT_ARG, gopt_shorts('f'), gopt_longs("format"))));
 
+    /* --help */
     if(gopt(options, 'h'))
     {
 	print_usage("map2fig");
 	exit(EXIT_SUCCESS);
     }
 
+    /* --version */
     if(gopt(options, 'v'))
     {
 	puts("map2fig version " VERSION " - Copyright(c) 2011-2012 Maurizio Tomasi");
 	exit(EXIT_SUCCESS);
     }
 
+    /* --list-formats */
     if(gopt(options, 'F'))
     {
 	print_list_of_available_formats();
 	exit(EXIT_SUCCESS);
     }
 
+    /* --verbose */
     if(gopt(options, 'V'))
 	verbose_flag = 1;
 
     if(gopt(options, 'b'))
 	draw_color_bar_flag = 1;
 
+    /* --column NUM */
     if(gopt_arg(options, 'c', &value_str))
     {
 	tail_ptr = NULL;
@@ -245,9 +273,11 @@ parse_command_line(int argc, const char ** argv)
 	}
     }
 
+    /* --format STRING */
     if(gopt_arg(options, 'f', &value_str))
 	parse_format_specification(value_str);
 
+    /* --min VALUE */
     if(gopt_arg(options, '_', &value_str))
     {
 	tail_ptr = NULL;
@@ -263,6 +293,7 @@ parse_command_line(int argc, const char ** argv)
     } else
 	min_value = NAN;
 
+    /* --max VALUE */
     if(gopt_arg(options, '^', &value_str))
     {
 	tail_ptr = NULL;
@@ -278,13 +309,17 @@ parse_command_line(int argc, const char ** argv)
     } else
 	max_value = NAN;
 
-    /* Save the option passed to `--measure-unit` into variable MEASURE_UNIT. */
+    /* --measure-unit STRING */
     gopt_arg(options, 'm', &measure_unit_str);
+    /* --title STRING */
     gopt_arg(options, 't', &title_str);
-    gopt_arg(options, 'f', &number_format);
+    /* --output FILE */
     gopt_arg(options, 'o', &output_file_name);
 
     gopt_free(options);
+
+    /* NOTE: in this version, there must be only input parameter! This
+     * is the name of the FITS file containing the map to draw. */
 
     if(argc > 2)
     {
@@ -328,6 +363,11 @@ load_map(void)
 /******************************************************************************/
 
 
+/* Find the minimum and maximum value in a map, properly skipping
+ * UNSEEN pixels. This is different from the extrema returned by
+ * hpix_bmp_trace_bitmap, as the latter returns the extrema of the
+ * pixels used to draw the map (which are in general a subset of all
+ * the pixels in the map). */
 void
 find_map_extrema(const hpix_map_t * map, double * min, double * max)
 {
@@ -363,13 +403,28 @@ find_map_extrema(const hpix_map_t * map, double * min, double * max)
 /******************************************************************************/
 
 
+/* The following code is used to define the color gradient used to
+ * draw the Mollview projection and the color bar. The purpose is to
+ * convert a floating-point number into a color. Like Healpix's
+ * map2gif and map2tga, we use a combination of linear gradients, i.e.
+ * a function that maps a floating-point value between 0.0 and 1.0 and
+ * a `color_t` structure. The mapping is implemented by means of a set
+ * of linear functions over subsets of the domain [0.0, 1.0] that
+ * completely cover the domain and are continuously connected. */
+
+/* The most basic structure: a RGB color. Following Cairo's
+ * conventions, each component is a floating-point number between 0.0
+ * and 1.0. */
 typedef struct {
     double red;
     double green;
     double blue;
 } color_t;
 
+/* These numbers split the [0.0, 1.0] domain in a number of subsets. */
 static const double levels[] = { 0.0, 0.15, 0.40, 0.70, 0.90, 1.00 };
+/* These are the colors of the mapping at the boundaries specified by
+ * the `levels` variable above. */
 static const color_t colors[] = {
     { 0.0, 0.0, 0.5 },
     { 0.0, 0.0, 1.0 },
@@ -377,13 +432,19 @@ static const color_t colors[] = {
     { 1.0, 1.0, 0.0 },
     { 1.0, 0.33, 0.0 },
     { 0.5, 0.0, 0.0 }};
+/* Number of steps, i.e. of subsets of [0.0, 1.0] */
 static const size_t num_of_levels = sizeof(levels) / sizeof(levels[0]);
 
+/* This function provides the mapping between [0.0, 1.0] and a
+ * `color_t` structure. It is a faithful copy of a function found in
+ * Heapix's map2tga program. */
 void
 get_palette_color(double level, color_t * color_ptr)
 {
     size_t idx;
     size_t index0, index1;
+
+    /* Clip values outside the boundaries */
 
     if(level <= 0.0)
     {
@@ -399,6 +460,7 @@ get_palette_color(double level, color_t * color_ptr)
 	return;
     }
 
+    /* Look for the applicable subset of [0.0, 1.0] */
     idx = 0;
     while(level > levels[idx])
 	++idx;
@@ -406,6 +468,8 @@ get_palette_color(double level, color_t * color_ptr)
     index1 = idx;
     index0 = index1 - 1;
 
+    /* Perform a linear interpolation for each of the three color
+     * components */
 #define INTERPOLATE_COMPONENT(level, comp_name) \
     (  colors[index0].comp_name * (levels[index1] - level) / (levels[index1] - levels[index0]) \
      + colors[index1].comp_name * (level - levels[index0]) / (levels[index1] - levels[index0]))
@@ -420,6 +484,14 @@ get_palette_color(double level, color_t * color_ptr)
 /******************************************************************************/
 
 
+/* This function creates a Cairo image surface that contains the
+ * Mollview projection of the map. The values `map_min` and `map_max`
+ * are used to rescale every value in the map (i.e. to convert every
+ * pixel value in the map into a number in [0.0, 1.0]). The value of
+ * `bitmap` is the return value of `hpix_bmp_trace_bitmap`. Finally,
+ * `width` and `height` give the resolution (in pixel) of the image
+ * surface. The Mollview plot fits into the largest ellipse that can
+ * be enclosed in the rectangle (0,0) - (width, height). */
 cairo_surface_t *
 plot_bitmap_to_cairo_surface(double map_min, double map_max,
 			     const double * bitmap,
@@ -436,6 +508,11 @@ plot_bitmap_to_cairo_surface(double map_min, double map_max,
     assert(bitmap);
     fprintf(stderr, MSG_HEADER "plotting the map on a %ux%u bitmap\n",
 	    width, height);
+    /* Because of the way Cairo implements surface copies, it is not
+     * possible to use CAIRO_FORMAT_ARGB32 here. It would have been
+     * really useful, as having an "alpha" (transparency) channel
+     * would have helped in implementing the surface copy
+     * operation. */
     surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					 width, height);
     image_data = cairo_image_surface_get_data(surface);
@@ -608,6 +685,8 @@ paint_colorbar(cairo_t * context,
 /******************************************************************************/
 
 
+/* Wrapper to one of the cairo_*_surface_create function, depending on
+ * the output format chosen by the user (--format). */
 cairo_surface_t *
 create_surface(double width, double height)
 {
@@ -684,6 +763,18 @@ paint_map(const hpix_map_t * map)
 		"with a range of %g\n",
 		min, max, max - min);
 
+    /* Steps to create the map:
+     * 1. Create a surface of the appropriate type (e.g. PS, PDF...)
+     * 2. Fill the background
+     * 3. Draw the title
+     * 4. Use `plot_bitmap_to_cairo_surface` to create another
+     *    (bitmapped) surface containing the Mollview projection of
+     *    the map
+     * 5. Copy the surface with the Mollview projection into the "big"
+     *    surface created in 1.
+     * 6. Draw the color bar 
+     * 7. Save the result
+     */
     surface = create_surface(image_width, image_height);
     context = cairo_create(surface);
 
@@ -793,6 +884,7 @@ main(int argc, const char ** argv)
     switch(output_format)
     {
     case FMT_PNG:
+	/* Pixels */
 	image_width = 750;
 	image_height = 500;
 	break;
@@ -801,6 +893,7 @@ main(int argc, const char ** argv)
     case FMT_EPS:
     case FMT_PDF:
     case FMT_SVG:
+	/* Points, that is, 1/72 inches */
 	image_width = 7.5 * 72;
 	image_height = 5.0 * 72;
 	break;
