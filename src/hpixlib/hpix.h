@@ -15,8 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef HPXLIB_H
-#define HPXLIB_H
+#ifndef HPIX_H
+#define HPIX_H
 
 #ifdef __cplusplus
 extern "C"{
@@ -30,15 +30,15 @@ typedef unsigned short hpix_nside_t;
 typedef unsigned long hpix_pixel_num_t;
 
 typedef enum {
-    HPXLIB_ORDER_RING,
-    HPXLIB_ORDER_NEST
+    HPIX_ORDER_RING,
+    HPIX_ORDER_NEST
 } hpix_ordering_t;
 
 typedef enum {
-    HPXLIB_COORD_CUSTOM,
-    HPXLIB_COORD_ECLIPTIC,
-    HPXLIB_COORD_GALACTIC,
-    HPXLIB_COORD_CELESTIAL
+    HPIX_COORD_CUSTOM,
+    HPIX_COORD_ECLIPTIC,
+    HPIX_COORD_GALACTIC,
+    HPIX_COORD_CELESTIAL
 } hpix_coordinates_t;
 
 typedef struct {

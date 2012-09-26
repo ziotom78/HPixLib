@@ -98,7 +98,7 @@ The functions described in this paragraph convert angular positions
   {
       size_t idx;
       hpix_angles_to_pixel_fn_t * ang2pix_fn;
-      if(order == HPXLIB_ORDER_RING)
+      if(order == HPIX_ORDER_RING)
           ang2pix_fn = hpix_angles_to_ring_pixel;
       else
           ang2pix_fn = hpix_angles_to_nest_pixel;

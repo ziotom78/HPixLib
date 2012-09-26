@@ -100,7 +100,7 @@ hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
 
     nside = hpix_map_nside(map);
 
-    angles_to_pixel_fn = (hpix_map_ordering(map) == HPXLIB_ORDER_NEST)
+    angles_to_pixel_fn = (hpix_map_ordering(map) == HPIX_ORDER_NEST)
 	? hpix_angles_to_nest_pixel
 	: hpix_angles_to_ring_pixel;
 

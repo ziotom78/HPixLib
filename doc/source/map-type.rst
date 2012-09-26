@@ -11,14 +11,14 @@ Basic types
 .. c:type:: hpix_ordering_t
 
   This ``enum`` type specifies the ordering scheme of the map. It can assume
-  the values ``HPXLIB_ORDER_RING`` or ``HPXLIB_ORDER_NEST``.
+  the values ``HPIX_ORDER_RING`` or ``HPIX_ORDER_NEST``.
 
 .. c:type:: hpix_coordinates_t
 
   This ``enum`` type specifies the coordinate system used by the map.
-  It can either be ``HPXLIB_COORD_GALACTIC`` (Galactic coordinates),
-  ``HPXLIB_COORD_ECLIPTIC`` (ecliptic coordinates),
-  ``HPXLIB_COORD_CELESTIAL`` or ``HPXLIB_COORD_CUSTOM`` (custom Euler
+  It can either be ``HPIX_COORD_GALACTIC`` (Galactic coordinates),
+  ``HPIX_COORD_ECLIPTIC`` (ecliptic coordinates),
+  ``HPIX_COORD_CELESTIAL`` or ``HPIX_COORD_CUSTOM`` (custom Euler
   rotation).
 
 .. c:type:: hpix_map_t
@@ -252,7 +252,7 @@ the command line.
         printf("File name: %s\n", *argv);
         printf("NSIDE: %ud\n", hpix_map_nside(map));
         printf("Ordering: %s\n\n",
-               hpix_map_ordering(map) == HPXLIB_ORDER_RING ?
+               hpix_map_ordering(map) == HPIX_ORDER_RING ?
                "RING" : "NEST");
         printf("Peak-to-peak variation: %.4g\n",
                peak_to_peak_amplitude(map));
