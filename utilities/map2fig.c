@@ -107,8 +107,8 @@ const float title_height_fraction = 0.1;
 const float colorbar_height_fraction = 0.05;
 
 /* Extrema of the color bar, set by `--min` and `--max` */
-double min_value = NAN;
-double max_value = NAN;
+double min_value;
+double max_value;
 
 /* Size of the image. Depending on the output format, these number can
  * be pixels (PNG) or inches (PS, PDF, SVG). Therefore, they are set
@@ -260,7 +260,8 @@ parse_command_line(int argc, const char ** argv)
 		    value_str);
 	    exit(EXIT_FAILURE);
 	}
-    }
+    } else
+	min_value = NAN;
 
     if(gopt_arg(options, '^', &value_str))
     {
@@ -274,7 +275,8 @@ parse_command_line(int argc, const char ** argv)
 		    value_str);
 	    exit(EXIT_FAILURE);
 	}
-    }
+    } else
+	max_value = NAN;
 
     /* Save the option passed to `--measure-unit` into variable MEASURE_UNIT. */
     gopt_arg(options, 'm', &measure_unit_str);
