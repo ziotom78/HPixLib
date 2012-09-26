@@ -91,6 +91,9 @@ output_format_t list_of_output_formats[] = {
 /* Output format to use, see above */
 output_format_code_t output_format = FMT_PNG;
 
+/* Should we skip painting the image background? Set by `--no-background` */
+int no_background_flag = 0;
+
 /* Should we draw a color bar? Set by `-b`, `--draw-color-bar` */
 int draw_color_bar_flag = 0;
 
@@ -150,6 +153,7 @@ print_usage(const char * program_name)
     printf("Usage: %s [OPTIONS] INPUT_MAP\n\n", program_name);
     puts("OPTIONS can be one or more of the following:");
     puts("  -b, --draw-color-bar      Draw a color bar");
+    puts("  --no-background           Do not paint the background");
     puts("  -c, --column=NUM          Number of the column to display");
     puts("  -f, --format=STRING       Format of the output image file");
     puts("  --list-formats            Print a list of the file formats that");
@@ -220,6 +224,7 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('v', 0, gopt_shorts('v'), gopt_longs("version")),
 		      gopt_option('V', 0, gopt_shorts(0), gopt_longs("verbose")),
 		      gopt_option('b', 0, gopt_shorts('b'), gopt_longs("draw-color-bar")),
+		      gopt_option('B', 0, gopt_shorts(0), gopt_longs("no-background")),
 		      gopt_option('c', 0, gopt_shorts('c'), gopt_longs("column")),	
 		      gopt_option('F', 0, gopt_shorts(0), gopt_longs("list-formats")),
 		      gopt_option('m', GOPT_ARG, gopt_shorts('m'), gopt_longs("measure-unit")),
@@ -242,6 +247,10 @@ parse_command_line(int argc, const char ** argv)
 	puts("map2fig version " VERSION " - Copyright(c) 2011-2012 Maurizio Tomasi");
 	exit(EXIT_SUCCESS);
     }
+
+    /* --no-background */
+    if(gopt(options, 'B'))
+	no_background_flag = 1;
 
     /* --list-formats */
     if(gopt(options, 'F'))
@@ -695,7 +704,9 @@ create_surface(double width, double height)
     switch(output_format)
     {
     case FMT_PNG:
-	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
+	surface = cairo_image_surface_create(no_background_flag
+					     ? CAIRO_FORMAT_ARGB32
+					     : CAIRO_FORMAT_RGB24,
 					     width, height);
 	bitmap_columns = width;
 	break;
@@ -765,7 +776,7 @@ paint_map(const hpix_map_t * map)
 
     /* Steps to create the map:
      * 1. Create a surface of the appropriate type (e.g. PS, PDF...)
-     * 2. Fill the background
+     * 2. Fill the background (unless --no-background was used)
      * 3. Draw the title
      * 4. Use `plot_bitmap_to_cairo_surface` to create another
      *    (bitmapped) surface containing the Mollview projection of
@@ -782,8 +793,16 @@ paint_map(const hpix_map_t * map)
 	bitmap_rows = map_height;
 
     /* Draw the background */
-    cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
-    cairo_paint(context);
+    if(no_background_flag)
+    {
+	cairo_save(context);
+	cairo_set_operator(context, CAIRO_OPERATOR_CLEAR);
+	cairo_paint(context);
+	cairo_restore(context);
+    } else {
+	cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
+	cairo_paint(context);
+    }
 
     /* Draw the title */
     paint_title(context,
