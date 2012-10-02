@@ -103,6 +103,9 @@ int verbose_flag = 0;
 /* String to append to the measure unit, set by `-m`, `--measure-unit` */
 const char * measure_unit_str = "";
 
+/* Scale to use with the maps, set by `-s`, `--scale` */
+double scale_factor = 1.0;
+
 /* Title to be drawn above the map, set by `-t`, `--title` */
 const char * title_str = "";
 
@@ -162,6 +165,8 @@ print_usage(const char * program_name)
     puts("  --min=VALUE, --max=VALUE  Minimum and maximum value to be used");
     puts("                            at the extrema of the color bar");
     puts("  -o, --output=FILE         Save the image to the specified file");
+    puts("  -s, --scale=NUM           Multiply the pixel values by NUM");
+    puts("                            (useful e.g. to convert K into mK)");
     puts("  -t, --title=TITLE         Title to be written");
     puts("  -v, --version             Print version number and exit");
     puts("  -h, --help                Print this help");
@@ -231,6 +236,7 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('o', GOPT_ARG, gopt_shorts('o'), gopt_longs("output")),
 		      gopt_option('_', GOPT_ARG, gopt_shorts(0), gopt_longs("min")),
 		      gopt_option('^', GOPT_ARG, gopt_shorts(0), gopt_longs("max")),
+		      gopt_option('s', GOPT_ARG, gopt_shorts('s'), gopt_longs("scale")),
 		      gopt_option('t', GOPT_ARG, gopt_shorts('t'), gopt_longs("title")),
 		      gopt_option('f', GOPT_ARG, gopt_shorts('f'), gopt_longs("format"))));
 
@@ -318,6 +324,23 @@ parse_command_line(int argc, const char ** argv)
     } else
 	max_value = NAN;
 
+
+    /* --max VALUE */
+    if(gopt_arg(options, 's', &value_str))
+    {
+	tail_ptr = NULL;
+	scale_factor = strtod(value_str, &tail_ptr);
+	if(! tail_ptr ||
+	   *tail_ptr != '\x0')
+	{
+	    fprintf(stderr,
+		    MSG_HEADER "invalid scale factor '%s' specified with --scale\n",
+		    value_str);
+	    exit(EXIT_FAILURE);
+	}
+    } else
+	scale_factor = 1.0;
+
     /* --measure-unit STRING */
     gopt_arg(options, 'm', &measure_unit_str);
     /* --title STRING */
@@ -356,6 +379,9 @@ load_map(void)
 {
     hpix_map_t * result;
     int status = 0;
+    double * pixels;
+    size_t num_of_pixels;
+    size_t idx;
 
     if(! hpix_load_fits_component_from_file(input_file_name,
 					    column_number,
@@ -365,6 +391,12 @@ load_map(void)
 		input_file_name);
 	exit(EXIT_FAILURE);
     }
+
+    /* Multiply the pixels in the map by `scale_factor` */
+    pixels = hpix_map_pixels(result);
+    num_of_pixels = hpix_map_num_of_pixels(result);
+    for(idx = 0; idx < num_of_pixels; ++idx)
+	pixels[idx] *= scale_factor;
 
     return result;
 }
