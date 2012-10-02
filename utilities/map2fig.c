@@ -121,7 +121,7 @@ unsigned short column_number = 1;
  * the height of the map, their sum is 1.0. It would be nice to make
  * these numbers customizable via command-line switches. */
 const float title_height_fraction = 0.1;
-const float colorbar_height_fraction = 0.05;
+const float colorbar_height_fraction = 0.1;
 
 /* Extrema of the color bar, optinally set by `--min` and `--max`. If
  * the user does not specify them, they will be initialized to NAN. In
@@ -574,20 +574,175 @@ plot_bitmap_to_cairo_surface(double map_min, double map_max,
 /******************************************************************************/
 
 
+typedef enum {
+    HALIGN_RIGHT,
+    HALIGN_LEFT,
+    HALIGN_CENTER
+} halign_t;
+
+typedef enum {
+    VALIGN_TOP,
+    VALIGN_BOTTOM,
+    VALIGN_CENTER
+} valign_t;
+
+void
+draw_aligned_text(cairo_t * context, const char * label,
+		  double x, double y,
+		  halign_t h_align, valign_t v_align)
+{
+    cairo_text_extents_t te;
+    double text_pos_x = x, text_pos_y = y;
+
+    cairo_text_extents (context, label, &te);
+
+    switch(h_align)
+    {
+    case HALIGN_LEFT:
+	text_pos_x -= te.width;
+	break;
+    case HALIGN_CENTER:
+	text_pos_x -= te.width * 0.5;
+	break;
+    }
+
+    switch(v_align)
+    {
+    case VALIGN_BOTTOM:
+	text_pos_y -= te.y_bearing;
+	break;
+    case VALIGN_CENTER:
+	text_pos_y -= te.y_bearing * 0.5;
+	break;
+    case VALIGN_TOP:
+	break;
+    }
+
+    cairo_move_to(context, text_pos_x, text_pos_y);
+    cairo_show_text(context, label);
+}
+
+/******************************************************************************/
+
+
 void
 paint_title(cairo_t * context, double start_x, double start_y,
 	    double width, double height)
 {
-    cairo_text_extents_t title_te;
     const double title_font_size = height * 0.9;
 
     cairo_set_font_size(context, title_font_size);
-    cairo_text_extents(context, title_str, &title_te);
-    cairo_move_to(context, 0.5 * (width - title_te.width),
-		  title_font_size);
     cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
-    cairo_show_text(context, title_str);
+    draw_aligned_text(context, title_str,
+		      start_x + 0.5 * width, start_y + 0.5 * height,
+		      HALIGN_CENTER, VALIGN_CENTER);
 }
+
+/******************************************************************************/
+
+
+
+double
+pow_of_ten(int n)
+{
+    int index;
+    double result = 1.0;
+
+    if(n > 0)
+    {
+	for(index = 0; index < n; ++index)
+	    result *= 10.0;
+    } else if(n < 0)
+    {
+	for(index = 0; index < -n; ++index)
+	    result /= 10.0;
+    }
+
+    return result;
+}
+
+/******************************************************************************/
+
+
+/* Given some floating-point number NUM, return a "nice" number which
+ * is roughly equal to NUM. This is used to paint the ticks in the
+ * color bar. */
+double
+nice_number(double num, int round_flag)
+{
+    int sign = num >= 0.0 ? 1.0 : -1.0;
+    int exponent = (int) floor(log10(sign * num));
+    double fraction = sign * num / pow_of_ten(exponent); /* Always between 1 and 10 */
+    double nice_fraction;
+
+    if(round_flag)
+    {
+	if(fraction < 1.5)
+	    nice_fraction = 1.0;
+	else if(fraction < 3.0)
+	    nice_fraction = 2.0;
+	else if(fraction < 7.0)
+	    nice_fraction = 5.0;
+	else
+	    nice_fraction = 10.0;
+    } else {
+	if(fraction <= 1.0)
+	    nice_fraction = 1.0;
+	else if(fraction <= 2.0)
+	    nice_fraction = 2.0;
+	else if(fraction <= 5.0)
+	    nice_fraction = 5.0;
+	else
+	    nice_fraction = 10.0;
+    }
+    
+    return sign * nice_fraction * pow_of_ten(exponent);
+}
+
+/******************************************************************************/
+
+
+void
+draw_ticks(cairo_t * context,
+	   double start_x, double start_y,
+	   double width, double height,
+	   double tick_height,
+	   double min_level, double max_level)
+{
+    const int num_of_ticks = 5;
+    double range = nice_number(max_level - min_level, 0);
+    double delta = nice_number(range / (num_of_ticks - 1), 1);
+    double graph_min = floor(min_level / delta) * delta;
+    double graph_max = ceil(max_level / delta) * delta;
+    double num_of_frac_digits = -floor(log10(delta));
+    double x;
+
+    if(num_of_frac_digits < 0)
+	num_of_frac_digits = 0;
+	
+    cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
+    for(x = graph_min; x <= graph_max + 0.5 * delta; x += delta)
+    {
+	double pos;
+	char label[40];
+
+	if(x < min_level || x > max_level)
+	    continue;
+
+	pos = start_x + width * (x - min_level) / (max_level - min_level);
+	cairo_move_to(context, pos, start_y);
+	cairo_line_to(context, pos, start_y + tick_height);
+	cairo_stroke(context);
+
+	snprintf(label, sizeof(label) - 1,
+		 "%.4g", x);
+
+	draw_aligned_text(context, label,
+			  pos, start_y + height,
+			  HALIGN_CENTER, VALIGN_TOP);
+    }
+}
+
 
 /******************************************************************************/
 
@@ -605,12 +760,14 @@ paint_colorbar(cairo_t * context,
     double bar_start_x, bar_start_y;
     double bar_width, bar_height;
     const double text_margin_factor = 1.1;
-    double tick_height;
+    double tick_band_height;
 
     if(output_format == FMT_PNG)
-	tick_height = 6.0;
+	tick_band_height = 6.0;
     else
-	tick_height = 0.1;
+	tick_band_height = 0.1;
+
+    cairo_set_font_size(context, height * 0.4);
 
     if(measure_unit_str != NULL
        && measure_unit_str[0] != '\0')
@@ -628,22 +785,17 @@ paint_colorbar(cairo_t * context,
     bar_start_x = start_x;
     bar_start_y = start_y;
     bar_width = width;
-    bar_height = height;
+    bar_height = height * 0.5;
 
-    /* If zero is within the range, plot a small thick around it */
-    if(max_level > 0.0 && min_level < 0.0)
-    {
-	double zero_pos = 
-	    start_x + width * (0.0 - min_level) / (max_level - min_level);
-	cairo_move_to(context, zero_pos, start_y);
-	cairo_line_to(context, zero_pos, start_y + height);
-	cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
-	cairo_stroke(context);
-    }
-
-    /* Now plot the gradient */
     bar_start_x += min_te.width * text_margin_factor;
     bar_width -= (min_te.width + max_te.width) * text_margin_factor;
+
+    draw_ticks(context,
+	       bar_start_x, bar_start_y + bar_height - tick_band_height,
+	       bar_width, height - bar_height + tick_band_height,
+	       height - (bar_height + min_te.height) * 1.05,
+	       min_level, max_level);
+
     linear = cairo_pattern_create_linear (bar_start_x, 0.0,
 					  bar_start_x + bar_width, 0.0);
 
@@ -656,8 +808,8 @@ paint_colorbar(cairo_t * context,
     }
 
     cairo_rectangle(context,
-		    bar_start_x, bar_start_y + tick_height,
-		    bar_width, bar_height - 2 * tick_height);
+		    bar_start_x, bar_start_y,
+		    bar_width, bar_height - tick_band_height);
 
     /* Draw the gradient */
     cairo_set_source(context, linear);
@@ -674,20 +826,15 @@ paint_colorbar(cairo_t * context,
 	double baseline;
 	baseline =
 	    start_y
-	    + height * 0.5 
+	    + bar_height * 0.5
 	    - min_te.y_bearing 
 	    - min_te.height * 0.5;
 	cairo_move_to(context, start_x, baseline);
 	cairo_show_text(context, label_min);
 
-	 baseline =
-	     start_y
-	     + height * 0.5 
-	     - max_te.y_bearing 
-	     - max_te.height * 0.5;
-	 cairo_move_to(context, start_x + width - max_te.width,
-		       baseline);
-	 cairo_show_text(context, label_max);
+	cairo_move_to(context, start_x + width - max_te.width,
+		      baseline);
+	cairo_show_text(context, label_max);
     }
 }
 
@@ -858,7 +1005,6 @@ paint_map(const hpix_map_t * map)
 	hpix_free_bmp_projection(projection);
     }
 
-    cairo_set_font_size(context, colorbar_height * 0.8);
     paint_colorbar(context,
 		   0.01 * image_width, colorbar_start_y,
 		   image_width * 0.98, colorbar_height,
