@@ -218,6 +218,36 @@ parse_format_specification(const char * format_str)
 /******************************************************************************/
 
 
+double
+parse_double_from_options(void * list_of_options,
+			  char option_code,
+			  double default_value,
+			  const char * command_line_switch)
+{
+    const char * value_str;
+    double value = default_value;
+
+    if(gopt_arg(list_of_options, option_code, &value_str))
+    {
+	char * tail_ptr = NULL;
+	value = strtod(value_str, &tail_ptr);
+	if(! tail_ptr ||
+	   *tail_ptr != '\x0')
+	{
+	    fprintf(stderr,
+		    MSG_HEADER "invalid minimum '%s' specified with %s\n",
+		    value_str,
+		    command_line_switch);
+	    exit(EXIT_FAILURE);
+	}
+    }
+
+    return value;
+}
+
+/******************************************************************************/
+
+
 /* This code uses the `gopt` library to parse the command-line
  * options. It initializes a number of global variables declared at
  * the beginning of this file. */
@@ -301,99 +331,17 @@ parse_command_line(int argc, const char ** argv)
     if(gopt_arg(options, 'f', &value_str))
 	parse_format_specification(value_str);
 
-    /* --min VALUE */
-    if(gopt_arg(options, '_', &value_str))
-    {
-	tail_ptr = NULL;
-	min_value = strtod(value_str, &tail_ptr);
-	if(! tail_ptr ||
-	   *tail_ptr != '\x0')
-	{
-	    fprintf(stderr,
-		    MSG_HEADER "invalid minimum '%s' specified with --min\n",
-		    value_str);
-	    exit(EXIT_FAILURE);
-	}
-    } else
-	min_value = NAN;
-
-    /* --max VALUE */
-    if(gopt_arg(options, '^', &value_str))
-    {
-	tail_ptr = NULL;
-	max_value = strtod(value_str, &tail_ptr);
-	if(! tail_ptr ||
-	   *tail_ptr != '\x0')
-	{
-	    fprintf(stderr,
-		    MSG_HEADER "invalid maximum '%s' specified with --max\n",
-		    value_str);
-	    exit(EXIT_FAILURE);
-	}
-    } else
-	max_value = NAN;
-
-    /* --max VALUE */
-    if(gopt_arg(options, 's', &value_str))
-    {
-	tail_ptr = NULL;
-	scale_factor = strtod(value_str, &tail_ptr);
-	if(! tail_ptr ||
-	   *tail_ptr != '\x0')
-	{
-	    fprintf(stderr,
-		    MSG_HEADER "invalid scale factor '%s' specified with --scale\n",
-		    value_str);
-	    exit(EXIT_FAILURE);
-	}
-    } else
-	scale_factor = 1.0;
-
-    /* --scale VALUE */
-    if(gopt_arg(options, 's', &value_str))
-    {
-	tail_ptr = NULL;
-	scale_factor = strtod(value_str, &tail_ptr);
-	if(! tail_ptr ||
-	   *tail_ptr != '\x0')
-	{
-	    fprintf(stderr,
-		    MSG_HEADER "invalid scale factor '%s' specified with --scale\n",
-		    value_str);
-	    exit(EXIT_FAILURE);
-	}
-    } else
-	scale_factor = 1.0;
-
-    /* --tick-font-size VALUE */
-    if(gopt_arg(options, '1', &value_str))
-    {
-	tail_ptr = NULL;
-	tick_font_size = strtod(value_str, &tail_ptr);
-	if(! tail_ptr ||
-	   *tail_ptr != '\x0')
-	{
-	    fprintf(stderr,
-		    MSG_HEADER "invalid scale factor '%s' specified with --scale\n",
-		    value_str);
-	    exit(EXIT_FAILURE);
-	}
-    }
-
-    /* --title-font-size VALUE */
-    if(gopt_arg(options, '2', &value_str))
-    {
-	tail_ptr = NULL;
-	title_font_size = strtod(value_str, &tail_ptr);
-	if(! tail_ptr ||
-	   *tail_ptr != '\x0')
-	{
-	    fprintf(stderr,
-		    MSG_HEADER "invalid scale factor '%s' specified with --scale\n",
-		    value_str);
-	    exit(EXIT_FAILURE);
-	}
-    }
+    /* Here we parse all those options of the form --name VALUE, with
+     * VALUE being a floating-point number. */
+    min_value = parse_double_from_options(options, '_', NAN, "--min");
+    max_value = parse_double_from_options(options, '^', NAN, "--max");
+    scale_factor = parse_double_from_options(options, 's', 1.0, "--scale");
+    tick_font_size = parse_double_from_options(options, '1',
+					       tick_font_size,
+					       "--tick-font-size");
+    title_font_size = parse_double_from_options(options, '2',
+						title_font_size,
+						"--title-font-size");
 
     /* --measure-unit STRING */
     gopt_arg(options, 'm', &measure_unit_str);
