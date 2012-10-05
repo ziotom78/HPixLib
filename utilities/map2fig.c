@@ -121,10 +121,9 @@ const char * input_file_name = NULL;
 unsigned short column_number = 1;
 
 /* Relative height of the title and of the color bar. Together with
- * the height of the map, their sum is 1.0. It would be nice to make
- * these numbers customizable via command-line switches. */
-const float title_height_fraction = 0.1;
-const float colorbar_height_fraction = 0.1;
+ * the height of the map, their sum is 1.0. */
+float title_height_fraction = 0.1;
+float colorbar_height_fraction = 0.1;
 
 /* Extrema of the color bar, optinally set by `--min` and `--max`. If
  * the user does not specify them, they will be initialized to NAN. In
@@ -168,6 +167,11 @@ print_usage(const char * program_name)
     puts("  -s, --scale=NUM           Multiply the pixel values by NUM");
     puts("                            (useful e.g. to convert K into mK)");
     puts("  -t, --title=TITLE         Title to be written");
+    puts("  --tick-font-size=NUM      Height of the tick labels in the");
+    puts("                            color bar (in pixels if exporting to");
+    puts("                            PNG, in dots otherwise)");
+    puts("  --title-font-size=NUM     Height of the title (in pixels if");
+    puts("                            exporting to PNG, in dots otherwise)");
     puts("  -v, --version             Print version number and exit");
     puts("  -h, --help                Print this help");
 }
@@ -222,6 +226,9 @@ parse_command_line(int argc, const char ** argv)
 {
     const char * value_str;
     char * tail_ptr;
+    double tick_font_size = NAN;
+    double title_font_size = NAN;
+
     void * options =
 	gopt_sort(&argc, argv,
 		  gopt_start(
@@ -238,6 +245,8 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('^', GOPT_ARG, gopt_shorts(0), gopt_longs("max")),
 		      gopt_option('s', GOPT_ARG, gopt_shorts('s'), gopt_longs("scale")),
 		      gopt_option('t', GOPT_ARG, gopt_shorts('t'), gopt_longs("title")),
+		      gopt_option('1', GOPT_ARG, gopt_shorts(0), gopt_longs("tick-font-size")),
+		      gopt_option('2', GOPT_ARG, gopt_shorts(0), gopt_longs("title-font-size")),
 		      gopt_option('f', GOPT_ARG, gopt_shorts('f'), gopt_longs("format"))));
 
     /* --help */
@@ -324,7 +333,6 @@ parse_command_line(int argc, const char ** argv)
     } else
 	max_value = NAN;
 
-
     /* --max VALUE */
     if(gopt_arg(options, 's', &value_str))
     {
@@ -340,6 +348,52 @@ parse_command_line(int argc, const char ** argv)
 	}
     } else
 	scale_factor = 1.0;
+
+    /* --scale VALUE */
+    if(gopt_arg(options, 's', &value_str))
+    {
+	tail_ptr = NULL;
+	scale_factor = strtod(value_str, &tail_ptr);
+	if(! tail_ptr ||
+	   *tail_ptr != '\x0')
+	{
+	    fprintf(stderr,
+		    MSG_HEADER "invalid scale factor '%s' specified with --scale\n",
+		    value_str);
+	    exit(EXIT_FAILURE);
+	}
+    } else
+	scale_factor = 1.0;
+
+    /* --tick-font-size VALUE */
+    if(gopt_arg(options, '1', &value_str))
+    {
+	tail_ptr = NULL;
+	tick_font_size = strtod(value_str, &tail_ptr);
+	if(! tail_ptr ||
+	   *tail_ptr != '\x0')
+	{
+	    fprintf(stderr,
+		    MSG_HEADER "invalid scale factor '%s' specified with --scale\n",
+		    value_str);
+	    exit(EXIT_FAILURE);
+	}
+    }
+
+    /* --title-font-size VALUE */
+    if(gopt_arg(options, '2', &value_str))
+    {
+	tail_ptr = NULL;
+	title_font_size = strtod(value_str, &tail_ptr);
+	if(! tail_ptr ||
+	   *tail_ptr != '\x0')
+	{
+	    fprintf(stderr,
+		    MSG_HEADER "invalid scale factor '%s' specified with --scale\n",
+		    value_str);
+	    exit(EXIT_FAILURE);
+	}
+    }
 
     /* --measure-unit STRING */
     gopt_arg(options, 'm', &measure_unit_str);
@@ -365,6 +419,58 @@ parse_command_line(int argc, const char ** argv)
 	fprintf(stderr,
 		MSG_HEADER "reading maps from stdin is not supported yet\n"
 		MSG_HEADER "(hint: specify the name of a FITS file to be read)\n");
+	exit(EXIT_FAILURE);
+    }
+
+    switch(output_format)
+    {
+    case FMT_PNG:
+	/* Pixels */
+	image_width = 750;
+	image_height = 500;
+	break;
+
+    case FMT_PS:
+    case FMT_EPS:
+    case FMT_PDF:
+    case FMT_SVG:
+	/* Points, that is, 1/72 inches */
+	image_width = 7.5 * 72;
+	image_height = 5.0 * 72;
+	break;
+
+    default:
+	assert(0);
+    }
+
+    if(! isnan(title_font_size))
+    {
+	if(title_font_size <= 0.0)
+	{
+	    fputs(MSG_HEADER "the size of the title font must be positive\n",
+		  stderr);
+	    exit(EXIT_FAILURE);
+	}
+	title_height_fraction = title_font_size / image_height * 1.05;
+    }
+
+    if(! isnan(tick_font_size))
+    {
+	if(title_font_size <= 0.0)
+	{
+	    fputs(MSG_HEADER "the size of the font of the colorbar labels\n"
+		  MSG_HEADER "must be positive\n",
+		  stderr);
+	    exit(EXIT_FAILURE);
+	}
+	colorbar_height_fraction = tick_font_size / image_height * 2.10;
+    }
+
+    if(title_height_fraction + colorbar_height_fraction >= 0.9)
+    {
+	fprintf(stderr,
+		MSG_HEADER "too large title/tick font sizes\n"
+		MSG_HEADER "try to enlarge the image using --geometry");
 	exit(EXIT_FAILURE);
     }
 
@@ -641,10 +747,10 @@ draw_aligned_text(cairo_t * context, const char * label,
     switch(v_align)
     {
     case VALIGN_BOTTOM:
-	text_pos_y -= te.y_bearing;
+	text_pos_y += te.height;
 	break;
     case VALIGN_CENTER:
-	text_pos_y -= te.y_bearing * 0.5;
+	text_pos_y += te.height * 0.5;
 	break;
     case VALIGN_TOP:
 	break;
@@ -706,6 +812,7 @@ nice_number(double num, int round_flag)
     int exponent = (int) floor(log10(sign * num));
     double fraction = sign * num / pow_of_ten(exponent); /* Always between 1 and 10 */
     double nice_fraction;
+    double result;
 
     if(round_flag)
     {
@@ -727,8 +834,30 @@ nice_number(double num, int round_flag)
 	else
 	    nice_fraction = 10.0;
     }
-    
-    return sign * nice_fraction * pow_of_ten(exponent);
+
+    result = sign * nice_fraction * pow_of_ten(exponent);
+
+    /* Prevent slight roundoff errors */
+    if(fabs(result / pow_of_ten(exponent)) < 1e-6)
+	return 0.0;
+    else
+	return result;
+}
+
+/******************************************************************************/
+
+
+void
+format_number(char * buf, size_t size, double number)
+{
+    if(measure_unit_str != NULL
+       && measure_unit_str[0] != '\0')
+    {
+	snprintf(buf, size, "%.4g %s", number, measure_unit_str);
+    } else {
+	snprintf(buf, size, "%.4g", number);
+    }
+    buf[size - 1] = 0;
 }
 
 /******************************************************************************/
@@ -757,6 +886,7 @@ draw_ticks(cairo_t * context,
     {
 	double pos;
 	char label[40];
+	cairo_text_extents_t te;
 
 	if(x < min_level || x > max_level)
 	    continue;
@@ -766,11 +896,17 @@ draw_ticks(cairo_t * context,
 	cairo_line_to(context, pos, start_y + tick_height);
 	cairo_stroke(context);
 
-	snprintf(label, sizeof(label) - 1,
-		 "%.4g", x);
+	format_number(label, sizeof(label) + 1, x);
 
+	/* We need to decide which is the baseline of the font. The
+	 * function `draw_aligned_text` does not include the space
+	 * needed below the baseline (e.g. the tail of the letter
+	 * 'y'). But in this case we must compensate for it, as these
+	 * letters are going to be painted right along the bottom
+	 * border of the image. */
+	cairo_text_extents(context, label, &te);
 	draw_aligned_text(context, label,
-			  pos, start_y + height,
+			  pos, start_y + height - (te.height + te.y_bearing),
 			  HALIGN_CENTER, VALIGN_TOP);
     }
 }
@@ -801,23 +937,16 @@ paint_colorbar(cairo_t * context,
 
     cairo_set_font_size(context, height * 0.4);
 
-    if(measure_unit_str != NULL
-       && measure_unit_str[0] != '\0')
-    {
-	sprintf(label_min, "%.4g %s", min_level, measure_unit_str);
-	sprintf(label_max, "%.4g %s", max_level, measure_unit_str);
-    } else {
-	sprintf(label_min, "%.4g", min_level);
-	sprintf(label_max, "%.4g", max_level);
-    }
+    format_number(label_min, sizeof(label_min) + 1, min_level);
+    format_number(label_max, sizeof(label_max) + 1, max_level);
 
-    cairo_text_extents (context, label_min, &min_te);
-    cairo_text_extents (context, label_max, &max_te);
+    cairo_text_extents(context, label_min, &min_te);
+    cairo_text_extents(context, label_max, &max_te);
 
     bar_start_x = start_x;
-    bar_start_y = start_y;
+    bar_start_y = start_y + height * 0.05;
     bar_width = width;
-    bar_height = height * 0.5;
+    bar_height = height * 0.45; /* = 0.5 - 0.05 (the number above) */
 
     bar_start_x += min_te.width * text_margin_factor;
     bar_width -= (min_te.width + max_te.width) * text_margin_factor;
@@ -1077,27 +1206,6 @@ main(int argc, const char ** argv)
     map = load_map();
     if(verbose_flag)
 	fprintf(stderr, MSG_HEADER "map loaded\n");
-
-    switch(output_format)
-    {
-    case FMT_PNG:
-	/* Pixels */
-	image_width = 750;
-	image_height = 500;
-	break;
-
-    case FMT_PS:
-    case FMT_EPS:
-    case FMT_PDF:
-    case FMT_SVG:
-	/* Points, that is, 1/72 inches */
-	image_width = 7.5 * 72;
-	image_height = 5.0 * 72;
-	break;
-
-    default:
-	assert(0);
-    }
 
     if(verbose_flag)
 	fprintf(stderr, MSG_HEADER "painting map\n");
