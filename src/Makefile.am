@@ -31,6 +31,15 @@
 # Maurizio Tomasi.
 
 lib_LTLIBRARIES = libhpix.la
+
+LIBPSHT_SOURCES = \
+	psht.c \
+	ylmgen_c.c \
+	c_utils.c \
+	fftpack.c \
+	ls_fft.c \
+	bluestein.c
+
 libhpix_la_SOURCES = \
 	mem.c \
 	bitmap.c \
@@ -39,7 +48,8 @@ libhpix_la_SOURCES = \
 	map.c \
 	io.c \
 	positions.c \
-	query_disc.c
+	query_disc.c \
+	$(LIBPSHT_SOURCES)
 
 libhpix_la_LDFLAGS = -version-info 0:0:0
 
