@@ -37,7 +37,7 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     double * pixels;
     long nside;
     long elements_per_row;
-    hpix_coordinates_t coord_sys;
+    hpix_ordering_t ordering;
 
     assert(fptr);
     assert(map);
@@ -73,13 +73,11 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     /* Read the array */
     switch(ordering_key[0])
     {
-    case 'G': coord_sys = HPXLIB_COORD_GALACTIC; break;
-    case 'E': coord_sys = HPXLIB_COORD_ECLIPTIC; break;
-    case 'Q': coord_sys = HPXLIB_COORD_CUSTOM; break;
-    default: coord_sys = HPXLIB_COORD_CELESTIAL; break;
+    case 'N': ordering = HPIX_ORDER_NEST;
+    default: ordering = HPIX_ORDER_RING; break;
     }
 
-    *map = hpix_create_map(nside, coord_sys);
+    *map = hpix_create_map(nside, ordering);
     pixels = hpix_map_pixels(*map);
     for (row_idx = 0; row_idx < num_of_rows; ++row_idx)
     {
@@ -162,16 +160,16 @@ hpix_create_empty_fits_table_for_map(fitsfile * fptr,
     tunit[0] = tunit[1] = tunit[2] = (char *) measure_unit;
     nside = hpix_map_nside(template_map);
     num_of_pixels = hpix_map_num_of_pixels(template_map);
-    if (hpix_map_ordering(template_map) == HPXLIB_ORDER_NEST)
+    if (hpix_map_ordering(template_map) == HPIX_ORDER_NEST)
 	strcpy(ordering_key, "NESTED");
     else
 	strcpy(ordering_key, "RING");
 
     switch(hpix_map_coordinate_system(template_map))
     {
-    case HPXLIB_COORD_ECLIPTIC: coord_sys_key[0] = 'E'; break;
-    case HPXLIB_COORD_GALACTIC: coord_sys_key[0] = 'G'; break;
-    case HPXLIB_COORD_CUSTOM: coord_sys_key[0] = 'Q'; break;
+    case HPIX_COORD_ECLIPTIC: coord_sys_key[0] = 'E'; break;
+    case HPIX_COORD_GALACTIC: coord_sys_key[0] = 'G'; break;
+    case HPIX_COORD_CUSTOM: coord_sys_key[0] = 'Q'; break;
     default: coord_sys_key[0] = 'C';
     }
 

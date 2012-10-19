@@ -26,7 +26,7 @@
 int
 main(void)
 {
-    hpix_map_t * map_to_save = hpix_create_map(4, HPXLIB_ORDER_RING);
+    hpix_map_t * map_to_save = hpix_create_map(4, HPIX_ORDER_RING);
     hpix_map_t * loaded_map;
     size_t index;
     int status = 0;

@@ -23,8 +23,8 @@ hpix_create_map(hpix_nside_t nside, hpix_ordering_t ordering)
 {
     hpix_map_t * map = (hpix_map_t *) hpix_malloc(sizeof(hpix_map_t), 1);
 
-    map->order = HPXLIB_ORDER_RING;
-    map->coord = HPXLIB_COORD_GALACTIC;
+    map->order = HPIX_ORDER_RING;
+    map->coord = HPIX_COORD_GALACTIC;
     map->nside = nside;
     map->pixels = hpix_calloc(sizeof(map->pixels[0]),
 			      hpix_nside_to_npixel(nside));
@@ -40,7 +40,7 @@ hpix_create_map_from_array(double * array,
     hpix_map_t * map = (hpix_map_t *) hpix_malloc(sizeof(hpix_map_t), 1);
 
     map->order = ordering;
-    map->coord = HPXLIB_COORD_GALACTIC;
+    map->coord = HPIX_COORD_GALACTIC;
     map->nside = hpix_npixel_to_nside(num_of_elements);
     map->pixels = array;
 
