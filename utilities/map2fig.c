@@ -585,7 +585,7 @@ get_palette_color(double level, color_t * color_ptr)
  * pixel value in the map into a number in [0.0, 1.0]). The value of
  * `bitmap` is the return value of `hpix_bmp_trace_bitmap`. Finally,
  * `width` and `height` give the resolution (in pixel) of the image
- * surface. The Mollview plot fits into the largest ellipse that can
+ * surface. The Mollweide plot fits into the largest ellipse that can
  * be enclosed in the rectangle (0,0) - (width, height). */
 cairo_surface_t *
 plot_bitmap_to_cairo_surface(double map_min, double map_max,
