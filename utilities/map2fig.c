@@ -580,7 +580,7 @@ get_palette_color(double level, color_t * color_ptr)
 
 
 /* This function creates a Cairo image surface that contains the
- * Mollview projection of the map. The values `map_min` and `map_max`
+ * Mollweide projection of the map. The values `map_min` and `map_max`
  * are used to rescale every value in the map (i.e. to convert every
  * pixel value in the map into a number in [0.0, 1.0]). The value of
  * `bitmap` is the return value of `hpix_bmp_trace_bitmap`. Finally,
