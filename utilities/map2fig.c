@@ -1079,18 +1079,26 @@ lay_out_page(rect_t * title_rect, rect_t * map_rect, rect_t * colorbar_rect)
 {
     title_rect->x = title_rect->y = 0.0;
     title_rect->width = image_width;
-    title_rect->height = title_height_fraction * image_height;
+    if(title_str != NULL && title_str[0] != 0)
+	title_rect->height = title_height_fraction * image_height;
+    else
+	title_rect->height = 0.0;
 
     map_rect->x = 0.0;
     map_rect->y = title_rect->y + title_rect->height;
     map_rect->width = image_width;
-    map_rect->height = image_height
-	* (1 - title_height_fraction - colorbar_height_fraction);
+    /* Leave map_rect->height to the end */
 
     colorbar_rect->x = 0.0;
-    colorbar_rect->y = map_rect->y + map_rect->height;
+    /* Leave colorbar_rect->y to the end */
     colorbar_rect->width = image_width;
-    colorbar_rect->height = image_height * colorbar_height_fraction;
+    if(draw_color_bar_flag)
+	colorbar_rect->height = image_height * colorbar_height_fraction;
+    else
+	colorbar_rect->height = 0.0;
+
+    map_rect->height = image_height - title_rect->height - colorbar_rect->height;
+    colorbar_rect->y = map_rect->y + map_rect->height;
 }
 
 /******************************************************************************/
@@ -1150,10 +1158,14 @@ paint_and_save_figure(const hpix_map_t * map)
 	cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
 	cairo_paint(context);
     }
-    
-    paint_title(context, &title_rect);
+
+    if(title_rect.height > 0.0)
+	paint_title(context, &title_rect);
+
     paint_map(context, &map_rect, map, min, max);
-    paint_colorbar(context, &colorbar_rect, min, max);
+
+    if(colorbar_rect.height > 0.0)
+	paint_colorbar(context, &colorbar_rect, min, max);
 
     if(output_format == FMT_PNG)
     {
