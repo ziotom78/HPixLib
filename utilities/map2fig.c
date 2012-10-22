@@ -145,6 +145,12 @@ double image_height;
 double bitmap_columns = 600;
 double bitmap_rows = 400;
 
+/* This structure represents a rectangle on the Cairo surface. It is
+ * used to lay out things on the image. */
+typedef struct {
+    double x, y;
+    double width, height;
+} rect_t;
 
 /******************************************************************************/
 
@@ -712,15 +718,15 @@ draw_aligned_text(cairo_t * context, const char * label,
 
 
 void
-paint_title(cairo_t * context, double start_x, double start_y,
-	    double width, double height)
+paint_title(cairo_t * context, const rect_t * region)
 {
-    const double title_font_size = height * 0.9;
+    const double title_font_size = region->height * 0.9;
 
     cairo_set_font_size(context, title_font_size);
     cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
     draw_aligned_text(context, title_str,
-		      start_x + 0.5 * width, start_y + 0.5 * height,
+		      region->x + 0.5 * region->width,
+		      region->y + 0.5 * region->height,
 		      HALIGN_CENTER, VALIGN_CENTER);
 }
 
@@ -795,6 +801,70 @@ nice_number(double num, int round_flag)
 /******************************************************************************/
 
 
+/* Draw the Mollweide projection of the map on the rectangle specified
+ * by `map_rect' on the Cairo surface specified by `context'. The
+ * values of `min' and `max' specify the minimum and maximum values to
+ * be used in plotting the map, and are used to set the color scale.
+ * This function is a nice wrapper around
+ * `plot_bitmap_to_cairo_surface', which is more low-level because (1)
+ * it fills the whole Cairo surface, and (2) it fills the whole
+ * rectangular surface, instead of just an ellipse. (The latter seems
+ * to be due to a bug in Cairo.) */
+void
+paint_map(cairo_t * context, const rect_t * map_rect,
+	  const hpix_map_t * map, double min, double max)
+{
+    hpix_bmp_projection_t * projection;
+    cairo_surface_t * map_surface;
+    double * map_bitmap;
+    const double reduce_factor = 1.02;
+
+    /* First produce a cairo image surface with the map in it */
+    projection = hpix_create_bmp_projection((int) (bitmap_columns + .5),
+					    (int) (bitmap_rows + .5));
+    map_bitmap = hpix_bmp_trace_bitmap(projection, map, NULL, NULL);
+    map_surface =
+	plot_bitmap_to_cairo_surface(min, max,
+				     map_bitmap,
+				     hpix_bmp_projection_width(projection),
+				     hpix_bmp_projection_height(projection));
+    hpix_free(map_bitmap);
+
+    /* Now copy the cairo surface into the surface we're currently
+     * using to draw the figure */
+    cairo_save(context);
+    
+    /* These transformations are useful for the map containing the
+     * bitmap (i.e. the source in the copy operation). */
+    cairo_translate(context, 0.0, map_rect->y);
+    cairo_scale(context,
+		image_width / cairo_image_surface_get_width(map_surface),
+		map_rect->height  / cairo_image_surface_get_height(map_surface));
+    cairo_set_source_surface(context, map_surface,
+			     0.0, 0.0);
+    
+    /* Now we need two more transformations in order to draw an
+     * ellipse out of `cairo_arc'. */
+    cairo_translate(context,
+		    cairo_image_surface_get_width(map_surface) / 2.0,
+		    cairo_image_surface_get_height(map_surface) / 2.0);
+    cairo_scale(context,
+		cairo_image_surface_get_width(map_surface) / 2.0,
+		cairo_image_surface_get_height(map_surface) / 2.0);
+    
+    /* Fill an ellipse with the content of `map_surface'. */
+    cairo_arc(context, 0.0, 0.0, 1.0, 0.0, 2 * M_PI);
+    cairo_fill(context);
+    cairo_restore(context);
+    
+    /* Cleanup */
+    cairo_surface_destroy(map_surface);
+    hpix_free_bmp_projection(projection);
+}
+
+/******************************************************************************/
+
+
 void
 format_number(char * buf, size_t size, double number,
 	      const char * measure_unit)
@@ -855,7 +925,7 @@ draw_ticks(cairo_t * context,
 	 * border of the image. */
 	cairo_text_extents(context, label, &te);
 	draw_aligned_text(context, label,
-			  pos, start_y + height - (te.height + te.y_bearing),
+			  pos, start_y + height,
 			  HALIGN_CENTER, VALIGN_TOP);
     }
 }
@@ -866,8 +936,7 @@ draw_ticks(cairo_t * context,
 
 void
 paint_colorbar(cairo_t * context,
-	       double start_x, double start_y,
-	       double width, double height,
+	       const rect_t * colorbar_rect,
 	       double min_level, double max_level)
 {
     cairo_pattern_t * linear;
@@ -884,7 +953,7 @@ paint_colorbar(cairo_t * context,
     else
 	tick_band_height = 0.1;
 
-    cairo_set_font_size(context, height * 0.4);
+    cairo_set_font_size(context, colorbar_rect->height * 0.4);
 
     format_number(label_min, sizeof(label_min) + 1, min_level, measure_unit_str);
     format_number(label_max, sizeof(label_max) + 1, max_level, measure_unit_str);
@@ -892,18 +961,18 @@ paint_colorbar(cairo_t * context,
     cairo_text_extents(context, label_min, &min_te);
     cairo_text_extents(context, label_max, &max_te);
 
-    bar_start_x = start_x;
-    bar_start_y = start_y + height * 0.05;
-    bar_width = width;
-    bar_height = height * 0.45; /* = 0.5 - 0.05 (the number above) */
+    bar_start_x = colorbar_rect->x;
+    bar_start_y = colorbar_rect->y + colorbar_rect->height * 0.05;
+    bar_width = colorbar_rect->width;
+    bar_height = colorbar_rect->height * 0.45; /* = 0.5 - 0.05 (the number above) */
 
     bar_start_x += min_te.width * text_margin_factor;
     bar_width -= (min_te.width + max_te.width) * text_margin_factor;
 
     draw_ticks(context,
 	       bar_start_x, bar_start_y + bar_height - tick_band_height,
-	       bar_width, height - bar_height + tick_band_height,
-	       height - (bar_height + min_te.height) * 1.05,
+	       bar_width, colorbar_rect->height - bar_height + tick_band_height,
+	       colorbar_rect->height - (bar_height + min_te.height) * 1.05,
 	       min_level, max_level);
 
     linear = cairo_pattern_create_linear (bar_start_x, 0.0,
@@ -935,14 +1004,15 @@ paint_colorbar(cairo_t * context,
     {
 	double baseline;
 	baseline =
-	    start_y
+	    colorbar_rect->y
 	    + bar_height * 0.5
 	    - min_te.y_bearing 
 	    - min_te.height * 0.5;
-	cairo_move_to(context, start_x, baseline);
+	cairo_move_to(context, colorbar_rect->x, baseline);
 	cairo_show_text(context, label_min);
 
-	cairo_move_to(context, start_x + width - max_te.width,
+	cairo_move_to(context,
+		      colorbar_rect->x + colorbar_rect->width - max_te.width,
 		      baseline);
 	cairo_show_text(context, label_max);
     }
@@ -1001,23 +1071,41 @@ create_surface(double width, double height)
 /******************************************************************************/
 
 
+/* Determine the position and extents of the three elements of the
+ * image, that is, the title, the Mollweide projection, and the color
+ * bar. */
 void
-paint_map(const hpix_map_t * map)
+lay_out_page(rect_t * title_rect, rect_t * map_rect, rect_t * colorbar_rect)
+{
+    title_rect->x = title_rect->y = 0.0;
+    title_rect->width = image_width;
+    title_rect->height = title_height_fraction * image_height;
+
+    map_rect->x = 0.0;
+    map_rect->y = title_rect->y + title_rect->height;
+    map_rect->width = image_width;
+    map_rect->height = image_height
+	* (1 - title_height_fraction - colorbar_height_fraction);
+
+    colorbar_rect->x = 0.0;
+    colorbar_rect->y = map_rect->y + map_rect->height;
+    colorbar_rect->width = image_width;
+    colorbar_rect->height = image_height * colorbar_height_fraction;
+}
+
+/******************************************************************************/
+
+
+void
+paint_and_save_figure(const hpix_map_t * map)
 {
     cairo_surface_t * surface;
     cairo_t * context;
-    hpix_bmp_projection_t * projection;
     double min, max;
 
-    const double title_start_y = 0.0;
-    const double map_start_y = title_height_fraction * image_height;
-    const double colorbar_start_y = image_height
-	* (1 - colorbar_height_fraction);
-
-    const double title_height = map_start_y;
-    const double map_height = image_height
-	* (1 - title_height_fraction - colorbar_height_fraction);
-    const double colorbar_height = image_height * colorbar_height_fraction;
+    rect_t title_rect;
+    rect_t map_rect;
+    rect_t colorbar_rect;
 
     find_map_extrema(map, &min, &max);
     if(! isnan(min_value))
@@ -1046,8 +1134,10 @@ paint_map(const hpix_map_t * map)
     surface = create_surface(image_width, image_height);
     context = cairo_create(surface);
 
+    lay_out_page(&title_rect, &map_rect, &colorbar_rect);
+
     if(output_format == FMT_PNG)
-	bitmap_rows = map_height;
+	bitmap_rows = map_rect.height;
 
     /* Draw the background */
     if(no_background_flag)
@@ -1060,65 +1150,10 @@ paint_map(const hpix_map_t * map)
 	cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
 	cairo_paint(context);
     }
-
-    /* Draw the title */
-    paint_title(context,
-		0.0, title_start_y,
-		image_width, title_height);
-
-    /* Plot the map */
-    {
-	cairo_surface_t * map_surface;
-	double * map_bitmap;
-	const double reduce_factor = 1.02;
-
-	/* First produce a cairo image surface with the map in it */
-	projection = hpix_create_bmp_projection((int) (bitmap_columns + .5),
-						(int) (bitmap_rows + .5));
-	map_bitmap = hpix_bmp_trace_bitmap(projection, map, NULL, NULL);
-	map_surface =
-	    plot_bitmap_to_cairo_surface(min, max,
-					 map_bitmap,
-					 hpix_bmp_projection_width(projection),
-					 hpix_bmp_projection_height(projection));
-	hpix_free(map_bitmap);
-
-	/* Now copy the cairo surface into the surface we're currently
-	 * using to draw the figure */
-	cairo_save(context);
-
-	/* These transformations are useful for the map containing the
-	 * bitmap (i.e. the source in the copy operation). */
-	cairo_translate(context, 0.0, map_start_y);
-	cairo_scale(context,
-		    image_width / cairo_image_surface_get_width(map_surface),
-		    map_height  / cairo_image_surface_get_height(map_surface));
-	cairo_set_source_surface(context, map_surface,
-	  0.0, 0.0);
-
-	/* Now we need two more transformations in order to draw an
-	 * ellipse out of `cairo_arc'. */
-	cairo_translate(context,
-			cairo_image_surface_get_width(map_surface) / 2.0,
-			cairo_image_surface_get_height(map_surface) / 2.0);
-	cairo_scale(context,
-		    cairo_image_surface_get_width(map_surface) / 2.0,
-		    cairo_image_surface_get_height(map_surface) / 2.0);
-
-	/* Fill an ellipse with the content of `map_surface'. */
-	cairo_arc(context, 0.0, 0.0, 1.0, 0.0, 2 * M_PI);
-	cairo_fill(context);
-	cairo_restore(context);
-
-	/* Cleanup */
-	cairo_surface_destroy(map_surface);
-	hpix_free_bmp_projection(projection);
-    }
-
-    paint_colorbar(context,
-		   0.01 * image_width, colorbar_start_y,
-		   image_width * 0.98, colorbar_height,
-		   min, max);
+    
+    paint_title(context, &title_rect);
+    paint_map(context, &map_rect, map, min, max);
+    paint_colorbar(context, &colorbar_rect, min, max);
 
     if(output_format == FMT_PNG)
     {
@@ -1158,7 +1193,7 @@ main(int argc, const char ** argv)
 
     if(verbose_flag)
 	fprintf(stderr, MSG_HEADER "painting map\n");
-    paint_map(map);
+    paint_and_save_figure(map);
 
     hpix_free_map(map);
 
