@@ -905,7 +905,6 @@ draw_ticks(cairo_t * context,
     {
 	double pos;
 	char label[40];
-	cairo_text_extents_t te;
 
 	if(x < min_level || x > max_level)
 	    continue;
@@ -917,13 +916,6 @@ draw_ticks(cairo_t * context,
 
 	format_number(label, sizeof(label) + 1, x, NULL);
 
-	/* We need to decide which is the baseline of the font. The
-	 * function `draw_aligned_text` does not include the space
-	 * needed below the baseline (e.g. the tail of the letter
-	 * 'y'). But in this case we must compensate for it, as these
-	 * letters are going to be painted right along the bottom
-	 * border of the image. */
-	cairo_text_extents(context, label, &te);
 	draw_aligned_text(context, label,
 			  pos, start_y + height,
 			  HALIGN_CENTER, VALIGN_TOP);
@@ -939,21 +931,39 @@ paint_colorbar(cairo_t * context,
 	       const rect_t * colorbar_rect,
 	       double min_level, double max_level)
 {
+    /* Here is the inner layout of the colorbar:
+     *
+     * +---+--------------------------------------------------+---+
+     * |   |                                                  |   |
+     * | 1 |                        2                         | 3 |
+     * |   |                                                  |   |
+     * +---+--------------------------------------------------+---+
+     * |                            4                             |
+     * +----------------------------------------------------------+
+     * |                                                          |
+     * |                            5                             |
+     * |                                                          |
+     * +----------------------------------------------------------+
+     *
+     * 1. Minimum value of the color bar
+     * 2. The gradient-filled rectangle
+     * 3. Maximum value of the color bar
+     * 4. Space for the vertical tick marks
+     * 5. Values associated with each tick mark
+     */
+
     cairo_pattern_t * linear;
     size_t idx;
     char label_min[20], label_max[20];
     cairo_text_extents_t min_te, max_te;
-    double bar_start_x, bar_start_y;
-    double bar_width, bar_height;
     const double text_margin_factor = 1.1;
+    /* This is space 2. in the diagram above */
+    rect_t bar_only_rect;
+    /* This is the height of space 4. in the diagram above */
     double tick_band_height;
 
-    if(output_format == FMT_PNG)
-	tick_band_height = 6.0;
-    else
-	tick_band_height = 0.1;
-
     cairo_set_font_size(context, colorbar_rect->height * 0.4);
+    cairo_set_line_width(context, 1.0);
 
     format_number(label_min, sizeof(label_min) + 1, min_level, measure_unit_str);
     format_number(label_max, sizeof(label_max) + 1, max_level, measure_unit_str);
@@ -961,22 +971,31 @@ paint_colorbar(cairo_t * context,
     cairo_text_extents(context, label_min, &min_te);
     cairo_text_extents(context, label_max, &max_te);
 
-    bar_start_x = colorbar_rect->x;
-    bar_start_y = colorbar_rect->y + colorbar_rect->height * 0.05;
-    bar_width = colorbar_rect->width;
-    bar_height = colorbar_rect->height * 0.45; /* = 0.5 - 0.05 (the number above) */
+    bar_only_rect.x = colorbar_rect->x;
+    bar_only_rect.y = colorbar_rect->y;
+    bar_only_rect.width = colorbar_rect->width;
+    bar_only_rect.height = colorbar_rect->height * 0.4;
 
-    bar_start_x += min_te.width * text_margin_factor;
-    bar_width -= (min_te.width + max_te.width) * text_margin_factor;
+    bar_only_rect.x += min_te.width * text_margin_factor;
+    bar_only_rect.width -= (min_te.width + max_te.width) * text_margin_factor;
+
+    if(output_format == FMT_PNG)
+	tick_band_height = 6.0;
+    else
+	tick_band_height = 0.1;
+
+    tick_band_height = colorbar_rect->height * 0.1;
 
     draw_ticks(context,
-	       bar_start_x, bar_start_y + bar_height - tick_band_height,
-	       bar_width, colorbar_rect->height - bar_height + tick_band_height,
-	       colorbar_rect->height - (bar_height + min_te.height) * 1.05,
+	       bar_only_rect.x,
+	       bar_only_rect.y + bar_only_rect.height,
+	       bar_only_rect.width,
+	       colorbar_rect->height - bar_only_rect.height,
+	       tick_band_height,
 	       min_level, max_level);
 
-    linear = cairo_pattern_create_linear (bar_start_x, 0.0,
-					  bar_start_x + bar_width, 0.0);
+    linear = cairo_pattern_create_linear (bar_only_rect.x, 0.0,
+					  bar_only_rect.x + bar_only_rect.width, 0.0);
 
     for(idx = 0; idx < num_of_levels; ++idx)
     {
@@ -987,8 +1006,8 @@ paint_colorbar(cairo_t * context,
     }
 
     cairo_rectangle(context,
-		    bar_start_x, bar_start_y,
-		    bar_width, bar_height - tick_band_height);
+		    bar_only_rect.x, bar_only_rect.y,
+		    bar_only_rect.width, bar_only_rect.height);
 
     /* Draw the gradient */
     cairo_set_source(context, linear);
@@ -1005,7 +1024,7 @@ paint_colorbar(cairo_t * context,
 	double baseline;
 	baseline =
 	    colorbar_rect->y
-	    + bar_height * 0.5
+	    + bar_only_rect.height * 0.5
 	    - min_te.y_bearing 
 	    - min_te.height * 0.5;
 	cairo_move_to(context, colorbar_rect->x, baseline);
@@ -1077,17 +1096,17 @@ create_surface(double width, double height)
 void
 lay_out_page(rect_t * title_rect, rect_t * map_rect, rect_t * colorbar_rect)
 {
+    /* This is a small dimensionless number that quantifies how much
+     * empty vertical space there should be between consecutive
+     * elements in the page. */
+    const double relative_margin = 0.05;
+
     title_rect->x = title_rect->y = 0.0;
     title_rect->width = image_width;
     if(title_str != NULL && title_str[0] != 0)
 	title_rect->height = title_height_fraction * image_height;
     else
 	title_rect->height = 0.0;
-
-    map_rect->x = 0.0;
-    map_rect->y = title_rect->y + title_rect->height;
-    map_rect->width = image_width;
-    /* Leave map_rect->height to the end */
 
     colorbar_rect->x = 0.0;
     /* Leave colorbar_rect->y to the end */
@@ -1097,8 +1116,19 @@ lay_out_page(rect_t * title_rect, rect_t * map_rect, rect_t * colorbar_rect)
     else
 	colorbar_rect->height = 0.0;
 
+    map_rect->x = 0.0;
+    map_rect->y = title_rect->y + title_rect->height;
+    map_rect->width = image_width;
     map_rect->height = image_height - title_rect->height - colorbar_rect->height;
+
+    /* Now calculate where the color bar should be placed vertically */
     colorbar_rect->y = map_rect->y + map_rect->height;
+
+    /* Finally, shrink a bit the title and the color bar so that there
+     * is some space between them and the map. */
+    title_rect->height *= (1.0 - relative_margin);
+    colorbar_rect->y += colorbar_rect->height * relative_margin;
+    colorbar_rect->height *= (1.0 - relative_margin);
 }
 
 /******************************************************************************/
