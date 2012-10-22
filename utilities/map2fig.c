@@ -796,12 +796,13 @@ nice_number(double num, int round_flag)
 
 
 void
-format_number(char * buf, size_t size, double number)
+format_number(char * buf, size_t size, double number,
+	      const char * measure_unit)
 {
-    if(measure_unit_str != NULL
-       && measure_unit_str[0] != '\0')
+    if(measure_unit != NULL
+       && measure_unit[0] != '\0')
     {
-	snprintf(buf, size, "%.4g %s", number, measure_unit_str);
+	snprintf(buf, size, "%.4g %s", number, measure_unit);
     } else {
 	snprintf(buf, size, "%.4g", number);
     }
@@ -844,7 +845,7 @@ draw_ticks(cairo_t * context,
 	cairo_line_to(context, pos, start_y + tick_height);
 	cairo_stroke(context);
 
-	format_number(label, sizeof(label) + 1, x);
+	format_number(label, sizeof(label) + 1, x, NULL);
 
 	/* We need to decide which is the baseline of the font. The
 	 * function `draw_aligned_text` does not include the space
@@ -885,8 +886,8 @@ paint_colorbar(cairo_t * context,
 
     cairo_set_font_size(context, height * 0.4);
 
-    format_number(label_min, sizeof(label_min) + 1, min_level);
-    format_number(label_max, sizeof(label_max) + 1, max_level);
+    format_number(label_min, sizeof(label_min) + 1, min_level, measure_unit_str);
+    format_number(label_max, sizeof(label_max) + 1, max_level, measure_unit_str);
 
     cairo_text_extents(context, label_min, &min_te);
     cairo_text_extents(context, label_max, &max_te);
