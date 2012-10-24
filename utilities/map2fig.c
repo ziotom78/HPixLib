@@ -994,8 +994,9 @@ paint_colorbar(cairo_t * context,
 	       tick_band_height,
 	       min_level, max_level);
 
-    linear = cairo_pattern_create_linear (bar_only_rect.x, 0.0,
-					  bar_only_rect.x + bar_only_rect.width, 0.0);
+    linear =
+	cairo_pattern_create_linear(bar_only_rect.x, 0.0,
+				    bar_only_rect.x + bar_only_rect.width, 0.0);
 
     for(idx = 0; idx < num_of_levels; ++idx)
     {
