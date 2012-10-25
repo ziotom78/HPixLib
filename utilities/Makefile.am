@@ -30,7 +30,13 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
-bin_PROGRAMS = map2fig
+if CAIRO_PRESENT
+PROGRAMS_TO_BUILD = map2fig
+else
+PROGRAMS_TO_BUILD =
+endif
+
+bin_PROGRAMS = $(PROGRAMS_TO_BUILD)
 
 INCLUDES = -I$(top_srcdir)/src
 

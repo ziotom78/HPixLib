@@ -76,10 +76,10 @@ hpix_set_bmp_projection_height(hpix_bmp_projection_t * proj,
 }
 
 double *
-hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
-		      const hpix_map_t * map,
-		      double * min_value,
-		      double * max_value)
+hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
+			   const hpix_map_t * map,
+			   double * min_value,
+			   double * max_value)
 {
     unsigned int x;
     unsigned int y;

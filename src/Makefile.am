@@ -30,6 +30,10 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
+if CAIRO_PRESENT
+ADDITIONAL_SOURCES = cairo_interface.c
+endif
+
 lib_LTLIBRARIES = libhpix.la
 
 LIBPSHT_SOURCES = \
@@ -49,6 +53,7 @@ libhpix_la_SOURCES = \
 	io.c \
 	positions.c \
 	query_disc.c \
+	$(ADDITIONAL_SOURCES) \
 	$(LIBPSHT_SOURCES)
 
 libhpix_la_LDFLAGS = -version-info 0:0:0

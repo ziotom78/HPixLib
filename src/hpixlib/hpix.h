@@ -22,6 +22,7 @@
 extern "C"{
 #endif /* __cplusplus */
 
+#include "config.h"
 #include "fitsio.h"
 
 #define CHEALPIX_VERSION "0.1"
@@ -223,10 +224,26 @@ hpix_set_bmp_projection_height(hpix_bmp_projection_t * proj,
 				 unsigned int height);
 
 double *
-hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj,
-		      const hpix_map_t * map,
-		      double * min_value,
-		      double * max_value);
+hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
+			   const hpix_map_t * map,
+			   double * min_value,
+			   double * max_value);
+
+/* Functions implemented in cairo_interface.c */
+
+#ifdef HAVE_CAIRO
+
+#include <cairo/cairo.h>
+
+cairo_surface_t *
+hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
+					 const hpix_map_t * map,
+					 double map_min, double map_max);
+
+void
+hpix_bmp_configure_linear_gradient(cairo_pattern_t * pattern);
+
+#endif /* HAVE_CAIRO */
 
 /* Functions implemented in order_conversion.c */
 
