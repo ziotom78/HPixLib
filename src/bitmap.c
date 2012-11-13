@@ -19,6 +19,8 @@
 #include <math.h>
 #include <assert.h>
 
+#include "constants.h"
+
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 struct ___hpix_bmp_projection_t {
@@ -85,8 +87,8 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
     unsigned int y;
     double center_x;
     double center_y;
-    double *bitmap;
-    double *bitmap_ptr;
+    double *restrict bitmap;
+    double *restrict bitmap_ptr;
     hpix_angles_to_pixel_fn_t * angles_to_pixel_fn;
     hpix_nside_t nside;
     int minmax_flag = 0;
@@ -105,6 +107,9 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
 	: hpix_angles_to_ring_pixel;
 
     bitmap = hpix_malloc(sizeof(bitmap[0]), proj->width * proj->height);
+    /* Although the two pointers point to the same area, only one of
+     * them (bitmap_ptr) will be used for writing. So we're justified
+     * in using "restricted" for them. */
     bitmap_ptr = bitmap;
 
     pixels = hpix_map_pixels(map);

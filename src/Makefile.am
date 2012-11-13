@@ -30,6 +30,8 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
+AM_CFLAGS = -std=c99
+
 if CAIRO_PRESENT
 ADDITIONAL_SOURCES = cairo_interface.c
 endif

@@ -19,6 +19,8 @@
 #include <assert.h>
 #include <math.h>
 
+#include "constants.h"
+
 #include "xy2pix.c"
 
 #define NORMALIZE_ANGLE(x)					\
