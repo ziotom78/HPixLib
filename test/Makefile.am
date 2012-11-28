@@ -45,6 +45,9 @@ check_PROGRAMS = \
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 
+AM_CFLAGS = $(cairo_CFLAGS)
+LIBS += $(cairo_LIBS)
+
 LDADD = ../src/libhpix.la $(LIBOBJS) -lcfitsio
 
 TESTS = $(check_PROGRAMS)
