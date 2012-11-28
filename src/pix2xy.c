@@ -1,4 +1,7 @@
-int pix2x[1024] = {
+/* Vectors `pix2x` and `pix2y` are used by a number of functions, e.g.
+ * `chpx_nest_pixel_to_angles`. */
+
+static const int pix2x[1024] = {
 	   0,    1,    0,    1,    2,    3,    2,    3,    0,    1, 
 	   0,    1,    2,    3,    2,    3,    4,    5,    4,    5, 
 	   6,    7,    6,    7,    4,    5,    4,    5,    6,    7, 
@@ -103,7 +106,7 @@ int pix2x[1024] = {
 	  28,   29,   30,   31,   30,   31,   28,   29,   28,   29, 
 	  30,   31,   30,   31, };
 
-int pix2y[1024] = {
+static const int pix2y[1024] = {
 	   0,    0,    1,    1,    0,    0,    1,    1,    2,    2, 
 	   3,    3,    2,    2,    3,    3,    0,    0,    1,    1, 
 	   0,    0,    1,    1,    2,    2,    3,    3,    2,    2, 

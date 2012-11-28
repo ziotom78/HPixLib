@@ -49,12 +49,12 @@
 
 #define TEST_CLOSE(a,b)							\
     {									\
-	if(! fabs(a - b) < 1e-7)					\
+	if(fabs(a - b) > 1e-7)						\
 	{								\
 	    fprintf(stderr, "%s:%d: assertion failed: "			\
-		    #a " is not close to "				\
-		    #b "\n",						\
-		    __FILE__, __LINE__);				\
+		    #a " (= %f) is not close to "			\
+		    #b " (= %f)\n",					\
+		    __FILE__, __LINE__, a, b);				\
 	    test_result = EXIT_FAILURE;					\
 	}								\
     }
