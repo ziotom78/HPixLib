@@ -73,7 +73,7 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     /* Read the array */
     switch(ordering_key[0])
     {
-    case 'N': ordering = HPIX_ORDER_NEST;
+    case 'N': ordering = HPIX_ORDER_NEST; break;
     default: ordering = HPIX_ORDER_RING; break;
     }
 
