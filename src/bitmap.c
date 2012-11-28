@@ -83,45 +83,34 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
 			   double * min_value,
 			   double * max_value)
 {
-    unsigned int x;
-    unsigned int y;
-    double center_x;
-    double center_y;
-    double *restrict bitmap;
-    double *restrict bitmap_ptr;
-    hpix_angles_to_pixel_fn_t * angles_to_pixel_fn;
-    hpix_nside_t nside;
-    int minmax_flag = 0;
-    double * pixels;
-
     assert(proj);
     assert(map);
 
-    center_x = proj->width / 2.0;
-    center_y = proj->height / 2.0;
+    double center_x = proj->width / 2.0;
+    double center_y = proj->height / 2.0;
 
-    nside = hpix_map_nside(map);
+    hpix_nside_t nside = hpix_map_nside(map);
 
-    angles_to_pixel_fn = (hpix_map_ordering(map) == HPIX_ORDER_NEST)
+    hpix_angles_to_pixel_fn_t * angles_to_pixel_fn =
+	(hpix_map_ordering(map) == HPIX_ORDER_NEST)
 	? hpix_angles_to_nest_pixel
 	: hpix_angles_to_ring_pixel;
 
-    bitmap = hpix_malloc(sizeof(bitmap[0]), proj->width * proj->height);
+    double *restrict bitmap =
+	hpix_malloc(sizeof(bitmap[0]), proj->width * proj->height);
     /* Although the two pointers point to the same area, only one of
      * them (bitmap_ptr) will be used for writing. So we're justified
      * in using "restricted" for them. */
-    bitmap_ptr = bitmap;
+    double *restrict bitmap_ptr = bitmap;
 
-    pixels = hpix_map_pixels(map);
-    for (y = 0; y < proj->height; ++y)
+    double * pixels = hpix_map_pixels(map);
+    int minmax_flag = 0;
+    for (unsigned int y = 0; y < proj->height; ++y)
     {
-	for (x = 0; x < proj->width; ++x)
+	for (unsigned int x = 0; x < proj->width; ++x)
 	{
 	    double u = 2.0 * (x - center_x) / center_x;
 	    double v = (y - center_y) / center_y;
-	    double theta;
-	    double phi;
-	    hpix_pixel_num_t pixel_idx;
 
 	    if(u*u/4 + v*v >= 1)
 	    {
@@ -129,11 +118,13 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
 		continue;
 	    }
 
-	    theta = M_PI_2 - asin(2 / M_PI *
-				  (asin(v) +
-				   v * sqrt((1 - v) * (1 + v))));
-	    phi = -M_PI_2 * u / MAX(sqrt((1 - v) * (1 + v)), 1e-6);
-	    pixel_idx = angles_to_pixel_fn(nside, theta, phi);
+	    double theta = M_PI_2 - asin(2 / M_PI *
+					 (asin(v) +
+					  v * sqrt((1 - v) * (1 + v))));
+	    double phi = -M_PI_2 * u / MAX(sqrt((1 - v) * (1 + v)), 1e-6);
+
+	    hpix_pixel_num_t pixel_idx =
+		angles_to_pixel_fn(nside, theta, phi);
 	    if(pixels[pixel_idx] > -1.6e+30)
 		*bitmap_ptr = pixels[pixel_idx];
 	    else
