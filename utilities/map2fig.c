@@ -100,6 +100,9 @@ int draw_color_bar_flag = 0;
 /* Should we produce a number of diagnostic messages? Set by `--verbose` */
 int verbose_flag = 0;
 
+/* Shall we remove the average from the map? Set by `--remove-monopole' */
+int remove_monopole = 0;
+
 /* String to append to the measure unit, set by `-m`, `--measure-unit` */
 const char * measure_unit_str = "";
 
@@ -178,6 +181,7 @@ print_usage(const char * program_name)
     puts("                            PNG, in dots otherwise)");
     puts("  --title-font-size=NUM     Height of the title (in pixels if");
     puts("                            exporting to PNG, in dots otherwise)");
+    puts("  --remove-monopole         Remove the monopole from the map");
     puts("  -v, --version             Print version number and exit");
     puts("  -h, --help                Print this help");
 }
@@ -272,6 +276,7 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('v', 0, gopt_shorts('v'), gopt_longs("version")),
 		      gopt_option('V', 0, gopt_shorts(0), gopt_longs("verbose")),
 		      gopt_option('b', 0, gopt_shorts('b'), gopt_longs("draw-color-bar")),
+		      gopt_option('M', 0, gopt_shorts(0), gopt_longs("remove-monopole")),
 		      gopt_option('B', 0, gopt_shorts(0), gopt_longs("no-background")),
 		      gopt_option('c', 0, gopt_shorts('c'), gopt_longs("column")),	
 		      gopt_option('F', 0, gopt_shorts(0), gopt_longs("list-formats")),
@@ -313,6 +318,10 @@ parse_command_line(int argc, const char ** argv)
     /* --verbose */
     if(gopt(options, 'V'))
 	verbose_flag = 1;
+
+    /* --remove-monopole */
+    if(gopt(options, 'M'))
+	remove_monopole = 1;
 
     if(gopt(options, 'b'))
 	draw_color_bar_flag = 1;
@@ -450,6 +459,30 @@ load_map(void)
 	fprintf(stderr, MSG_HEADER "unable to load file '%s'\n",
 		input_file_name);
 	exit(EXIT_FAILURE);
+    }
+
+    /* Remove the monopole */
+    if(remove_monopole)
+    {
+	size_t good_pixels = 0;
+	double average = 0.0;
+	double * pixels = hpix_map_pixels(result);
+	num_of_pixels = hpix_map_num_of_pixels(result);
+	for(idx = 0; idx < num_of_pixels; ++idx)
+	{
+	    if(! isnan(pixels[idx]) && pixels[idx] > -1.6e+30)
+	    {
+		++good_pixels;
+		average += pixels[idx];
+	    } else {
+		pixels[idx] = NAN;
+	    }
+	}
+
+	average /= good_pixels;
+
+	for(idx = 0; idx < num_of_pixels; ++idx)
+	    pixels[idx] -= average;
     }
 
     /* Multiply the pixels in the map by `scale_factor` */
