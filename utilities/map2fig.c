@@ -184,6 +184,7 @@ print_usage(const char * program_name)
     puts("  --title-font-size=NUM     Height of the title (in pixels if");
     puts("                            exporting to PNG, in dots otherwise)");
     puts("  --remove-monopole         Remove the monopole from the map");
+    puts("  --xy-aspect-ratio=NUM     Width/height ratio of the image size");
     puts("  -v, --version             Print version number and exit");
     puts("  -h, --help                Print this help");
 }
@@ -284,6 +285,7 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('F', 0, gopt_shorts(0), gopt_longs("list-formats")),
 		      gopt_option('m', GOPT_ARG, gopt_shorts('m'), gopt_longs("measure-unit")),
 		      gopt_option('o', GOPT_ARG, gopt_shorts('o'), gopt_longs("output")),
+		      gopt_option('a', GOPT_ARG, gopt_shorts(0), gopt_longs("xy-aspect-ratio")),
 		      gopt_option('_', GOPT_ARG, gopt_shorts(0), gopt_longs("min")),
 		      gopt_option('^', GOPT_ARG, gopt_shorts(0), gopt_longs("max")),
 		      gopt_option('s', GOPT_ARG, gopt_shorts('s'), gopt_longs("scale")),
@@ -350,15 +352,28 @@ parse_command_line(int argc, const char ** argv)
 
     /* Here we parse all those options of the form --name VALUE, with
      * VALUE being a floating-point number. */
-    min_value = parse_double_from_options(options, '_', NAN, "--min");
-    max_value = parse_double_from_options(options, '^', NAN, "--max");
-    scale_factor = parse_double_from_options(options, 's', 1.0, "--scale");
-    tick_font_size = parse_double_from_options(options, '1',
-					       tick_font_size,
-					       "--tick-font-size");
-    title_font_size = parse_double_from_options(options, '2',
-						title_font_size,
-						"--title-font-size");
+    min_value = parse_double_from_options(options, '_', 
+					  /* default_value = */ NAN,
+					  "--min");
+    max_value = parse_double_from_options(options, '^',
+					  /* default_value = */ NAN,
+					  "--max");
+    scale_factor = 
+	parse_double_from_options(options, 's', 
+				  /* default_value = */ 1.0,
+				  "--scale");
+    double xy_aspect_ratio = 
+	parse_double_from_options(options, 'a', 
+				  /* default_value = */ 1.5,
+				  "--xy-aspect-ratio");
+    tick_font_size = 
+	parse_double_from_options(options, '1',
+				  /* default = */ tick_font_size,
+				  "--tick-font-size");
+    title_font_size = 
+	parse_double_from_options(options, '2',
+				  /* default = */ title_font_size,
+				  "--title-font-size");
 
     /* --measure-unit STRING */
     gopt_arg(options, 'm', &measure_unit_str);
@@ -392,7 +407,6 @@ parse_command_line(int argc, const char ** argv)
     case FMT_PNG:
 	/* Pixels */
 	image_width = 750;
-	image_height = 500;
 	break;
 
     case FMT_PS:
@@ -401,12 +415,13 @@ parse_command_line(int argc, const char ** argv)
     case FMT_SVG:
 	/* Points, that is, 1/72 inches */
 	image_width = 7.5 * 72;
-	image_height = 5.0 * 72;
 	break;
 
     default:
 	assert(0);
     }
+
+    image_height = image_width / xy_aspect_ratio;
 
     if(! isnan(title_font_size))
     {
@@ -440,68 +455,6 @@ parse_command_line(int argc, const char ** argv)
     }
 
     input_file_name = argv[1];
-}
-
-/******************************************************************************/
-
-static double
-average_value_for_map(hpix_map_t * map)
-{
-    size_t good_pixels = 0;
-    double sum_of_pixels = 0.0;
-    double * pixels = hpix_map_pixels(map);
-    size_t num_of_pixels = hpix_map_num_of_pixels(map);
-    for(size_t idx = 0; idx < num_of_pixels; ++idx)
-    {
-	if(! HPIX_IS_MASKED(pixels[idx]))
-	{
-	    ++good_pixels;
-	    sum_of_pixels += pixels[idx];
-	} else {
-	    pixels[idx] = NAN;
-	}
-    }
-    
-    return sum_of_pixels / good_pixels;
-}
-
-/******************************************************************************/
-
-static void
-scale_map_by_constant_factor(hpix_map_t * map, double factor)
-{
-    /* Multiply the pixels in the map by `scale_factor` */
-    double * pixels = hpix_map_pixels(map);
-    size_t num_of_pixels = hpix_map_num_of_pixels(map);
-    for(size_t idx = 0; idx < num_of_pixels; ++idx)
-    {
-	if(! HPIX_IS_MASKED(pixels[idx]))
-	    pixels[idx] *= scale_factor;
-    }
-}
-
-/******************************************************************************/
-
-static void
-add_constant_value_to_map(hpix_map_t * map, double value)
-{
-    /* Multiply the pixels in the map by `scale_factor` */
-    double * pixels = hpix_map_pixels(map);
-    size_t num_of_pixels = hpix_map_num_of_pixels(map);
-    for(size_t idx = 0; idx < num_of_pixels; ++idx)
-    {
-	if(! HPIX_IS_MASKED(pixels[idx]))
-	    pixels[idx] += value;
-    }
-}
-
-/******************************************************************************/
-
-static void
-remove_monopole_from_map(hpix_map_t * map)
-{
-    double average = average_value_for_map(map);
-    add_constant_value_to_map(map, -average);
 }
 
 /******************************************************************************/

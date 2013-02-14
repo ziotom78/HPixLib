@@ -17,6 +17,7 @@ Contents:
    installation.rst
    pixel-funcs.rst
    map-type.rst
+   mathematics.rst
    drawing.rst
    utilities.rst
 

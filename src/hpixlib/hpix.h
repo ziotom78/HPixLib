@@ -58,6 +58,13 @@ typedef struct {
 struct ___hpix_bmp_projection_t;
 typedef struct ___hpix_bmp_projection_t hpix_bmp_projection_t;
 
+/* Functions implemented in math.c */
+
+double hpix_average_pixel_value(const hpix_map_t * map);
+void hpix_scale_pixels_by_constant_inplace(hpix_map_t * map, double constant);
+void hpix_add_constant_to_pixels_inplace(hpix_map_t * map, double constant);
+void hpix_remove_monopole_from_map_inplace(hpix_map_t * map);
+
 /* Functions implemented in mem.c */
 
 void * hpix_malloc(size_t size, size_t num);
