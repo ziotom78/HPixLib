@@ -58,6 +58,15 @@ HPixLib.
   Free any memory associated with *map*. Once the function exits,
   *map* is no longer available.
 
+.. c:function:: hpix_map_t * hpix_create_copy_of_map(const hpix_map_t * map)
+
+  Return a pointer to a copy of *map*. This is useful if you plan to
+  modify *map* inplace (e.g. by means of a call to
+  :c:func:`hpix_scale_pixels_by_constant_inplace`) but you want to
+  keep a copy of the map as it was before the modification. Once no
+  longer used, the new copy must be disposed using
+  :c:func:`hpix_free_map` as usual.
+
 Loading and saving maps
 -----------------------
 

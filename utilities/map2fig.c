@@ -477,9 +477,9 @@ load_map_and_rescale_if_needed(void)
 
     /* Remove the monopole */
     if(remove_monopole)
-	remove_monopole_from_map(result);
+	hpix_remove_monopole_from_map_inplace(result);
 
-    scale_map_by_constant_factor(result, scale_factor);
+    hpix_scale_pixels_by_constant_inplace(result, scale_factor);
 
     return result;
 }

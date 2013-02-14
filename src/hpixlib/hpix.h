@@ -88,6 +88,8 @@ hpix_map_t * hpix_create_map_from_array(double * array,
 
 void hpix_free_map(hpix_map_t * map);
 
+hpix_map_t * hpix_create_copy_of_map(const hpix_map_t * map);
+
 hpix_ordering_t hpix_map_ordering(const hpix_map_t * map);
 
 hpix_coordinates_t hpix_map_coordinate_system(const hpix_map_t * map);

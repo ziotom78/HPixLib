@@ -17,6 +17,7 @@
 
 #include <hpixlib/hpix.h>
 #include <assert.h>
+#include <memory.h>
 
 hpix_map_t *
 hpix_create_map(hpix_nside_t nside, hpix_ordering_t ordering)
@@ -55,6 +56,19 @@ hpix_free_map(hpix_map_t * map)
 
     hpix_free(map->pixels);
     hpix_free(map);
+}
+
+hpix_map_t *
+hpix_create_copy_of_map(const hpix_map_t * map)
+{
+    hpix_map_t * copy = hpix_create_map(hpix_map_nside(map),
+					hpix_map_ordering(map));
+
+    memcpy(hpix_map_pixels(copy),
+	   hpix_map_pixels(map),
+	   hpix_map_num_of_pixels(map) * sizeof(double));
+
+    return copy;
 }
 
 hpix_ordering_t

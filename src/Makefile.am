@@ -47,6 +47,7 @@ LIBPSHT_SOURCES = \
 	bluestein.c
 
 libhpix_la_SOURCES = \
+	math.c \
 	mem.c \
 	bitmap.c \
 	misc.c \

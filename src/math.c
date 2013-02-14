@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include <hpixlib/hpix.h>
+#include <math.h>
 
 double
-hpix_average_pixel_value(hpix_map_t * map)
+hpix_average_pixel_value(const hpix_map_t * map)
 {
     size_t good_pixels = 0;
     double sum_of_pixels = 0.0;
@@ -71,7 +72,7 @@ hpix_add_constant_to_pixels_inplace(hpix_map_t * map, double constant)
 /******************************************************************************/
 
 void
-hpix_remove_monopole_from_map(hpix_map_t * map)
+hpix_remove_monopole_from_map_inplace(hpix_map_t * map)
 {
     double average = hpix_average_pixel_value(map);
     hpix_add_constant_to_pixels_inplace(map, -average);
