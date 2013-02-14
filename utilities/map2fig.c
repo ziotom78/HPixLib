@@ -46,10 +46,12 @@
 
 #include "gopt.h"
 
-#define VERSION "0.1"
-
 /* Used to print information/error/warning messages */
 #define MSG_HEADER   "map2fig: "
+
+#ifndef M_PI
+#define M_PI 3.141592653589793
+#endif
 
 /* Available file formats */
 typedef enum { FMT_NULL, FMT_PNG, FMT_PS, FMT_EPS, FMT_PDF, FMT_SVG }
@@ -442,15 +444,74 @@ parse_command_line(int argc, const char ** argv)
 
 /******************************************************************************/
 
+static double
+average_value_for_map(hpix_map_t * map)
+{
+    size_t good_pixels = 0;
+    double sum_of_pixels = 0.0;
+    double * pixels = hpix_map_pixels(map);
+    size_t num_of_pixels = hpix_map_num_of_pixels(map);
+    for(size_t idx = 0; idx < num_of_pixels; ++idx)
+    {
+	if(! HPIX_IS_MASKED(pixels[idx]))
+	{
+	    ++good_pixels;
+	    sum_of_pixels += pixels[idx];
+	} else {
+	    pixels[idx] = NAN;
+	}
+    }
+    
+    return sum_of_pixels / good_pixels;
+}
+
+/******************************************************************************/
+
+static void
+scale_map_by_constant_factor(hpix_map_t * map, double factor)
+{
+    /* Multiply the pixels in the map by `scale_factor` */
+    double * pixels = hpix_map_pixels(map);
+    size_t num_of_pixels = hpix_map_num_of_pixels(map);
+    for(size_t idx = 0; idx < num_of_pixels; ++idx)
+    {
+	if(! HPIX_IS_MASKED(pixels[idx]))
+	    pixels[idx] *= scale_factor;
+    }
+}
+
+/******************************************************************************/
+
+static void
+add_constant_value_to_map(hpix_map_t * map, double value)
+{
+    /* Multiply the pixels in the map by `scale_factor` */
+    double * pixels = hpix_map_pixels(map);
+    size_t num_of_pixels = hpix_map_num_of_pixels(map);
+    for(size_t idx = 0; idx < num_of_pixels; ++idx)
+    {
+	if(! HPIX_IS_MASKED(pixels[idx]))
+	    pixels[idx] += value;
+    }
+}
+
+/******************************************************************************/
+
+static void
+remove_monopole_from_map(hpix_map_t * map)
+{
+    double average = average_value_for_map(map);
+    add_constant_value_to_map(map, -average);
+}
+
+/******************************************************************************/
+
 
 hpix_map_t *
-load_map(void)
+load_map_and_rescale_if_needed(void)
 {
     hpix_map_t * result;
     int status = 0;
-    double * pixels;
-    size_t num_of_pixels;
-    size_t idx;
 
     if(! hpix_load_fits_component_from_file(input_file_name,
 					    column_number,
@@ -463,33 +524,9 @@ load_map(void)
 
     /* Remove the monopole */
     if(remove_monopole)
-    {
-	size_t good_pixels = 0;
-	double average = 0.0;
-	double * pixels = hpix_map_pixels(result);
-	num_of_pixels = hpix_map_num_of_pixels(result);
-	for(idx = 0; idx < num_of_pixels; ++idx)
-	{
-	    if(! isnan(pixels[idx]) && pixels[idx] > -1.6e+30)
-	    {
-		++good_pixels;
-		average += pixels[idx];
-	    } else {
-		pixels[idx] = NAN;
-	    }
-	}
+	remove_monopole_from_map(result);
 
-	average /= good_pixels;
-
-	for(idx = 0; idx < num_of_pixels; ++idx)
-	    pixels[idx] -= average;
-    }
-
-    /* Multiply the pixels in the map by `scale_factor` */
-    pixels = hpix_map_pixels(result);
-    num_of_pixels = hpix_map_num_of_pixels(result);
-    for(idx = 0; idx < num_of_pixels; ++idx)
-	pixels[idx] *= scale_factor;
+    scale_map_by_constant_factor(result, scale_factor);
 
     return result;
 }
@@ -516,7 +553,7 @@ find_map_extrema(const hpix_map_t * map, double * min, double * max)
 
     for(counter = 0; counter < num_of_pixels; ++counter, ++cur_pixel)
     {
-	if(isnan(*cur_pixel) || *cur_pixel < -1.6e+30)
+	if(HPIX_IS_MASKED(*cur_pixel))
 	    continue;
 
 	if (! are_minmax_initialized)
@@ -1088,7 +1125,7 @@ main(int argc, const char ** argv)
 
     if(verbose_flag)
 	fprintf(stderr, MSG_HEADER "loading map `%s'\n", input_file_name);
-    map = load_map();
+    map = load_map_and_rescale_if_needed();
     if(verbose_flag)
 	fprintf(stderr, MSG_HEADER "map loaded\n");
 

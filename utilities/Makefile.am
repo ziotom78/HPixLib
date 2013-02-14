@@ -30,6 +30,8 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
+AM_CFLAGS = -std=c99
+
 if CAIRO_PRESENT
 PROGRAMS_TO_BUILD = map2fig
 else
@@ -40,7 +42,7 @@ bin_PROGRAMS = $(PROGRAMS_TO_BUILD)
 
 INCLUDES = -I$(top_srcdir)/src
 
-AM_CFLAGS = $(cairo_CFLAGS)
+AM_CFLAGS += $(cairo_CFLAGS)
 LIBS += $(cairo_LIBS) -lcfitsio
 
 map2fig_SOURCES = map2fig.c gopt.c

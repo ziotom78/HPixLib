@@ -27,6 +27,8 @@ extern "C"{
 
 #define CHEALPIX_VERSION "0.1"
 
+#define HPIX_IS_MASKED(x) (isnan(x) || (x) < -1.6e+30)
+
 typedef unsigned short hpix_nside_t;
 typedef unsigned long hpix_pixel_num_t;
 
