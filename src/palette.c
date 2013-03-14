@@ -178,6 +178,8 @@ hpix_set_color_for_unseen_pixels_in_palette(hpix_color_palette_t * palette,
 					    hpix_color_t new_color)
 {
     assert(palette != NULL);
+
+    palette->color_for_unseen_pixels = new_color;
 }
 
 /**********************************************************************/
@@ -186,6 +188,8 @@ hpix_color_t
 hpix_color_for_unseen_pixels_in_palette(const hpix_color_palette_t * palette)
 {
     assert(palette != NULL);
+
+    return palette->color_for_unseen_pixels;
 }
 
 /**********************************************************************/
