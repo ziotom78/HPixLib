@@ -20,84 +20,6 @@
 #include <string.h>
 #include <math.h>
 
-/* The following code is used to define the color gradient used to
- * draw the Mollview projection and the color bar. The purpose is to
- * convert a floating-point number into a color. Like Healpix's
- * map2gif and map2tga, we use a combination of linear gradients, i.e.
- * a function that maps a floating-point value between 0.0 and 1.0 and
- * a `color_t` structure. The mapping is implemented by means of a set
- * of linear functions over subsets of the domain [0.0, 1.0] that
- * completely cover the domain and are continuously connected. */
-
-/* The most basic structure: a RGB color. Following Cairo's
- * conventions, each component is a floating-point number between 0.0
- * and 1.0. */
-typedef struct {
-    double red;
-    double green;
-    double blue;
-} color_t;
-
-/* These numbers split the [0.0, 1.0] domain in a number of subsets. */
-static const double levels[] = { 0.0, 0.15, 0.40, 0.70, 0.90, 1.00 };
-/* These are the colors of the mapping at the boundaries specified by
- * the `levels` variable above. */
-static const color_t colors[] = {
-    { 0.0, 0.0, 0.5 },
-    { 0.0, 0.0, 1.0 },
-    { 0.0, 1.0, 1.0 },
-    { 1.0, 1.0, 0.0 },
-    { 1.0, 0.33, 0.0 },
-    { 0.5, 0.0, 0.0 }};
-/* Number of steps, i.e. of subsets of [0.0, 1.0] */
-static const size_t num_of_levels = sizeof(levels) / sizeof(levels[0]);
-
-/* This function provides the mapping between [0.0, 1.0] and a
- * `color_t` structure. It is a faithful copy of a function found in
- * Heapix's map2tga program. */
-void
-get_palette_color(double level, color_t * color_ptr)
-{
-    size_t idx;
-    size_t index0, index1;
-
-    /* Clip values outside the boundaries */
-
-    if(level <= 0.0)
-    {
-	memcpy(color_ptr, (const void *) &colors[0],
-	       sizeof(color_t));
-	return;
-    }
-
-    if(level >= 1.0)
-    {
-	memcpy(color_ptr, (const void *) &colors[num_of_levels - 1],
-	       sizeof(color_t));
-	return;
-    }
-
-    /* Look for the applicable subset of [0.0, 1.0] */
-    idx = 0;
-    while(level > levels[idx])
-	++idx;
-
-    index1 = idx;
-    index0 = index1 - 1;
-
-    /* Perform a linear interpolation for each of the three color
-     * components */
-#define INTERPOLATE_COMPONENT(level, comp_name) \
-    (  colors[index0].comp_name * (levels[index1] - level) / (levels[index1] - levels[index0]) \
-     + colors[index1].comp_name * (level - levels[index0]) / (levels[index1] - levels[index0]))
-
-    color_ptr->red   = INTERPOLATE_COMPONENT(level, red);
-    color_ptr->green = INTERPOLATE_COMPONENT(level, green);
-    color_ptr->blue  = INTERPOLATE_COMPONENT(level, blue);
-
-#undef INTERPOLATE_COMPONENT
-}
-
 /******************************************************************************/
 
 
@@ -111,6 +33,7 @@ get_palette_color(double level, color_t * color_ptr)
  * be enclosed in the rectangle (0,0) - (width, height). */
 cairo_surface_t *
 hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
+					 const hpix_color_palette_t * palette,
 					 const hpix_map_t * map,
 					 double map_min, double map_max)
 {
@@ -145,6 +68,10 @@ hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
     image_data = cairo_image_surface_get_data(surface);
     stride = cairo_image_surface_get_stride(surface);
 
+    hpix_color_t color_for_unseen_pixels =
+	hpix_color_for_unseen_pixels_in_palette(palette);
+    hpix_color_t white_color = hpix_create_color(1.0, 1.0, 1.0);
+
     for(cur_y = 0; cur_y < height; ++cur_y)
     {
 	unsigned int cur_x;
@@ -152,35 +79,31 @@ hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
 	for(cur_x = 0; cur_x < width; ++cur_x)
 	{
 	    double value = *cur_pixel++;
-	    color_t color;
+	    hpix_color_t color;
 
 	    /* Not sure if this works on big-endian machines... */
-#define SET_PIXEL(a,r,g,b) {	      \
+#define SET_PIXEL(opacity,color) {  \
 		int base = cur_x * 4; \
-		row[base]     = b;    \
-		row[base + 1] = g;    \
-		row[base + 2] = r;    \
-		row[base + 3] = a;    \
+		row[base]     = (int) (255 * color.blue);	\
+		row[base + 1] = (int) (255 * color.green);	\
+		row[base + 2] = (int) (255 * color.red);	\
+		row[base + 3] = (int) (255 * opacity);		\
 	    }
 
 	    if(isinf(value))
 	    {
 		/* Transparent pixel */
-		SET_PIXEL(0, 255, 255, 255);
+		SET_PIXEL(0.0, white_color);
 	    }
 	    else if (isnan(value) || value < -1.6e+30)
 	    {
-		/* Opaque pixel with a gray shade */
-		SET_PIXEL(255, 128, 128, 128);
+		SET_PIXEL(1.0, color_for_unseen_pixels);
 	    }
 	    else
 	    {
 		double normalized_value = (value - map_min) / dynamic_range;
-		get_palette_color(normalized_value, &color);
-		SET_PIXEL(255, /* This makes the pixel fully opaque */
-			  (int) (255 * color.red),
-			  (int) (255 * color.green),
-			  (int) (255 * color.blue));
+		color = hpix_get_palette_color(palette, normalized_value);
+		SET_PIXEL(1.0, color);
 	    }
 #undef SET_PIXEL
 	}
@@ -194,17 +117,18 @@ hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
 
 
 void
-hpix_bmp_configure_linear_gradient(cairo_pattern_t * pattern)
+hpix_bmp_configure_linear_gradient(cairo_pattern_t * pattern, 
+				   const hpix_color_palette_t * palette)
 {
     size_t idx;
     assert(pattern);
 
-    for(idx = 0; idx < num_of_levels; ++idx)
+    for(idx = 0; idx < hpix_num_of_steps_in_color_palette(palette); ++idx)
     {
-	cairo_pattern_add_color_stop_rgb(pattern,
-					 levels[idx],
-					 colors[idx].red,
-					 colors[idx].green,
-					 colors[idx].blue);
+	double level = hpix_level_for_step_in_palette(palette, idx);
+	hpix_color_t color = hpix_color_for_step_in_palette(palette, idx);
+
+	cairo_pattern_add_color_stop_rgb(pattern, level,
+					 color.red, color.green, color.blue);
     }
 }

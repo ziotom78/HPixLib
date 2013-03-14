@@ -38,6 +38,7 @@ check_PROGRAMS = \
 	nest_to_ring \
 	npixel_to_nside \
 	nside_to_npixel \
+	palette \
 	pixel_to_angles \
 	query_disc \
 	ring_to_nest \
@@ -45,8 +46,8 @@ check_PROGRAMS = \
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 
-AM_CFLAGS = $(cairo_CFLAGS)
-LIBS += $(cairo_LIBS)
+AM_CFLAGS = $(cairo_CFLAGS) `pkg-config --cflags check`
+LIBS += $(cairo_LIBS) `pkg-config --libs check`
 
 LDADD = ../src/libhpix.la $(LIBOBJS) -lcfitsio
 

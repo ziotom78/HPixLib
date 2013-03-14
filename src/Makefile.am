@@ -54,6 +54,7 @@ libhpix_la_SOURCES = \
 	order_conversion.c \
 	map.c \
 	io.c \
+	palette.c \
 	positions.c \
 	query_disc.c \
 	$(ADDITIONAL_SOURCES) \

@@ -51,6 +51,18 @@ typedef struct {
     double           * pixels;
 } hpix_map_t;
 
+/* The most basic structure: a RGB color. Following Cairo's
+ * conventions, each component is a floating-point number between 0.0
+ * and 1.0. */
+
+typedef struct {
+    double red;
+    double green;
+    double blue;
+} hpix_color_t;
+
+typedef struct hpix_color_palette_t hpix_color_palette_t;
+
 #define HPIX_MAP_PIXEL(map, index)				\
     (*((double *) (((char *) map->pixels)			\
 		   + (index) * sizeof(map->pixels[0]))))
@@ -248,11 +260,13 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
 
 cairo_surface_t *
 hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
+					 const hpix_color_palette_t * palette,
 					 const hpix_map_t * map,
 					 double map_min, double map_max);
 
 void
-hpix_bmp_configure_linear_gradient(cairo_pattern_t * pattern);
+hpix_bmp_configure_linear_gradient(cairo_pattern_t * pattern, 
+				   const hpix_color_palette_t * palette);
 
 #endif /* HAVE_CAIRO */
 
@@ -266,6 +280,37 @@ hpix_ring_to_nest_idx(hpix_nside_t nside, hpix_pixel_num_t ring_index);
 
 void
 hpix_switch_order(hpix_map_t * map);
+
+/* Functions implemented in palette.c */
+
+hpix_color_t hpix_create_color(double red, double green, double blue);
+double hpix_red_level_from_color(const hpix_color_t * color);
+double hpix_blue_level_from_color(const hpix_color_t * color);
+double hpix_green_level_from_color(const hpix_color_t * color);
+
+hpix_color_palette_t * hpix_create_black_color_palette(void);
+hpix_color_palette_t * hpix_create_grayscale_color_palette(void);
+hpix_color_palette_t * hpix_create_healpix_color_palette(void);
+void hpix_free_color_palette(hpix_color_palette_t * palette);
+void hpix_set_color_for_unseen_pixels_in_palette(hpix_color_palette_t * palette,
+						 hpix_color_t new_color);
+hpix_color_t hpix_color_for_unseen_pixels_in_palette(const hpix_color_palette_t * palette);
+void hpix_add_step_to_color_palette(hpix_color_palette_t * palette,
+				    double level, hpix_color_t color);
+size_t hpix_num_of_steps_in_color_palette(const hpix_color_palette_t * palette);
+hpix_color_t hpix_color_for_step_in_palette(const hpix_color_palette_t * palette,
+					    size_t zero_based_index);
+double hpix_level_for_step_in_palette(const hpix_color_palette_t * palette,
+				      size_t zero_based_index);
+void hpix_set_color_for_step_in_palette(hpix_color_palette_t * palette,
+					size_t zero_based_index,
+					hpix_color_t new_color);
+void hpix_set_level_for_step_in_palette(hpix_color_palette_t * palette,
+					size_t zero_based_index,
+					double new_level);
+void hpix_sort_levels_in_color_palette(hpix_color_palette_t * palette);
+hpix_color_t hpix_get_palette_color(const hpix_color_palette_t * palette,
+				    double level);
 
 /* Functions implemented in query_disc.c */
 

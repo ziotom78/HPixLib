@@ -673,6 +673,7 @@ nice_number(double num, int round_flag)
  * to be due to a bug in Cairo.) */
 void
 paint_map(cairo_t * context, const rect_t * map_rect,
+	  const hpix_color_palette_t * palette,
 	  const hpix_map_t * map, double min, double max)
 {
     hpix_bmp_projection_t * projection;
@@ -683,7 +684,8 @@ paint_map(cairo_t * context, const rect_t * map_rect,
     projection = hpix_create_bmp_projection((int) (bitmap_columns + .5),
 					    (int) (bitmap_rows + .5));
     map_surface =
-	hpix_bmp_mollweide_proj_to_cairo_surface(projection, map, min, max);
+	hpix_bmp_mollweide_proj_to_cairo_surface(projection, palette,
+						 map, min, max);
 
     /* Now copy the cairo surface into the surface we're currently
      * using to draw the figure */
@@ -784,6 +786,7 @@ draw_ticks(cairo_t * context,
 void
 paint_colorbar(cairo_t * context,
 	       const rect_t * colorbar_rect,
+	       const hpix_color_palette_t * palette,
 	       double min_level, double max_level)
 {
     /* Here is the inner layout of the colorbar:
@@ -852,7 +855,7 @@ paint_colorbar(cairo_t * context,
 	cairo_pattern_create_linear(bar_only_rect.x, 0.0,
 				    bar_only_rect.x + bar_only_rect.width, 0.0);
 
-    hpix_bmp_configure_linear_gradient(linear);
+    hpix_bmp_configure_linear_gradient(linear, palette);
 
     cairo_rectangle(context,
 		    bar_only_rect.x, bar_only_rect.y,
@@ -970,6 +973,13 @@ lay_out_page(rect_t * title_rect, rect_t * map_rect, rect_t * colorbar_rect)
     map_rect->width = image_width;
     map_rect->height = image_height - title_rect->height - colorbar_rect->height;
 
+    if(verbose_flag)
+	fprintf(stderr,
+		MSG_HEADER "Mollweide projection has a size of %gx%g "
+		"(aspect ratio: %.3f)\n",
+		map_rect->width, map_rect->height,
+		map_rect->width / map_rect->height);
+
     /* Now calculate where the color bar should be placed vertically */
     colorbar_rect->y = map_rect->y + map_rect->height;
 
@@ -986,13 +996,7 @@ lay_out_page(rect_t * title_rect, rect_t * map_rect, rect_t * colorbar_rect)
 void
 paint_and_save_figure(const hpix_map_t * map)
 {
-    cairo_surface_t * surface;
-    cairo_t * context;
     double min, max;
-
-    rect_t title_rect;
-    rect_t map_rect;
-    rect_t colorbar_rect;
 
     find_map_extrema(map, &min, &max);
     if(! isnan(min_value))
@@ -1018,8 +1022,12 @@ paint_and_save_figure(const hpix_map_t * map)
      * 6. Draw the color bar 
      * 7. Save the result
      */
-    surface = create_surface(image_width, image_height);
-    context = cairo_create(surface);
+    cairo_surface_t * surface = create_surface(image_width, image_height);
+    cairo_t * context = cairo_create(surface);
+
+    rect_t title_rect;
+    rect_t map_rect;
+    rect_t colorbar_rect;
 
     lay_out_page(&title_rect, &map_rect, &colorbar_rect);
 
@@ -1041,10 +1049,12 @@ paint_and_save_figure(const hpix_map_t * map)
     if(title_rect.height > 0.0)
 	paint_title(context, &title_rect);
 
-    paint_map(context, &map_rect, map, min, max);
+    hpix_color_palette_t * palette = hpix_create_healpix_color_palette();
+    paint_map(context, &map_rect, palette, map, min, max);
 
     if(colorbar_rect.height > 0.0)
-	paint_colorbar(context, &colorbar_rect, min, max);
+	paint_colorbar(context, &colorbar_rect, palette, min, max);
+    hpix_free_color_palette(palette);
 
     if(output_format == FMT_PNG)
     {
