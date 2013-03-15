@@ -1,5 +1,5 @@
 Command-line utilities
-===================
+======================
 
 In the utilities directory there are a few non-trivial programs using
 HPixLib. They are automatically build and installed with the library,

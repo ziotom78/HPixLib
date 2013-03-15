@@ -47,15 +47,17 @@ library, there are two possible approaches for drawing a map:
   well when enlarged. The typical formats used to store such maps are
   Postscript and PDF.
 
-HPixLib provides two sets of functions to ease the production of
-bitmapped and vector maps. Such functions need to be wrapped with some
+HPixLib will provide two sets of functions to ease the production of
+bitmapped and vector maps. (Such functions need to be wrapped with some
 glue code which actually writes the map on disk or display it on the
-screen.
+screen.) Currently HPixLib supports the creation of bitmapped images;
+the veneration of vector images is considered less important and will
+be implemented in future releases of the library.
 
 The library provides a program, map2fig, which is similar to the two
 programs provided in the Healpix distribution, map2gif and map2tga.
 However, being based on the Cairo graphics library, it allows to save
-maps in vector format as well. (The map itself is a bitmapped image
+maps in vector formats as well. (The map itself is a bitmapped image
 embedded in the EPS/PDF/SVG file, but the title, the color bar and
 every other element is a vector.) This allows e.g. to modify these
 maps within vector drawing programs like Inkscape or Adobe
@@ -115,15 +117,25 @@ use the facilities provided by the library.his.
 Painting functions
 ------------------
 
-.. c:function:: double * hpix_bmp_trace_bitmap(const hpix_bmp_projection_t * proj, const hpix_map_t * map, double * min_value, double * max_value)
+.. c:function:: double * hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj, const hpix_map_t * map, double * min_value, double * max_value)
 
    This function creates a bitmap (rectangular array of numbers)
-   representing *map*. The details of the projection are specified by
-   the *proj* parameter (size of the bitmap, set of coordinates to be
-   used and so on). The bitmap is an array of floating-point values,
-   each using the same scale as in the original map (i.e. if the map
-   represents a set of temperatures in Kelvin, then each pixel in the
-   bitmap will be measured in Kelvin as well).
+   containing a Mollweide projection of *map*. The details of the
+   projection are specified by the *proj* parameter (size of the
+   bitmap, set of coordinates to be used and so on). The bitmap is an
+   array of floating-point values, each using the same scale as in the
+   original map (i.e. if the map represents a set of temperatures in
+   Kelvin, then each pixel in the bitmap will be measured in Kelvin as
+   well).
+
+   Note that the Mollweide projection must have an aspect ratio 2:1,
+   i.e., the width of the image should be twice its height. HPixLib
+   does not enforce such requirement on the width and height of the
+   bitmap, as the true aspect ratio of the image depends on the pixel
+   aspect ratio of the device where the bitmap will be displayed as
+   well. However, a good rule of thumb is to pick a width which is
+   roughly twice the height, as most of the display devices in use
+   today have a pixel aspect ratio which is close to 1:1.
   
    When the bitmap returned by this function is no longer useful, you
    must free it using :c:func:`hpix_free`.
@@ -162,6 +174,228 @@ Painting functions
    hpix_free(bitmap);
    hpix_free_projection(proj);
 
+Color palettes
+--------------
+
+Functions like :c:func:`hpix_bmp_to_mollweide_proj` create a bitmapped
+representation of a map in which each matrix element of the bitmap is
+expressed in the same units as the map (e.g., if a map represents some
+measured sky flux in Jy, then the matrix elements of the bitmap will
+be expressed in Jy too).
+
+In order to properly display the bitmap on a device, HPixLib provides
+a number of functions which convert floating-point values (in
+arbitrary scales) into colors. Moreover, HPixLib is able to handle
+color sets, called color palette, that represent gradients used to
+attribute specific colors to each pixel in a map.
+
+Color types and functions
+'''''''''''''''''''''''''
+
+The representation of colors used by HPixLib (through the type
+:c:type:`hpix_color_t`) uses the classical RGB decomposition, i.e.,
+each color is expressed as a mixture of red, green, and blue levels
+(RGB), where each level is a floating-point value between 0.0
+(absence) to 1.0 (saturation).
+
+.. c:type:: hpix_color_t
+
+    This type is a structure made up by three fields: `red`, `green`,
+    and `blue`. Each element is a floating-point value normalized to
+    unity.
+
+    The value of the `red`, `green`, and `blue` fields should be
+    between 0.0 (lack of shade) and 1.0 (saturated shade). HPixLib
+    however does not enforce such limits, since it is quite common in
+    computer graphics to represent saturated values using levels
+    greater than 1.0. (E.g., this effect is used in ray-tracing
+    programs like POV-Ray to create very bright light sources.)
+
+    The structure is not opaque, therefore it can be created
+    on-the-fly using the facilities of the C99 language:
+
+.. code-block:: c
+
+    /* This will work in C99, but not in C89 */
+    hpix_color_t red_color = 
+        (hpix_color_t) { .red = 1.0, .green = 0.0, .blue = 0.0 };
+
+Although the members of :c:type:`hpix_color_t` can be accessed
+directly, HPixLib provides getter/setter functions in order to ease
+the creation of binding libraries in other languages.
+
+.. c:function:: hpix_color_t hpix_create_color(double red, double green, double blue)
+
+    Return a :c:type:`hpix_color_t` structure initialized to the
+    specified values of red, green, and blue.
+
+.. c:function:: hpix_red_level_from_color(const hpix_color_t * color)
+
+    Return the red level of the color.
+
+.. c:function:: hpix_green_level_from_color(const hpix_color_t * color)
+
+    Return the green level of the color.
+
+.. c:function:: hpix_blue_level_from_color(const hpix_color_t * color)
+
+    Return the blue level of the color.
+
+
+Color palettes
+''''''''''''''
+
+A color palette is a set of colors and rules which specify how to
+combine the colors in order to provide a continuous and smooth
+palette. The idea is that every floating-point number falling within
+some predefined range can then be converted into a RGB color and
+displayed on a device.
+
+:ref:`figlem` shows an example. The palette is made by six colors,
+each with an associated floating-point number between 0 and 1. The
+library is able to blend the colors (using linear interpolation) to
+produce a smooth transition between them. The programmer can create
+custom color palettes using the functions described in this section.
+
+.. _figlem:
+
+.. figure:: ../images/healpix_palette.svg
+    :align: center
+
+    The original Healpix color palette
+
+The type :c:type:`hpix_color_palette_t` is an opaque type that holds
+the information which represents a color palette:
+
+   #. An array of levels and colors (:c:type:`hpix_color_t`). This
+      array always contains at least two elements: the one at level 0
+      (left side) and the one at level 1 (right side).
+
+   #. The color to be used for unseen pixels. This can be read using
+      :c:func:`hpix_color_for_unseen_pixels_in_palette` and set using
+      :c:func:`hpix_set_color_for_unseen_pixels_in_palette`.
+
+Being an opaque type, it can be accessed only using the setter/getter
+functions described here. It is important to note that for the linear
+interpolation routines to work (implemented in
+:c:func:`hpix_get_palette_color`), the levels must be sorted in
+ascending order. Moreover, as said above, the first level should have
+a level equal to 0 and the last should have a level equal to 1.
+
+It is possible to add color levels and to modify the existing ones,
+but it is not possible to delete levels from a
+:c:type:`hpix_color_palette_t` variable.
+
+.. c:function:: hpix_color_palette_t * hpix_create_black_color_palette(void)
+
+    Create a black color palette. This is never used in real-world
+    examples, but it can be a good starting point for creating custom
+    palettes using :c:func:`hpix_set_color_for_step_in_palette` and
+    :c:func:`hpix_add_step_to_color_palette`.
+
+    When the palette is no longer used, the program must call
+    :c:func:`hpix_free_color_palette`.
+
+.. c:function:: hpix_color_palette_t * hpix_create_grayscale_color_palette(void)
+
+    Create a color palette that mimics the one used by the original
+    Healpix library. When the palette is no longer used, the program
+    must call :c:func:`hpix_free_color_palette`.
+
+.. c:function:: hpix_color_palette_t * hpix_create_healpix_color_palette(void)
+
+    Create a color palette that mimics the one used by the original
+    Healpix library. When the palette is no longer used, the program
+    must call :c:func:`hpix_free_color_palette`.
+
+.. c:function:: void hpix_free_color_palette(hpix_color_palette_t * palette)
+
+    Release any memory associated with the palette.
+
+.. c:function:: void hpix_set_color_for_unseen_pixels_in_palette(hpix_color_palette_t * palette, hpix_color_t new_color)
+
+    Set the color to be used for unseen pixels in the specified palette.
+
+.. c:function:: hpix_color_t hpix_set_color_for_unseen_pixels_in_palette(hpix_color_palette_t * palette)
+    
+    Retrieve from the palette the color to be used for unseen pixels.
+
+.. c:function:: void hpix_add_step_to_color_palette(hpix_color_palette_t * palette, double level, hpix_color_t color)
+
+    Add a new color and a new level to the color palette. The new
+    color will be appended to the list of existing color steps. Before
+    using the palette, you must ensure that
+    :c:func:`hpix_sort_levels_in_color_palette` has been called, so
+    that all the levels are in ascending order.
+
+    Note that the code does not check if the level you are specifying
+    in the call is already present in the palette. If this is the
+    case, the library might behave unexpectedly (including divisions
+    by zero).
+
+.. c:function:: size_t hpix_num_of_steps_in_color_palette(const hpix_color_palette_t * palette)
+
+    Return the number of color steps in the palette. This number is
+    useful if you want to cycle over the steps using e.g. calls to
+    :c:func:`hpix_color_for_step_in_palette` and
+    :c:func:`hpix_level_for_step_in_palette`.
+
+.. c:function:: hpix_color_t hpix_color_for_step_in_palette(const hpix_color_palette_t * palette, size_t zero_based_index)
+
+    Return the color associated with the given step in the palette.
+    The value of `zero_based_index` ranges from 0 to the value
+    returned by :c:func:`hpix_num_of_steps_in_color_palette`.
+
+.. c:function:: double hpix_level_for_step_in_palette(const hpix_color_palette_t * palette, size_t zero_based_index)
+
+    Return the level associated with the given step in the palette.
+    This level should always be between 0.0 and 1.0. The value of
+    `zero_based_index` ranges from 0 to the value returned by
+    :c:func:`hpix_num_of_steps_in_color_palette`.
+
+
+.. c:function:: void hpix_set_color_for_step_in_palette(hpix_color_palette_t * palette, size_t zero_based_index, hpix_color_t new_color)
+
+    Change the color associated with the given step in the palette.
+
+    See also :c:func:`hpix_color_for_step_in_palette`.
+
+.. c:function:: void hpix_set_level_for_step_in_palette(hpix_color_palette_t * palette, size_t zero_based_index, double new_level)
+
+    Change the level associated with the given step in the palette.
+    Use with care! You must ensure that the new level does not
+    coincide with other levels in the palette, and that the first and
+    last level in the array of steps are still 0.0 and 1.0.
+
+    See also :c:func:`hpix_level_for_step_in_palette`.
+
+
+.. c:function:: void hpix_sort_levels_in_color_palette(hpix_color_palette_t * palette)
+
+    Sort all the steps in the palette in increasing order with respect
+    to their level. (The sort is done inplace using the Standard C
+    library function `qsort`: depending on the implementation, it
+    might require or not additional memory.)
+
+    Sorting the steps in the palette is crucial for allowing the
+    algorithm implemented in :c:func:`hpix_get_palette_color` to work.
+    For efficiency reasons, the function is _never_ called
+    automatically by HPixLib.
+
+.. c:function:: hpix_color_t hpix_get_palette_color(const hpix_color_palette_t * palette, double level)
+
+    Return a color representing the specified `level`, using the given
+    color palette. The result is a linear interpolation of the color
+    steps in the palette.
+
+    The palette must be properly sorted using
+    :c:func:`hpix_sort_levels_in_color_palette`. This is not needed
+    for the palettes returned by
+    :c:func:`hpix_create_black_color_palette`,
+    :c:func:`hpix_create_grayscale_color_palette`, and
+    :c:func:`hpix_create_healpix_color_palette`.
 
 Vector graphics
 ---------------
+
+Not implemented yet.
