@@ -176,18 +176,26 @@ END_TEST
 
 /**********************************************************************/
 
+void
+add_color_and_palette_tests_to_testcase(TCase * testcase)
+{
+    tcase_add_test(testcase, access_to_colors);
+    tcase_add_test(testcase, empty_palette);
+    tcase_add_test(testcase, unseen_pixel_color);
+    tcase_add_test(testcase, access_to_palettes);
+    tcase_add_test(testcase, modify_colors_in_palette);
+    tcase_add_test(testcase, check_interpolation);
+}
+
+/**********************************************************************/
+
 Suite *
-create_palette_test_suite(void)
+create_hpix_test_suite(void)
 {
     Suite * suite = suite_create("Colors and palettes");
 
     TCase * tc_core = tcase_create("Colors and palettes");
-    tcase_add_test(tc_core, access_to_colors);
-    tcase_add_test(tc_core, empty_palette);
-    tcase_add_test(tc_core, unseen_pixel_color);
-    tcase_add_test(tc_core, access_to_palettes);
-    tcase_add_test(tc_core, modify_colors_in_palette);
-    tcase_add_test(tc_core, check_interpolation);
+    add_color_and_palette_tests_to_testcase(tc_core);
 
     suite_add_tcase(suite, tc_core);
     return suite;
@@ -199,7 +207,7 @@ int
 main(void)
 {
     int number_failed;
-    Suite * palette_suite = create_palette_test_suite();
+    Suite * palette_suite = create_hpix_test_suite();
     SRunner * runner = srunner_create(palette_suite);
     srunner_run_all(runner, CK_VERBOSE);
     number_failed = srunner_ntests_failed(runner);
