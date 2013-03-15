@@ -136,10 +136,10 @@ Painting functions
    well. However, a good rule of thumb is to pick a width which is
    roughly twice the height, as most of the display devices in use
    today have a pixel aspect ratio which is close to 1:1.
-  
+
    When the bitmap returned by this function is no longer useful, you
    must free it using :c:func:`hpix_free`.
-  
+
    The typical usage is to produce a bitmap, then use *min_value* and
    *max_value* to scale it from the map measure unit into a color
    space. In the following example we imagine to use a graphics
@@ -154,11 +154,11 @@ Painting functions
    double * bitmap;
    double * cur_pixel;
    double min, max;
-   size_t i, x, y; 
-  
+   size_t i, x, y;
+
    proj = hpix_new_projection(640, 480, COORD_GALACTIC);
    bitmap = hpix_bmp_trace_bitmap(proj, map, &min, &max);
-  
+
    cur_pixel = bitmap;
    for(y = 0; y < hpix_projection_height(proj); ++y)
    {
@@ -170,7 +170,7 @@ Painting functions
            paint_pixel(x, y, red, green, blue);
        }
    }
-  
+
    hpix_free(bitmap);
    hpix_free_projection(proj);
 
@@ -217,7 +217,7 @@ each color is expressed as a mixture of red, green, and blue levels
 .. code-block:: c
 
     /* This will work in C99, but not in C89 */
-    hpix_color_t red_color = 
+    hpix_color_t red_color =
         (hpix_color_t) { .red = 1.0, .green = 0.0, .blue = 0.0 };
 
 Although the members of :c:type:`hpix_color_t` can be accessed
@@ -264,27 +264,28 @@ custom color palettes using the functions described in this section.
 
     The original Healpix color palette
 
-The type :c:type:`hpix_color_palette_t` is an opaque type that holds
-the information which represents a color palette:
 
-   #. An array of levels and colors (:c:type:`hpix_color_t`). This
-      array always contains at least two elements: the one at level 0
-      (left side) and the one at level 1 (right side).
+.. c:type:: hpix_color_palette_t
 
-   #. The color to be used for unseen pixels. This can be read using
-      :c:func:`hpix_color_for_unseen_pixels_in_palette` and set using
-      :c:func:`hpix_set_color_for_unseen_pixels_in_palette`.
+    The type :c:type:`hpix_color_palette_t` is an opaque type that
+    holds the information which represents a color palette:
 
-Being an opaque type, it can be accessed only using the setter/getter
-functions described here. It is important to note that for the linear
-interpolation routines to work (implemented in
-:c:func:`hpix_get_palette_color`), the levels must be sorted in
-ascending order. Moreover, as said above, the first level should have
-a level equal to 0 and the last should have a level equal to 1.
+       #. An array of levels and colors (:c:type:`hpix_color_t`). This
+          array always contains at least two elements: the one at level 0
+          (left side) and the one at level 1 (right side).
 
-It is possible to add color levels and to modify the existing ones,
-but it is not possible to delete levels from a
-:c:type:`hpix_color_palette_t` variable.
+       #. The color to be used for unseen pixels.
+
+    HPixLib provides a few functions that create nice-looking palettes
+    ready to use: :c:func:`hpix_create_grayscale_color_palette` and
+    :c:func:`hpix_create_healpix_color_palette`. When a palette is no
+    longer used, the program must call
+    :c:func:`hpix_free_color_palette`.
+
+    Note that, being an opaque type, :c:type:`hpix_color_palette_t`
+    can be accessed only using the setter/getter functions described
+    here.
+
 
 .. c:function:: hpix_color_palette_t * hpix_create_black_color_palette(void)
 
@@ -298,9 +299,12 @@ but it is not possible to delete levels from a
 
 .. c:function:: hpix_color_palette_t * hpix_create_grayscale_color_palette(void)
 
-    Create a color palette that mimics the one used by the original
-    Healpix library. When the palette is no longer used, the program
-    must call :c:func:`hpix_free_color_palette`.
+    Create a color palette made by gray shades. (The color used for
+    unseen pixels has a reddish tint, in order to make it
+    distinguishable from the others.)
+
+    When the palette is no longer used, the program must call
+    :c:func:`hpix_free_color_palette`.
 
 .. c:function:: hpix_color_palette_t * hpix_create_healpix_color_palette(void)
 
@@ -312,13 +316,21 @@ but it is not possible to delete levels from a
 
     Release any memory associated with the palette.
 
+The color to be used for unseen/masked/bad pixels can be read using
+:c:func:`hpix_color_for_unseen_pixels_in_palette` and set using
+:c:func:`hpix_set_color_for_unseen_pixels_in_palette`.
+
 .. c:function:: void hpix_set_color_for_unseen_pixels_in_palette(hpix_color_palette_t * palette, hpix_color_t new_color)
 
     Set the color to be used for unseen pixels in the specified palette.
 
 .. c:function:: hpix_color_t hpix_set_color_for_unseen_pixels_in_palette(hpix_color_palette_t * palette)
-    
+
     Retrieve from the palette the color to be used for unseen pixels.
+
+It is possible to add color levels and to modify the existing ones.
+Note however that it is not possible to delete levels from a
+:c:type:`hpix_color_palette_t` variable.
 
 .. c:function:: void hpix_add_step_to_color_palette(hpix_color_palette_t * palette, double level, hpix_color_t color)
 
@@ -353,7 +365,6 @@ but it is not possible to delete levels from a
     `zero_based_index` ranges from 0 to the value returned by
     :c:func:`hpix_num_of_steps_in_color_palette`.
 
-
 .. c:function:: void hpix_set_color_for_step_in_palette(hpix_color_palette_t * palette, size_t zero_based_index, hpix_color_t new_color)
 
     Change the color associated with the given step in the palette.
@@ -369,6 +380,32 @@ but it is not possible to delete levels from a
 
     See also :c:func:`hpix_level_for_step_in_palette`.
 
+Here is an example of how to use these functions to dump the
+definition of a palette to `stdout`:
+
+.. code-block:: c
+
+    size_t num_of_steps = hpix_num_of_steps_in_color_palette(palette);
+
+    for(size_t index = 0; index < num_of_steps; ++index)
+    {
+        double level = hpix_level_for_step_in_palette(palette, index);
+	hpix_color_t color = hpix_color_for_step_in_palette(palette, index);
+
+        printf("Level: %.2f   -- R: %.2f, G: %.2f, B: %.2f\n",
+               color.red, color.green, color.blue);
+    }
+
+If `palette` were the result of a call to
+:c:func:`hpix_create_healpix_color_palette`, the output of the code
+above would have been the following::
+
+    Level: 0.00   -- R: 0.00, G: 0.00, B: 0.50
+    Level: 0.15   -- R: 0.00, G: 0.00, B: 1.00
+    Level: 0.40   -- R: 0.00, G: 1.00, B: 1.00
+    Level: 0.70   -- R: 1.00, G: 1.00, B: 0.00
+    Level: 0.90   -- R: 1.00, G: 0.33, B: 0.00
+    Level: 1.00   -- R: 0.50, G: 0.00, B: 0.00
 
 .. c:function:: void hpix_sort_levels_in_color_palette(hpix_color_palette_t * palette)
 
@@ -379,7 +416,7 @@ but it is not possible to delete levels from a
 
     Sorting the steps in the palette is crucial for allowing the
     algorithm implemented in :c:func:`hpix_get_palette_color` to work.
-    For efficiency reasons, the function is _never_ called
+    For efficiency reasons, the function is *never* called
     automatically by HPixLib.
 
 .. c:function:: hpix_color_t hpix_get_palette_color(const hpix_color_palette_t * palette, double level)
@@ -394,6 +431,55 @@ but it is not possible to delete levels from a
     :c:func:`hpix_create_black_color_palette`,
     :c:func:`hpix_create_grayscale_color_palette`, and
     :c:func:`hpix_create_healpix_color_palette`.
+
+Before using a palette in a
+call to :c:func:`hpix_get_color_palette` or any function that
+implicitly calls it (e.g.,
+:c:func:`hpix_bmp_mollweide_proj_to_cairo_surface`), you must ensure
+these rules apply:
+
+    #. The first color step in the palette has level 0.
+
+    #. The last color step in the palette has level 1.
+
+    #. All the color steps are sorted in increasing order according to
+       their level.
+
+    #. There must not be two color steps with the same value for the
+       level.
+
+HPixLib does not enforce any of these rules. To ensure that you comply
+with them, here is a set of rules:
+
+    * After you call :c:func:`hpix_add_step_to_color_palette`, call
+      :c:func:`hpix_sort_levels_in_color_palette` to sort the list. If
+      you make multiple calls to
+      :c:func:`hpix_add_step_to_color_palette`, you can sort the list
+      after the last call (which is very efficient).
+
+    * Never use :c:func:`hpix_set_level_for_step_in_palette` to change
+      the level of the color steps with level 0.0 and 1.0.
+
+    * When adding new color steps with
+      :c:func:`hpix_add_step_to_color_palette`, ensure that the level
+      you are specifing was never used in the palette.
+
+    * If you want to change the color at one of the edges of the
+      palette, the right way to do is to call
+      :c:func:`hpix_set_color_for_step_in_palette`, as shown in the
+      following example:
+
+.. code-block:: c
+
+    /* This might be unnecessary, but it does not harm. */
+    hpix_sort_levels_in_color_palette(palette);
+
+    size_t num_of_steps = hpix_num_of_steps_in_color_palette(palette);
+
+    /* Change the color for level 0 */
+    hpix_set_color_for_step_in_palette(0, hpix_create_color(0.0, 1.0, 1.0));
+    /* Change the color for level 1 */
+    hpix_set_color_for_step_in_palette(num_of_steps - 1, hpix_create_color(1.0, 1.0, 1.0));
 
 Vector graphics
 ---------------
