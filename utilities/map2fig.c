@@ -87,7 +87,7 @@ output_format_t list_of_output_formats[] = {
 #if CAIRO_HAS_SVG_SURFACE
     { "svg", "Scalable Vector Graphics", FMT_SVG },
 #endif
-    { NULL, FMT_NULL }
+    { NULL, NULL, FMT_NULL }
 };
 
 /* Output format to use, see above */
@@ -157,6 +157,31 @@ typedef struct {
     double width, height;
 } rect_t;
 
+typedef enum { PAL_NULL, PAL_HEALPIX, PAL_GRAYSCALE, PAL_PLANCK }
+    palette_type_code_t;
+
+/* This structure holds information about one palette. It is only used
+ * to parse the `--palette` command-line flag and to implement the
+ * `--list-palettes` command. */
+typedef struct {
+    /* Short name, used to parse the keyword after `--palette` */
+    const char * name;
+    /* Description, used by `--list-palettes` */
+    const char * description;
+    /* Code, used to initialize the global variable `palette_type_code` */
+    palette_type_code_t code;
+} palette_type_t;
+
+/* Here is the list of the palettes supported by the program. */
+palette_type_t list_of_palette_types[] = {
+    { "healpix", "Palette used in the original Healpix implementation", PAL_HEALPIX },
+    { "parchment", "Palette used in the first Planck data release", PAL_PLANCK },
+    { "grayscale", "Grayscale palette", PAL_GRAYSCALE },
+    { NULL, NULL, PAL_NULL }
+};
+
+palette_type_code_t palette_type_code = PAL_HEALPIX;
+
 /******************************************************************************/
 
 
@@ -175,6 +200,9 @@ print_usage(const char * program_name)
     puts("  --min=VALUE, --max=VALUE  Minimum and maximum value to be used");
     puts("                            at the extrema of the color bar");
     puts("  -o, --output=FILE         Save the image to the specified file");
+    puts("  --palette=NAME            Color palette to use");
+    puts("  --list-palettes           Print a list of the palettes that can");
+    puts("                            be specified with --palette");
     puts("  -s, --scale=NUM           Multiply the pixel values by NUM");
     puts("                            (useful e.g. to convert K into mK)");
     puts("  -t, --title=TITLE         Title to be written");
@@ -208,6 +236,21 @@ print_list_of_available_formats(void)
 
 
 void
+print_list_of_palette_types(void)
+{
+    int idx;
+    for(idx = 0; list_of_palette_types[idx].name != NULL; ++idx)
+    {
+	palette_type_t * type = &list_of_palette_types[idx];
+	assert(type != NULL);
+	printf("%s\t%s\n", type->name, type->description);
+    }
+}
+
+/******************************************************************************/
+
+
+void
 parse_format_specification(const char * format_str)
 {
     int idx;
@@ -226,6 +269,47 @@ parse_format_specification(const char * format_str)
 	    MSG_HEADER "unknown format `%s', get a list of the available\n"
 	    MSG_HEADER "formats using `--list-formats'\n",
 	    format_str);
+}
+
+/******************************************************************************/
+
+
+void
+parse_palette_specification(const char * type_str)
+{
+    int idx;
+    for(idx = 0; list_of_palette_types[idx].name != NULL; ++idx)
+    {
+	palette_type_t * type = &list_of_palette_types[idx];
+	assert(type != NULL);
+	if(strcmp(type->name, type_str) == 0)
+	{
+	    palette_type_code = type->code;
+	    return;
+	}
+    }
+
+    fprintf(stderr,
+	    MSG_HEADER "unknown palette `%s', get a list of the available\n"
+	    MSG_HEADER "palettes using `--list-palettes'\n",
+	    type_str);
+}
+
+/******************************************************************************/
+
+
+hpix_color_palette_t *
+create_palette(void)
+{
+    switch(palette_type_code)
+    {
+    case PAL_HEALPIX:   return hpix_create_healpix_color_palette();
+    case PAL_GRAYSCALE: return hpix_create_grayscale_color_palette();
+    case PAL_PLANCK:    return hpix_create_planck_color_palette();
+    case PAL_NULL:
+    default:
+	abort();
+    }
 }
 
 /******************************************************************************/
@@ -283,6 +367,7 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('B', 0, gopt_shorts(0), gopt_longs("no-background")),
 		      gopt_option('c', 0, gopt_shorts('c'), gopt_longs("column")),	
 		      gopt_option('F', 0, gopt_shorts(0), gopt_longs("list-formats")),
+		      gopt_option('P', 0, gopt_shorts(0), gopt_longs("list-palettes")),
 		      gopt_option('m', GOPT_ARG, gopt_shorts('m'), gopt_longs("measure-unit")),
 		      gopt_option('o', GOPT_ARG, gopt_shorts('o'), gopt_longs("output")),
 		      gopt_option('a', GOPT_ARG, gopt_shorts(0), gopt_longs("xy-aspect-ratio")),
@@ -292,7 +377,8 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('t', GOPT_ARG, gopt_shorts('t'), gopt_longs("title")),
 		      gopt_option('1', GOPT_ARG, gopt_shorts(0), gopt_longs("tick-font-size")),
 		      gopt_option('2', GOPT_ARG, gopt_shorts(0), gopt_longs("title-font-size")),
-		      gopt_option('f', GOPT_ARG, gopt_shorts('f'), gopt_longs("format"))));
+		      gopt_option('f', GOPT_ARG, gopt_shorts('f'), gopt_longs("format")),
+		      gopt_option('p', GOPT_ARG, gopt_shorts('p'), gopt_longs("palette"))));
 
     /* --help */
     if(gopt(options, 'h'))
@@ -316,6 +402,13 @@ parse_command_line(int argc, const char ** argv)
     if(gopt(options, 'F'))
     {
 	print_list_of_available_formats();
+	exit(EXIT_SUCCESS);
+    }
+
+    /* --list-palettes */
+    if(gopt(options, 'P'))
+    {
+	print_list_of_palette_types();
 	exit(EXIT_SUCCESS);
     }
 
@@ -349,6 +442,10 @@ parse_command_line(int argc, const char ** argv)
     /* --format STRING */
     if(gopt_arg(options, 'f', &value_str))
 	parse_format_specification(value_str);
+
+    /* --format STRING */
+    if(gopt_arg(options, 'p', &value_str))
+	parse_palette_specification(value_str);
 
     /* Here we parse all those options of the form --name VALUE, with
      * VALUE being a floating-point number. */
@@ -711,7 +808,12 @@ paint_map(cairo_t * context, const rect_t * map_rect,
     
     /* Fill an ellipse with the content of `map_surface'. */
     cairo_arc(context, 0.0, 0.0, 1.0, 0.0, 2 * M_PI);
-    cairo_fill(context);
+    cairo_fill_preserve(context);
+
+    cairo_set_line_width(context, 0.001);
+    cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
+    cairo_stroke(context);
+
     cairo_restore(context);
     
     /* Cleanup */
@@ -1049,7 +1151,7 @@ paint_and_save_figure(const hpix_map_t * map)
     if(title_rect.height > 0.0)
 	paint_title(context, &title_rect);
 
-    hpix_color_palette_t * palette = hpix_create_healpix_color_palette();
+    hpix_color_palette_t * palette = create_palette();
     paint_map(context, &map_rect, palette, map, min, max);
 
     if(colorbar_rect.height > 0.0)
