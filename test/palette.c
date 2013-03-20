@@ -53,11 +53,11 @@ START_TEST(access_to_colors)
     hpix_color_t dummy_color = hpix_create_color(red, green, blue);
 
     TEST_FOR_CLOSENESS(hpix_red_level_from_color(&dummy_color),
-	       red);
+		       red);
     TEST_FOR_CLOSENESS(hpix_green_level_from_color(&dummy_color),
-	       green);
+		       green);
     TEST_FOR_CLOSENESS(hpix_blue_level_from_color(&dummy_color),
-	       blue);
+		       blue);
 
 }
 END_TEST
