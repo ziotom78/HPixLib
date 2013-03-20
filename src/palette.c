@@ -160,6 +160,38 @@ hpix_create_healpix_color_palette(void)
 
 /**********************************************************************/
 
+/* Create a palette similar to the one used in the first Planck data
+ * release (2013). */
+
+hpix_color_palette_t *
+hpix_create_planck_color_palette(void)
+{
+    hpix_color_palette_t * palette = hpix_create_black_color_palette();
+
+    /* First fix the extrema of the range */
+    hpix_set_color_for_step_in_palette(palette, 0,
+				       hpix_create_color(0.0, 0.0, 1.0));
+    hpix_set_color_for_step_in_palette(palette, 1,
+				       hpix_create_color(0.4, 0.0, 0.0));
+    
+    /* Now fill the intermediate levels */
+    hpix_add_step_to_color_palette(palette, 0.33,
+				   hpix_create_color(0.0, 0.87, 1.0));
+    hpix_add_step_to_color_palette(palette, 0.50,
+				   hpix_create_color(1.0, 0.93, 0.85));
+    hpix_add_step_to_color_palette(palette, 0.67,
+				   hpix_create_color(1.0, 0.7, 0.0));
+    hpix_add_step_to_color_palette(palette, 0.83,
+				   hpix_create_color(1.0, 0.3, 0.0));
+
+    /* Finally, sort everything */
+    hpix_sort_levels_in_color_palette(palette);
+
+    return palette;
+}
+
+/**********************************************************************/
+
 
 void
 hpix_free_color_palette(hpix_color_palette_t * palette)

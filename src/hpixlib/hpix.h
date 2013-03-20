@@ -291,6 +291,7 @@ double hpix_green_level_from_color(const hpix_color_t * color);
 hpix_color_palette_t * hpix_create_black_color_palette(void);
 hpix_color_palette_t * hpix_create_grayscale_color_palette(void);
 hpix_color_palette_t * hpix_create_healpix_color_palette(void);
+hpix_color_palette_t * hpix_create_planck_color_palette(void);
 void hpix_free_color_palette(hpix_color_palette_t * palette);
 void hpix_set_color_for_unseen_pixels_in_palette(hpix_color_palette_t * palette,
 						 hpix_color_t new_color);

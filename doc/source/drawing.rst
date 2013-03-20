@@ -312,6 +312,12 @@ custom color palettes using the functions described in this section.
     Healpix library. When the palette is no longer used, the program
     must call :c:func:`hpix_free_color_palette`.
 
+.. c:function:: hpix_color_palette_t * hpix_create_planck_color_palette(void)
+
+    Create a color palette that mimics the one used in the first
+    Planck data release. When the palette is no longer used, the
+    program must call :c:func:`hpix_free_color_palette`.
+
 .. c:function:: void hpix_free_color_palette(hpix_color_palette_t * palette)
 
     Release any memory associated with the palette.
