@@ -139,8 +139,8 @@ double max_value;
 /* Size of the image. Depending on the output format, these number can
  * be pixels (PNG) or points (1/72 inch, used by PS, PDF, SVG).
  * Therefore, they are set once the format has been decided. */
-double image_width;
-double image_height;
+double image_width = -1;
+double image_height = -1;
 
 /* Number of pixels in the bitmapped representation of the map. Unlike
  * `image_width` and `image_height`, these numbers are always
@@ -212,6 +212,8 @@ print_usage(const char * program_name)
     puts("  --title-font-size=NUM     Height of the title (in pixels if");
     puts("                            exporting to PNG, in dots otherwise)");
     puts("  --remove-monopole         Remove the monopole from the map");
+    puts("  -w, --width=NUM           Width of the image (in pixels if using");
+    puts("                            the PNG format, in inches otherwise)");
     puts("  --xy-aspect-ratio=NUM     Width/height ratio of the image size");
     puts("  -v, --version             Print version number and exit");
     puts("  -h, --help                Print this help");
@@ -370,6 +372,7 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('P', 0, gopt_shorts(0), gopt_longs("list-palettes")),
 		      gopt_option('m', GOPT_ARG, gopt_shorts('m'), gopt_longs("measure-unit")),
 		      gopt_option('o', GOPT_ARG, gopt_shorts('o'), gopt_longs("output")),
+		      gopt_option('w', GOPT_ARG, gopt_shorts('w'), gopt_longs("width")),
 		      gopt_option('a', GOPT_ARG, gopt_shorts(0), gopt_longs("xy-aspect-ratio")),
 		      gopt_option('_', GOPT_ARG, gopt_shorts(0), gopt_longs("min")),
 		      gopt_option('^', GOPT_ARG, gopt_shorts(0), gopt_longs("max")),
@@ -459,9 +462,12 @@ parse_command_line(int argc, const char ** argv)
 	parse_double_from_options(options, 's', 
 				  /* default_value = */ 1.0,
 				  "--scale");
+    image_width = parse_double_from_options(options, 'w',
+					    /* default_value = */ -1.0,
+					    "--width");
     double xy_aspect_ratio = 
 	parse_double_from_options(options, 'a', 
-				  /* default_value = */ 1.5,
+				  /* default_value = */ 2.0,
 				  "--xy-aspect-ratio");
     tick_font_size = 
 	parse_double_from_options(options, '1',
@@ -499,23 +505,26 @@ parse_command_line(int argc, const char ** argv)
 	exit(EXIT_FAILURE);
     }
 
-    switch(output_format)
+    if(image_width < 0)
     {
-    case FMT_PNG:
-	/* Pixels */
-	image_width = 750;
-	break;
+	switch(output_format)
+	{
+	case FMT_PNG:
+	    /* Pixels */
+	    image_width = 750;
+	    break;
 
-    case FMT_PS:
-    case FMT_EPS:
-    case FMT_PDF:
-    case FMT_SVG:
-	/* Points, that is, 1/72 inches */
-	image_width = 7.5 * 72;
-	break;
+	case FMT_PS:
+	case FMT_EPS:
+	case FMT_PDF:
+	case FMT_SVG:
+	    /* Points, that is, 1/72 inches */
+	    image_width = 7.5 * 72;
+	    break;
 
-    default:
-	assert(0);
+	default:
+	    assert(0);
+	}
     }
 
     image_height = image_width / xy_aspect_ratio;
