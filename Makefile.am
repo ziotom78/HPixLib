@@ -35,6 +35,5 @@ ACLOCAL_AMFLAGS=-I m4
 
 SUBDIRS = src test utilities
 
-pkgconfigdir = $(top_srcdir)
-pkgconfig_DATA = libhpix.pc
-
+pkgconfigdir = $(libdir)/pkgconfig
+nodist_pkgconfig_DATA = libhpix.pc
