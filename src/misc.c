@@ -18,6 +18,12 @@
 #include <hpixlib/hpix.h>
 #include <math.h>
 
+_Bool
+hpix_valid_nside(hpix_nside_t nside)
+{
+    return nside > 0 && (! (nside & (nside - 1)));
+}
+
 hpix_pixel_num_t
 hpix_nside_to_npixel(hpix_nside_t nside)
 {
