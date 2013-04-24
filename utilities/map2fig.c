@@ -102,6 +102,9 @@ int draw_color_bar_flag = 0;
 /* Should we produce a number of diagnostic messages? Set by `--verbose` */
 int verbose_flag = 0;
 
+/* Should we show the logarithm of the pixel values? */
+int log_flag = 0;
+
 /* Shall we remove the average from the map? Set by `--remove-monopole' */
 int remove_monopole = 0;
 
@@ -205,6 +208,9 @@ print_usage(const char * program_name)
     puts("  --min=VALUE, --max=VALUE  Minimum and maximum value to be used");
     puts("                            at the extrema of the color bar");
     puts("  --remove-monopole         Remove the monopole from the map");
+    puts("  --log10                   Apply log10 to the value of each");
+    puts("                            non-negative pixels. (Other pixels");
+    puts("                            are set to NAN.)");
     puts("");
     puts("Aesthetics");
     puts("  -t, --title=TITLE         Title to be written on top of the image");
@@ -375,12 +381,13 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('h', 0, gopt_shorts('h', '?'), gopt_longs("help")),
 		      gopt_option('v', 0, gopt_shorts('v'), gopt_longs("version")),
 		      gopt_option('V', 0, gopt_shorts(0), gopt_longs("verbose")),
+		      gopt_option('l', 0, gopt_shorts(0), gopt_longs("log10")),
 		      gopt_option('b', 0, gopt_shorts('b'), gopt_longs("draw-color-bar")),
 		      gopt_option('M', 0, gopt_shorts(0), gopt_longs("remove-monopole")),
 		      gopt_option('B', 0, gopt_shorts(0), gopt_longs("no-background")),
-		      gopt_option('c', 0, gopt_shorts('c'), gopt_longs("column")),	
 		      gopt_option('F', 0, gopt_shorts(0), gopt_longs("list-formats")),
 		      gopt_option('P', 0, gopt_shorts(0), gopt_longs("list-palettes")),
+		      gopt_option('c', GOPT_ARG, gopt_shorts('c'), gopt_longs("column")),	
 		      gopt_option('m', GOPT_ARG, gopt_shorts('m'), gopt_longs("measure-unit")),
 		      gopt_option('o', GOPT_ARG, gopt_shorts('o'), gopt_longs("output")),
 		      gopt_option('w', GOPT_ARG, gopt_shorts('w'), gopt_longs("width")),
@@ -408,7 +415,11 @@ parse_command_line(int argc, const char ** argv)
 	exit(EXIT_SUCCESS);
     }
 
-    /* --no-background */
+    /* --log10 */
+    if(gopt(options, 'l'))
+	log_flag = 1;
+ 
+   /* --no-background */
     if(gopt(options, 'B'))
 	no_background_flag = 1;
 
@@ -595,6 +606,18 @@ load_map_and_rescale_if_needed(void)
     /* Remove the monopole */
     if(remove_monopole)
 	hpix_remove_monopole_from_map_inplace(result);
+
+    if(log_flag)
+    {
+	double * pixels = hpix_map_pixels(result);
+	for(size_t idx = 0; idx < hpix_map_num_of_pixels(result); ++idx)
+	{
+	    if(pixels[idx] > 0.0)
+		pixels[idx] = log10(pixels[idx]);
+	    else
+		pixels[idx] = FP_NAN;
+	}
+    }
 
     hpix_scale_pixels_by_constant_inplace(result, scale_factor);
 
@@ -848,6 +871,8 @@ void
 format_number(char * buf, size_t size, double number,
 	      const char * measure_unit)
 {
+    buf[0] = 0;
+
     if(measure_unit != NULL
        && measure_unit[0] != '\0')
     {
