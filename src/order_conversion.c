@@ -45,6 +45,32 @@ X(0),X(8),X(2048),X(2056)
 
 static const int jrll[12] = { 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4 };
 static const int jpll[12] = { 1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7 };
+
+/**********************************************************************/
+
+/* These two variables are used for swapping the ordering convention
+ * of the pixels in a map (see hpix_switch_order).
+ *
+ * The logic is the following: if you have some integer which
+ * represents the index of a pixel in a map using RING order and
+ * convert them into a NEST index, you'll likely get a different
+ * index. If now you take this NEST index to be a RING index and
+ * convert it again into a NEST index, and you repeat until you get
+ * the index you have when you started, you get a "cycle".
+ *
+ * Of course, "cycles" depend on the value of NSIDE. But they do not
+ * depend whether you start with a RING or NEST index (as long as you
+ * do not care about the cycle being reversed).
+ *
+ * The idea is that if you know the shape of a cycle for every NSIDE
+ * you want to use, you can quickly swap the order convention of a
+ * map. The variable `swap_clen' contains the number of cycles for
+ * each value of NSIDE, and the variable `swap_cycle' contains the
+ * *first* index of the cycle (subsequent indexes are easily
+ * calculated by iterating hpix_ring_to_nest_index or
+ * hpix_nest_to_ring_index until you get back to the first index).
+ */
+
 static const int swap_clen[] = {
     0,  /* NSIDE=1 */
     7,  /* NSIDE=2 */
@@ -340,6 +366,8 @@ hpix_switch_order(hpix_map_t * map)
     conversion_fn_t * conversion_fn;
     assert(map);
 
+    /* See the definition of swap_clen and swap_cycle to make sense of
+     * this stuff. */
     if(map->scheme == HPIX_ORDER_SCHEME_RING)
 	conversion_fn = hpix_ring_to_nest_idx;
     else
@@ -351,13 +379,11 @@ hpix_switch_order(hpix_map_t * map)
     for(size_t m = 0; m < num_of_cycles; ++m)
     {
         hpix_pixel_num_t istart = array_of_cycles[m];
-	printf("New cycle: istart = %d\n", istart);
         double pixbuf = map->pixels[istart];
         hpix_pixel_num_t iold = istart;
 	hpix_pixel_num_t inew = conversion_fn(&map->resolution, istart);
         while (inew != istart)
 	{
-	    printf("  iold = %d, inew = %d\n", iold, inew);
 	    map->pixels[iold] = map->pixels[inew];
 	    iold = inew;
 	    inew = conversion_fn(&map->resolution, inew);
