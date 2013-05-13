@@ -41,11 +41,11 @@ START_TEST(isqrt)
     ck_assert_int_eq(hpix_isqrt(0), 0);
     ck_assert_int_eq(hpix_isqrt(1), 1);
     ck_assert_int_eq(hpix_isqrt(2), 1);
-    ck_assert_int_eq(hpix_isqrt(3), 2);
+    ck_assert_int_eq(hpix_isqrt(3), 1);
     ck_assert_int_eq(hpix_isqrt(4), 2);
     ck_assert_int_eq(hpix_isqrt(9), 3);
 
-    ck_assert_int_eq(hpix_isqrt(143), 12);
+    ck_assert_int_eq(hpix_isqrt(143), 11);
     ck_assert_int_eq(hpix_isqrt(144), 12);
     ck_assert_int_eq(hpix_isqrt(145), 12);
 }
