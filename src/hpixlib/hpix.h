@@ -49,6 +49,7 @@ typedef struct {
     hpix_coordinates_t coord;
     hpix_nside_t       nside;
     double           * pixels;
+    int                free_pixels_flag;
 } hpix_map_t;
 
 /* The most basic structure: a RGB color. Following Cairo's

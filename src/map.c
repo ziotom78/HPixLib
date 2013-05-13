@@ -29,6 +29,7 @@ hpix_create_map(hpix_nside_t nside, hpix_ordering_t ordering)
     map->nside = nside;
     map->pixels = hpix_calloc(sizeof(map->pixels[0]),
 			      hpix_nside_to_npixel(nside));
+    map->free_pixels_flag = FALSE;
 
     return map;
 }
@@ -44,6 +45,7 @@ hpix_create_map_from_array(double * array,
     map->coord = HPIX_COORD_GALACTIC;
     map->nside = hpix_npixel_to_nside(num_of_elements);
     map->pixels = array;
+    map->free_pixels_flag = TRUE;
 
     return map;
 }
@@ -54,7 +56,9 @@ hpix_free_map(hpix_map_t * map)
     if(map == NULL)
 	return;
 
-    hpix_free(map->pixels);
+    if(map->free_pixels_flag)
+	hpix_free(map->pixels);
+
     hpix_free(map);
 }
 
