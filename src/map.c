@@ -77,7 +77,9 @@ hpix_free_map(hpix_map_t * map)
     if(map == NULL)
 	return;
 
-    hpix_free(map->pixels);
+    if(map->free_pixels_flag)
+	hpix_free(map->pixels);
+
     hpix_free(map);
 }
 
