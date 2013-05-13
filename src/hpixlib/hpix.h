@@ -64,7 +64,7 @@ typedef struct {
     hpix_ordering_scheme_t scheme;
     hpix_coordinates_t     coord;
     double               * pixels;
-    int                    free_pixels_flag;
+    _Bool                  free_pixels_flag;
 
     hpix_resolution_t      resolution;
 } hpix_map_t;
