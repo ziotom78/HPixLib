@@ -1,5 +1,4 @@
-/* test_nest_to_ring.c -- check the implementation of
- * hpix_nest_to_ring_idx and hpix_nest_to_ring_map
+/* check_helpers.h -- macros and functions based on the "check" library
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -16,23 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#include <hpixlib/hpix.h>
-#include <stdlib.h>
-#include "libtest.h"
+#ifndef CHECK_HELPERS_H
+#define CHECK_HELPERS_H
 
-int
-main(void)
-{
-    TEST_INIT;
+#define TEST_FOR_CLOSENESS(float1, float2)					\
+    {									\
+	fail_unless(fabs(float1 - float2) < 1e-7,			\
+		    "Numbers " #float1 " and " #float2 " are not close."); \
+    }
 
-    /* Check for some random numbers */
-    TEST_EQUAL(hpix_nest_to_ring_idx( 64,    9632),    9010);
-    TEST_EQUAL(hpix_nest_to_ring_idx(256,    1652),  324237);
-    TEST_EQUAL(hpix_nest_to_ring_idx(512, 2966186), 2800416);
-
-    /* Check for failures */
-    TEST_EQUAL(hpix_nest_to_ring_idx(4, 1000000), 0);
-    TEST_EQUAL(hpix_nest_to_ring_idx(0, 1),       0);
-
-    TEST_EXIT;
-}
+#endif
