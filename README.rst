@@ -6,7 +6,8 @@ open-source implementation of the Healpix pixelization library
 ("HEALPIX - a Framework for High Resolution Discretization, and Fast
 Analysis of Data Distributed on the Sphere". K.M. Górski, Eric Hivon,
 A.J. Banday, B.D. Wandelt, F.K. Hansen, M. Reinecke, M. Bartelmann,
-2005, ApJ 622, 759). It predates a number of functions from the
+2005, ApJ 622, 759). Most of the functions have been implemented using
+the algorithms and codes found in the
 `original Healpix implementation <http://healpix.jpl.nasa.gov/>`_.
 
 The library is licensed under the `GNU General Public License version 2
