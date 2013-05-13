@@ -64,7 +64,7 @@ hpix_create_map_from_array(double * array,
     map->coord  = HPIX_COORD_GALACTIC;
 
     map->pixels = array;
-    map->free_pixels_flag = TRUE;
+    map->free_pixels_flag = FALSE;
 
     hpix_init_resolution_from_nside(hpix_npixel_to_nside(num_of_elements),
 				    &map->resolution);

@@ -268,7 +268,7 @@ START_TEST(switch_order)
     for(size_t i = 0; i < num_of_pixels; ++i)
 	ck_assert_int_eq(map_pixels[i], ring_idx[i]);
     
-    /*hpix_free_map(map);*/
+    hpix_free_map(map);
 }
 END_TEST
 
