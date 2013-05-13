@@ -19,32 +19,55 @@
 #include <assert.h>
 #include <memory.h>
 
+void
+hpix_init_resolution_from_nside(hpix_nside_t nside,
+				hpix_resolution_t * resolution)
+{
+    assert(resolution != NULL);
+
+    resolution->nside            = nside;
+    resolution->nside_times_two  = nside * 2;
+    resolution->nside_times_four = nside * 4;
+
+    resolution->order            = (nside & (nside-1)) ? -1 : hpix_ilog2(nside);
+    resolution->npface           = nside * nside;
+    resolution->num_of_pixels    = 12 * resolution->npface;
+    resolution->ncap             = 2 * (resolution->npface - nside);
+    resolution->fact2            = 4.0 / resolution->num_of_pixels;
+    resolution->fact1            = (2 * nside) * resolution->fact2;
+}
+
 hpix_map_t *
-hpix_create_map(hpix_nside_t nside, hpix_ordering_t ordering)
+hpix_create_map(hpix_nside_t nside, hpix_ordering_scheme_t scheme)
 {
     hpix_map_t * map = (hpix_map_t *) hpix_malloc(sizeof(hpix_map_t), 1);
 
-    map->order = ordering;
-    map->coord = HPIX_COORD_GALACTIC;
-    map->nside = nside;
-    map->pixels = hpix_calloc(sizeof(map->pixels[0]),
-			      hpix_nside_to_npixel(nside));
+    map->scheme	= scheme;
+    map->coord	= HPIX_COORD_GALACTIC;
 
+    map->pixels	= hpix_calloc(sizeof(map->pixels[0]),
+			      hpix_nside_to_npixel(nside));
+    map->free_pixels_flag = TRUE;
+
+    hpix_init_resolution_from_nside(nside, &map->resolution);
     return map;
 }
 
 hpix_map_t *
 hpix_create_map_from_array(double * array,
 			   size_t num_of_elements,
-			   hpix_ordering_t ordering)
+			   hpix_ordering_scheme_t scheme)
 {
     hpix_map_t * map = (hpix_map_t *) hpix_malloc(sizeof(hpix_map_t), 1);
 
-    map->order = ordering;
-    map->coord = HPIX_COORD_GALACTIC;
-    map->nside = hpix_npixel_to_nside(num_of_elements);
-    map->pixels = array;
+    map->scheme = scheme;
+    map->coord  = HPIX_COORD_GALACTIC;
 
+    map->pixels = array;
+    map->free_pixels_flag = TRUE;
+
+    hpix_init_resolution_from_nside(hpix_npixel_to_nside(num_of_elements),
+				    &map->resolution);
     return map;
 }
 
@@ -62,7 +85,7 @@ hpix_map_t *
 hpix_create_copy_of_map(const hpix_map_t * map)
 {
     hpix_map_t * copy = hpix_create_map(hpix_map_nside(map),
-					hpix_map_ordering(map));
+					hpix_map_ordering_scheme(map));
 
     memcpy(hpix_map_pixels(copy),
 	   hpix_map_pixels(map),
@@ -71,11 +94,11 @@ hpix_create_copy_of_map(const hpix_map_t * map)
     return copy;
 }
 
-hpix_ordering_t
-hpix_map_ordering(const hpix_map_t * map)
+hpix_ordering_scheme_t
+hpix_map_ordering_scheme(const hpix_map_t * map)
 {
     assert(map);
-    return map->order;
+    return map->scheme;
 }
 
 hpix_coordinates_t
@@ -89,7 +112,7 @@ hpix_nside_t
 hpix_map_nside(const hpix_map_t * map)
 {
     assert(map);
-    return map->nside;
+    return map->resolution.nside;
 }
 
 double *
@@ -103,5 +126,12 @@ size_t
 hpix_map_num_of_pixels(const hpix_map_t * map)
 {
     assert(map);
-    return hpix_nside_to_npixel(map->nside);
+    return hpix_nside_to_npixel(map->resolution.nside);
+}
+
+const hpix_resolution_t *
+hpix_map_resolution(const hpix_map_t * map)
+{
+    assert(map);
+    return &map->resolution;
 }

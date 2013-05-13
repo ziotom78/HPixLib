@@ -92,7 +92,7 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
     hpix_nside_t nside = hpix_map_nside(map);
 
     hpix_angles_to_pixel_fn_t * angles_to_pixel_fn =
-	(hpix_map_ordering(map) == HPIX_ORDER_NEST)
+	(hpix_map_ordering_scheme(map) == HPIX_ORDER_SCHEME_NEST)
 	? hpix_angles_to_nest_pixel
 	: hpix_angles_to_ring_pixel;
 

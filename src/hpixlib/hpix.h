@@ -22,6 +22,7 @@
 extern "C"{
 #endif /* __cplusplus */
 
+#include <inttypes.h>
 #include "config.h"
 #include "fitsio.h"
 
@@ -30,12 +31,12 @@ extern "C"{
 #define HPIX_IS_MASKED(x) (isnan(x) || (x) < -1.6e+30)
 
 typedef unsigned short hpix_nside_t;
-typedef unsigned long hpix_pixel_num_t;
+typedef uint64_t hpix_pixel_num_t;
 
 typedef enum {
-    HPIX_ORDER_RING,
-    HPIX_ORDER_NEST
-} hpix_ordering_t;
+    HPIX_ORDER_SCHEME_RING,
+    HPIX_ORDER_SCHEME_NEST
+} hpix_ordering_scheme_t;
 
 typedef enum {
     HPIX_COORD_CUSTOM,
@@ -45,10 +46,26 @@ typedef enum {
 } hpix_coordinates_t;
 
 typedef struct {
-    hpix_ordering_t    order;
-    hpix_coordinates_t coord;
-    hpix_nside_t       nside;
-    double           * pixels;
+    hpix_nside_t           nside;
+    hpix_nside_t           nside_times_two;
+    hpix_nside_t           nside_times_four;
+    size_t                 num_of_pixels;
+
+    /* The following fields are used to quickly convert between pixel
+     * numbers and other representations. */
+    unsigned int           order;
+    unsigned int           npface;
+    unsigned int           ncap;
+    double                 fact2;
+    double                 fact1;
+} hpix_resolution_t;
+
+typedef struct {
+    hpix_ordering_scheme_t scheme;
+    hpix_coordinates_t     coord;
+    double               * pixels;
+
+    hpix_resolution_t      resolution;
 } hpix_map_t;
 
 /* The most basic structure: a RGB color. Following Cairo's
@@ -86,23 +103,25 @@ void hpix_free(void * ptr);
 
 /* Functions implemented in misc.c */
 
+_Bool hpix_valid_nside(hpix_nside_t nside);
 hpix_pixel_num_t hpix_nside_to_npixel(hpix_nside_t);
 hpix_nside_t hpix_npixel_to_nside(hpix_pixel_num_t);
 double hpix_max_pixel_radius(hpix_nside_t);
 
 /* Functions implemented in map.c */
 
-hpix_map_t * hpix_create_map(hpix_nside_t nside, hpix_ordering_t order);
+hpix_map_t * hpix_create_map(hpix_nside_t nside,
+			     hpix_ordering_scheme_t scheme);
 
 hpix_map_t * hpix_create_map_from_array(double * array,
 					    size_t num_of_elements,
-					    hpix_ordering_t order);
+					    hpix_ordering_scheme_t scheme);
 
 void hpix_free_map(hpix_map_t * map);
 
 hpix_map_t * hpix_create_copy_of_map(const hpix_map_t * map);
 
-hpix_ordering_t hpix_map_ordering(const hpix_map_t * map);
+hpix_ordering_scheme_t hpix_map_ordering_scheme(const hpix_map_t * map);
 
 hpix_coordinates_t hpix_map_coordinate_system(const hpix_map_t * map);
 
@@ -111,6 +130,13 @@ hpix_nside_t hpix_map_nside(const hpix_map_t * map);
 double * hpix_map_pixels(const hpix_map_t * map);
 
 size_t hpix_map_num_of_pixels(const hpix_map_t * map);
+
+const hpix_resolution_t * hpix_map_resolution(const hpix_map_t * map);
+
+/* Functions implemented in integer_functions.c */
+
+unsigned int hpix_ilog2 (const unsigned int argument);
+unsigned short hpix_isqrt(unsigned long argument);
 
 /* Functions implemented in io.c */
 
@@ -273,10 +299,12 @@ hpix_bmp_configure_linear_gradient(cairo_pattern_t * pattern,
 /* Functions implemented in order_conversion.c */
 
 hpix_pixel_num_t
-hpix_nest_to_ring_idx(hpix_nside_t nside, hpix_pixel_num_t nest_index);
+hpix_nest_to_ring_idx(const hpix_resolution_t * resolution,
+		      hpix_pixel_num_t nest_index);
 
 hpix_pixel_num_t
-hpix_ring_to_nest_idx(hpix_nside_t nside, hpix_pixel_num_t ring_index);
+hpix_ring_to_nest_idx(const hpix_resolution_t * resolution,
+		      hpix_pixel_num_t ring_index);
 
 void
 hpix_switch_order(hpix_map_t * map);
@@ -284,9 +312,9 @@ hpix_switch_order(hpix_map_t * map);
 /* Functions implemented in palette.c */
 
 hpix_color_t hpix_create_color(double red, double green, double blue);
-double hpix_red_level_from_color(const hpix_color_t * color);
-double hpix_blue_level_from_color(const hpix_color_t * color);
-double hpix_green_level_from_color(const hpix_color_t * color);
+double hpix_red_from_color(const hpix_color_t * color);
+double hpix_blue_from_color(const hpix_color_t * color);
+double hpix_green_from_color(const hpix_color_t * color);
 
 hpix_color_palette_t * hpix_create_black_color_palette(void);
 hpix_color_palette_t * hpix_create_grayscale_color_palette(void);
@@ -310,8 +338,8 @@ void hpix_set_level_for_step_in_palette(hpix_color_palette_t * palette,
 					size_t zero_based_index,
 					double new_level);
 void hpix_sort_levels_in_color_palette(hpix_color_palette_t * palette);
-hpix_color_t hpix_get_palette_color(const hpix_color_palette_t * palette,
-				    double level);
+void hpix_palette_color(const hpix_color_palette_t * palette,
+			double level, hpix_color_t * color);
 
 /* Functions implemented in query_disc.c */
 

@@ -33,7 +33,7 @@
 AUTOMAKE_OPTIONS = gnu
 ACLOCAL_AMFLAGS=-I m4
 
-SUBDIRS = src test utilities
+SUBDIRS = src test utilities examples
 
 pkgconfigdir = $(libdir)/pkgconfig
 nodist_pkgconfig_DATA = libhpix.pc

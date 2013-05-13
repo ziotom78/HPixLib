@@ -21,6 +21,7 @@ AM_CONDITIONAL([CAIRO_PRESENT], [test x$cairo = xyes])
 AC_OUTPUT(Makefile
 	src/Makefile
 	test/Makefile
+	examples/Makefile
 	utilities/Makefile
 	libhpix.pc)
 

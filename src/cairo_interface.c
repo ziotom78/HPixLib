@@ -102,7 +102,7 @@ hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
 	    else
 	    {
 		double normalized_value = (value - map_min) / dynamic_range;
-		color = hpix_get_palette_color(palette, normalized_value);
+		hpix_palette_color(palette, normalized_value, &color);
 		SET_PIXEL(1.0, color);
 	    }
 #undef SET_PIXEL

@@ -37,7 +37,7 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     double * pixels;
     long nside;
     long elements_per_row;
-    hpix_ordering_t ordering;
+    hpix_ordering_scheme_t ordering;
 
     assert(fptr);
     assert(map);
@@ -73,8 +73,8 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     /* Read the array */
     switch(ordering_key[0])
     {
-    case 'N': ordering = HPIX_ORDER_NEST; break;
-    default: ordering = HPIX_ORDER_RING; break;
+    case 'N': ordering = HPIX_ORDER_SCHEME_NEST; break;
+    default: ordering = HPIX_ORDER_SCHEME_RING; break;
     }
 
     *map = hpix_create_map(nside, ordering);
@@ -160,7 +160,7 @@ hpix_create_empty_fits_table_for_map(fitsfile * fptr,
     tunit[0] = tunit[1] = tunit[2] = (char *) measure_unit;
     nside = hpix_map_nside(template_map);
     num_of_pixels = hpix_map_num_of_pixels(template_map);
-    if (hpix_map_ordering(template_map) == HPIX_ORDER_NEST)
+    if (hpix_map_ordering_scheme(template_map) == HPIX_ORDER_SCHEME_NEST)
 	strcpy(ordering_key, "NESTED");
     else
 	strcpy(ordering_key, "RING");
@@ -414,7 +414,7 @@ hpix_save_fits_pol_to_file(const char * file_name,
 	return 0;
     }
 
-    if(fits_close_file(fptr, status))       /* close the FITS file */
+    if(fits_close_file(fptr, status))
 	return 0;
 
     return 1;

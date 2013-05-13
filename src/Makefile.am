@@ -53,6 +53,7 @@ libhpix_la_SOURCES = \
 	misc.c \
 	order_conversion.c \
 	map.c \
+	integer_functions.c \
 	io.c \
 	palette.c \
 	positions.c \
@@ -62,5 +63,5 @@ libhpix_la_SOURCES = \
 
 libhpix_la_LDFLAGS = -version-info 0:0:0
 
-include_HEADERS = hpixlib/hpix.h
+nobase_include_HEADERS = hpixlib/hpix.h
 

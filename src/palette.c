@@ -57,7 +57,7 @@ hpix_create_color(double red, double green, double blue)
 /**********************************************************************/
 
 double
-hpix_red_level_from_color(const hpix_color_t * color)
+hpix_red_from_color(const hpix_color_t * color)
 {
     return color->red;
 }
@@ -65,7 +65,7 @@ hpix_red_level_from_color(const hpix_color_t * color)
 /**********************************************************************/
 
 double
-hpix_green_level_from_color(const hpix_color_t * color)
+hpix_green_from_color(const hpix_color_t * color)
 {
     return color->green;
 }
@@ -73,7 +73,7 @@ hpix_green_level_from_color(const hpix_color_t * color)
 /**********************************************************************/
 
 double
-hpix_blue_level_from_color(const hpix_color_t * color)
+hpix_blue_from_color(const hpix_color_t * color)
 {
     return color->blue;
 }
@@ -339,22 +339,27 @@ hpix_sort_levels_in_color_palette(hpix_color_palette_t * palette)
  * `color_t` structure. It is a faithful copy of a function found in
  * Heapix's map2tga program. */
 
-hpix_color_t
-hpix_get_palette_color(const hpix_color_palette_t * palette,
-		       double level)
+void
+hpix_palette_color(const hpix_color_palette_t * palette,
+		   double level, hpix_color_t * color)
 {
     assert(palette != NULL);
+    assert(color != NULL);
 
     size_t num_of_levels = hpix_num_of_steps_in_color_palette(palette);
     assert(num_of_levels > 0);
 
     /* Clip values outside the boundaries */
 
-    if(level <= 0.0)
-	return hpix_color_for_step_in_palette(palette, 0);
+    if(level <= 0.0) {
+	*color = hpix_color_for_step_in_palette(palette, 0);
+	return;
+    }
 
-    if(level >= 1.0)
-	return hpix_color_for_step_in_palette(palette, num_of_levels - 1);
+    if(level >= 1.0) {
+	*color = hpix_color_for_step_in_palette(palette, num_of_levels - 1);
+	return;
+    }
 
     /* Look for the applicable subset of [0.0, 1.0] */
     size_t idx = 0;
@@ -373,9 +378,9 @@ hpix_get_palette_color(const hpix_color_palette_t * palette,
     (  comp_function(&color0) * (level1 - level) / (level1 - level0) \
      + comp_function(&color1) * (level - level0) / (level1 - level0))
 
-    return hpix_create_color(INTERPOLATE_COMPONENT(level, hpix_red_level_from_color),
-			     INTERPOLATE_COMPONENT(level, hpix_green_level_from_color),
-			     INTERPOLATE_COMPONENT(level, hpix_blue_level_from_color));
+    *color = hpix_create_color(INTERPOLATE_COMPONENT(level, hpix_red_from_color),
+			       INTERPOLATE_COMPONENT(level, hpix_green_from_color),
+			       INTERPOLATE_COMPONENT(level, hpix_blue_from_color));
 
 #undef INTERPOLATE_COMPONENT
 }
