@@ -22,6 +22,46 @@
 #include <check.h>
 #include "check_helpers.h"
 
+/**********************************************************************/
+
+START_TEST(ilog2)
+{
+    ck_assert_int_eq(hpix_ilog2(4), 2);
+    ck_assert_int_eq(hpix_ilog2(8), 3);
+    ck_assert_int_eq(hpix_ilog2(256), 8);
+
+    ck_assert_int_eq(hpix_ilog2(0), 0);
+}
+END_TEST
+
+/**********************************************************************/
+
+START_TEST(isqrt)
+{
+    ck_assert_int_eq(hpix_isqrt(0), 0);
+    ck_assert_int_eq(hpix_isqrt(1), 1);
+    ck_assert_int_eq(hpix_isqrt(2), 1);
+    ck_assert_int_eq(hpix_isqrt(3), 2);
+    ck_assert_int_eq(hpix_isqrt(4), 2);
+    ck_assert_int_eq(hpix_isqrt(9), 3);
+
+    ck_assert_int_eq(hpix_isqrt(143), 12);
+    ck_assert_int_eq(hpix_isqrt(144), 12);
+    ck_assert_int_eq(hpix_isqrt(145), 12);
+}
+END_TEST
+
+/**********************************************************************/
+
+void
+add_integer_function_tests_to_testcase(TCase * testcase)
+{
+    tcase_add_test(testcase, ilog2);
+    tcase_add_test(testcase, isqrt);
+}
+
+/************************************************************************/
+
 double red = 1.0;
 double green = 2.0;
 double blue = 3.0;
@@ -139,15 +179,43 @@ END_TEST
 
 /**********************************************************************/
 
+hpix_map_t * map64 = NULL;
+hpix_map_t * map256 = NULL;
+hpix_map_t * map512 = NULL;
+
+const hpix_resolution_t * resol64 = NULL;
+const hpix_resolution_t * resol256 = NULL;
+const hpix_resolution_t * resol512 = NULL;
+
+void
+setup_order_conversions(void)
+{
+    map64  = hpix_create_map( 64, HPIX_ORDER_SCHEME_RING);
+    map256 = hpix_create_map(256, HPIX_ORDER_SCHEME_RING);
+    map512 = hpix_create_map(512, HPIX_ORDER_SCHEME_RING);
+
+    resol64  = hpix_map_resolution(map64);
+    resol256 = hpix_map_resolution(map256);
+    resol512 = hpix_map_resolution(map512);
+}
+
+/**********************************************************************/
+
+void
+teardown_order_conversions(void)
+{
+    hpix_free_map(map64);
+    hpix_free_map(map256);
+    hpix_free_map(map512);
+}
+
+/**********************************************************************/
+
 START_TEST(nest_to_ring)
 {
-    ck_assert_int_eq(hpix_nest_to_ring_idx( 64,    9632),    9010);
-    ck_assert_int_eq(hpix_nest_to_ring_idx(256,    1652),  324237);
-    ck_assert_int_eq(hpix_nest_to_ring_idx(512, 2966186), 2800416);
-
-    /* Check for failures */
-    ck_assert_int_eq(hpix_nest_to_ring_idx(4, 1000000), 0);
-    ck_assert_int_eq(hpix_nest_to_ring_idx(0, 1),       0);
+    ck_assert_int_eq(hpix_nest_to_ring_idx( resol64,    9632),    9010);
+    ck_assert_int_eq(hpix_nest_to_ring_idx(resol256,    1652),  324237);
+    ck_assert_int_eq(hpix_nest_to_ring_idx(resol512, 2966186), 2800416);
 }
 END_TEST
 
@@ -155,13 +223,9 @@ END_TEST
 
 START_TEST(ring_to_nest)
 {
-    ck_assert_int_eq(hpix_ring_to_nest_idx( 64,    9010),    9632);
-    ck_assert_int_eq(hpix_ring_to_nest_idx(256,  324237),    1652);
-    ck_assert_int_eq(hpix_ring_to_nest_idx(512, 2800416), 2966186);
-
-    /* Check for failures */
-    ck_assert_int_eq(hpix_ring_to_nest_idx(4, 1000000), 0);
-    ck_assert_int_eq(hpix_ring_to_nest_idx(0, 1),       0);
+    ck_assert_int_eq(hpix_ring_to_nest_idx( resol64,    9010),    9632);
+    ck_assert_int_eq(hpix_ring_to_nest_idx(resol256,  324237),    1652);
+    ck_assert_int_eq(hpix_ring_to_nest_idx(resol512, 2800416), 2966186);
 }
 END_TEST
 
@@ -191,8 +255,8 @@ START_TEST(switch_order)
     hpix_map_t * map =
 	hpix_create_map_from_array(ring_idx, num_of_pixels,
 				   HPIX_ORDER_SCHEME_RING);
-
     hpix_switch_order(map);
+
     double * map_pixels = hpix_map_pixels(map);
 
     for(size_t i = 0; i < num_of_pixels; ++i)
@@ -204,7 +268,7 @@ START_TEST(switch_order)
     for(size_t i = 0; i < num_of_pixels; ++i)
 	ck_assert_int_eq(map_pixels[i], ring_idx[i]);
     
-    hpix_free_map(map);
+    /*hpix_free_map(map);*/
 }
 END_TEST
 
@@ -219,16 +283,41 @@ END_TEST
 /**********************************************************************/
 
 void
-add_color_and_palette_tests_to_testcase(TCase * testcase)
+add_pixel_tests_to_testcase(TCase * testcase)
 {
     tcase_add_test(testcase, valid_nside);
     tcase_add_test(testcase, npixel_to_nside);
     tcase_add_test(testcase, nside_to_npixel);
     tcase_add_test(testcase, angles_to_pixel);
     tcase_add_test(testcase, pixel_to_angles);
+}
+
+/**********************************************************************/
+
+void
+add_pixel_order_tests_to_testcase(TCase * testcase)
+{
+    tcase_add_checked_fixture(testcase,
+			      setup_order_conversions,
+			      teardown_order_conversions);
+
     tcase_add_test(testcase, nest_to_ring);
     tcase_add_test(testcase, ring_to_nest);
+}
+
+/**********************************************************************/
+
+void
+add_map_order_tests_to_testcase(TCase * testcase)
+{
     tcase_add_test(testcase, switch_order);
+}
+
+/**********************************************************************/
+
+void
+add_query_disk_tests_to_testcase(TCase * testcase)
+{
     tcase_add_test(testcase, query_disc);
 }
 
@@ -238,11 +327,28 @@ Suite *
 create_hpix_test_suite(void)
 {
     Suite * suite = suite_create("Pixel functions");
+    TCase * tc_core;
 
-    TCase * tc_core = tcase_create("Pixel functions");
-    add_color_and_palette_tests_to_testcase(tc_core);
-
+    tc_core = tcase_create("Mathematical functions on integers");
+    add_integer_function_tests_to_testcase(tc_core);
     suite_add_tcase(suite, tc_core);
+
+    tc_core = tcase_create("Pixel functions");
+    add_pixel_tests_to_testcase(tc_core);
+    suite_add_tcase(suite, tc_core);
+
+    tc_core = tcase_create("Pixel order swapping");
+    add_pixel_order_tests_to_testcase(tc_core);
+    suite_add_tcase(suite, tc_core);
+
+    tc_core = tcase_create("Map order swapping");
+    add_map_order_tests_to_testcase(tc_core);
+    suite_add_tcase(suite, tc_core);
+
+    tc_core = tcase_create("Querying disks");
+    add_query_disk_tests_to_testcase(tc_core);
+    suite_add_tcase(suite, tc_core);
+
     return suite;
 }
 

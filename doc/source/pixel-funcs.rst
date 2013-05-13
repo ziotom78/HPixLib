@@ -3,10 +3,42 @@ Pixel functions
 
 In this section we describe the functions implemented by HPixLib that
 allow to associate points on the sky sphere with pixels in the HEALPix
-tessellation.
+tessellation. These functions are the core of the library; HPixLib
+uses the same algorithms implemented in the C++ bindings (version
+3.00) of the reference Healpix library.
 
 Converting NSIDE into the number of pixels and back
 ---------------------------------------------------
+
+The Healpix tessellation subdivides the sphere in a set of pixels of
+equal area. The number of pixels is uniquely specified through a
+positive integer parameter, *nside*, which is related to the number of
+pixels through a well-defined mathematical expression, implemented by
+the function :c:func:`hpix_nside_to_npixel` (the inverse calculation
+is implemented by :c:func:`hpix_npixel_to_nside`). The value of
+*nside* must be an integer power of two. To check if a given integer
+value satisfies these condition, HPixLib implements the function
+:c:func:`hpix_valid_nside`:
+
+.. code-block:: c
+
+  hpix_nside_t nside;
+  printf("Enter a value for nside: ");
+  scanf("%u", &nside);
+  if(hpix_valid_nside(nside)) {
+    printf("The number of pixels in the map is %u\n",
+           hpix_nside_to_npixel(nside));
+  } else {
+    printf("Invalid value for nside.\n");
+  }
+
+.. c:function:: _Bool hpix_valid_nside(hpix_nside_t nside)
+
+  Return nonzero if the value of *nside* satisfies the following
+  conditions:
+
+  1. It is an integer greater than zero;
+  2. It is an integer power of two.
 
 .. c:function:: hpix_pixel_num_t hpix_nside_to_npixel(hpix_nside_t)
 
@@ -49,6 +81,30 @@ It is important to note that any conversion involving pixel centers is
 only approximate, e.g. you cannot convert *theta* and *phi* into a
 pixel index and then back to *theta* and *phi*, and expect to get the
 same values.
+
+The following example shows how to identify the pixel in a map which
+corresponds to a given coordinate pair. Note that you must ensure that
+the map is expressed in the same coordinate system as the angle you
+are providing: in the example, the position of M42 is specified in
+Galactic coordinates, and therefore the map must have been created
+using this coordinate system as well.
+
+.. code-block:: c
+
+  const hpix_nside_t NSIDE = 64;
+  const double DEG2RAD = 0.01745;
+
+  /* Position of OriA in Galactic coordinates (degrees) */
+  double M42_position[] = { 209.01, -19.38 };
+
+  /* Convert the latitude in colatitude */
+  M42_position[0] = M42_position[0] - 180.0;
+
+  /* Here we assume to work with maps in RING order */
+  hpix_pixel_num_t pixel_index = 
+      hpix_angles_to_ring_pixel(NSIDE,
+                                M42_position[0] * DEG2RAD,
+                                M42_position[1] * DEG2RAD);
 
 Converting angular positions
 ............................
@@ -234,4 +290,5 @@ Switch the order of the map from `RING` to `NESTED` or vice versa,
 depending on the current ordering of the map (see
 :c:func:`hpix_map_ordering`). Note that the reordering is done
 in-place: this means that no additional memory is needed during the
-conversion.
+conversion, but if you want to access both maps you have to copy it
+somewhere else before calling this function.

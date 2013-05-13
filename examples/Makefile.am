@@ -1,4 +1,3 @@
-# -*- automake -*-
 # Copyright 2011 Maurizio Tomasi. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,17 +30,15 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
-check_PROGRAMS = \
-	test_bmp_projection \
-	test_io \
-	test_palette \
-	test_pixel_functions
+AM_CFLAGS = -std=c99
 
-AM_CPPFLAGS = -I$(top_srcdir)/src
+bin_PROGRAMS = map2ppm
 
-AM_CFLAGS = -std=c99 $(cairo_CFLAGS) `pkg-config --cflags check`
-LIBS += $(cairo_LIBS) `pkg-config --libs check`
+INCLUDES = -I$(top_srcdir)/src
 
-LDADD = ../src/libhpix.la $(LIBOBJS) -lcfitsio
+AM_CFLAGS += $(cairo_CFLAGS)
+LIBS += $(cairo_LIBS) -lcfitsio
 
-TESTS = $(check_PROGRAMS)
+map2ppm_SOURCES = map2ppm.c
+map2ppm_LDADD = ../src/libhpix.la
+

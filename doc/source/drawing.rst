@@ -63,6 +63,89 @@ every other element is a vector.) This allows e.g. to modify these
 maps within vector drawing programs like Inkscape or Adobe
 Illustrator.
 
+Introduction: a poor-man clone of map2fig
+-----------------------------------------
+
+We begin with a full example of how to use the drawing/palette
+functions provided by HPixLib. The following program reads a map from
+a file and then outputs to stdout a bitmap in PPM format
+(http://netpbm.sourceforge.net/doc/ppm.html):
+
+.. code-block:: c
+
+  #include <stdio.h>
+  #include <hpixlib/hpix.h>
+     
+  void output_map_to_file(const hpix_map_t * map,
+  			    hpix_color_palette_t * palette,
+  			FILE * out)
+  {
+      /* Keeping it double makes calculations more efficient */
+      const double max_color_level = 255.0;
+  
+      hpix_bmp_projection_t * proj = 
+  	hpix_create_bmp_projection(640, 320);
+  
+      double min, max;
+      double * bitmap = hpix_bmp_to_mollweide_proj(proj, map, &min, &max);
+  
+      /* Write the PPM header */
+      fprintf(out, "P3\n%u %u\n%u\n",
+  	    hpix_bmp_projection_width(proj),
+  	    hpix_bmp_projection_height(proj),
+  	    (unsigned) max_color_level);
+  
+      double *restrict cur_pixel = bitmap;
+      for(unsigned y = 0; y < hpix_bmp_projection_height(proj); ++y)
+      {
+  	for(unsigned x = 0; x < hpix_bmp_projection_width(proj); ++x)
+  	{
+  	    hpix_color_t pixel_color;
+  	    hpix_palette_color(palette,
+  			       (*cur_pixel++ - min) / (max - min),
+  			       &pixel_color);
+  	    fprintf(out, "%3u %3u %3u\t",
+  		    (unsigned) (hpix_red_from_color(&pixel_color) * max_color_level),
+  		    (unsigned) (hpix_green_from_color(&pixel_color) * max_color_level),
+  		    (unsigned) (hpix_blue_from_color(&pixel_color) * max_color_level));
+  	}
+  
+  	fputc('\n', out);
+      }
+    
+      hpix_free(bitmap);
+      hpix_free_bmp_projection(proj);
+  }
+  
+  int main(int argc, const char ** argv)
+  {
+      if(argc != 2)
+      {
+  	fputs("You must specify the name of a FITS file on the command line\n",
+  	      stderr);
+  	return 1;
+      }
+  
+      hpix_map_t * map;
+      const char * file_name = argv[1];
+      int status;
+      if(! hpix_load_fits_component_from_file(file_name, 1, &map, &status))
+      {
+  	fprintf(stderr, "Unable to read map %s\n", file_name);
+  	return 1;
+      }
+  
+      hpix_color_palette_t * palette = hpix_create_planck_color_palette();
+      output_map_to_file(map, palette, stdout);
+      hpix_free_color_palette(palette);
+      hpix_free_map(map);
+  }
+
+The typical usage is to produce a bitmap, then use *min_value* and
+*max_value* to scale it from the map measure unit into a color space.
+(You can find the source code of this program in the file
+``examples/map2ppm.c``).
+
 Bitmapped graphics
 ------------------
 
@@ -140,40 +223,6 @@ Painting functions
    When the bitmap returned by this function is no longer useful, you
    must free it using :c:func:`hpix_free`.
 
-   The typical usage is to produce a bitmap, then use *min_value* and
-   *max_value* to scale it from the map measure unit into a color
-   space. In the following example we imagine to use a graphics
-   library which implements two functions: ``paint_pixel``, which draw
-   a pixel at a specified coordinate with a given color, and
-   ``level_to_RGB``, which converts a number between 0.0 and 1.0 into
-   a RGB color. Here is the code:
-
-.. code-block:: c
-
-   hpix_bmp_projection_t * proj;
-   double * bitmap;
-   double * cur_pixel;
-   double min, max;
-   size_t i, x, y;
-
-   proj = hpix_new_projection(640, 480, COORD_GALACTIC);
-   bitmap = hpix_bmp_trace_bitmap(proj, map, &min, &max);
-
-   cur_pixel = bitmap;
-   for(y = 0; y < hpix_projection_height(proj); ++y)
-   {
-       for(x = 0; x < hpix_projection_width(proj); ++x)
-       {
-           float red, green, blue;
-           level_to_RGB((cur_pixel++ - min) / (max - min),
-	                &red, &green, &blue);
-           paint_pixel(x, y, red, green, blue);
-       }
-   }
-
-   hpix_free(bitmap);
-   hpix_free_projection(proj);
-
 Color palettes
 --------------
 
@@ -229,15 +278,15 @@ the creation of binding libraries in other languages.
     Return a :c:type:`hpix_color_t` structure initialized to the
     specified values of red, green, and blue.
 
-.. c:function:: hpix_red_level_from_color(const hpix_color_t * color)
+.. c:function:: hpix_red_from_color(const hpix_color_t * color)
 
     Return the red level of the color.
 
-.. c:function:: hpix_green_level_from_color(const hpix_color_t * color)
+.. c:function:: hpix_green_from_color(const hpix_color_t * color)
 
     Return the green level of the color.
 
-.. c:function:: hpix_blue_level_from_color(const hpix_color_t * color)
+.. c:function:: hpix_blue_from_color(const hpix_color_t * color)
 
     Return the blue level of the color.
 
@@ -421,19 +470,19 @@ above would have been the following::
     might require or not additional memory.)
 
     Sorting the steps in the palette is crucial for allowing the
-    algorithm implemented in :c:func:`hpix_get_palette_color` to work.
+    algorithm implemented in :c:func:`hpix_palette_color` to work.
     For efficiency reasons, the function is *never* called
     automatically by HPixLib.
 
-.. c:function:: hpix_color_t hpix_get_palette_color(const hpix_color_palette_t * palette, double level)
+.. c:function:: hpix_palette_color(const hpix_color_palette_t * palette, double level, hpix_color_t * color)
 
-    Return a color representing the specified `level`, using the given
-    color palette. The result is a linear interpolation of the color
-    steps in the palette.
+    Set the fields of *color* so that it represents the specified
+    `level` in the given color palette. The function uses a linear
+    interpolation of the color steps in the palette.
 
     The palette must be properly sorted using
-    :c:func:`hpix_sort_levels_in_color_palette`. This is not needed
-    for the palettes returned by
+    :c:func:`hpix_sort_levels_in_color_palette`. This condition is
+    already satisfied for the palettes returned by
     :c:func:`hpix_create_black_color_palette`,
     :c:func:`hpix_create_grayscale_color_palette`, and
     :c:func:`hpix_create_healpix_color_palette`.

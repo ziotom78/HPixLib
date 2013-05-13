@@ -20,16 +20,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include <check.h>
+#include "check_helpers.h"
 
 double red = 1.0;
 double green = 2.0;
 double blue = 3.0;
-
-#define TEST_FOR_CLOSENESS(float1, float2)					\
-    {									\
-	fail_unless(fabs(float1 - float2) < 1e-7,			\
-		    "Numbers " #float1 " and " #float2 " are not close."); \
-    }
 
 #define TEST_COLORS_ARE_EQUAL(col1, col2)	\
     {						\
@@ -52,11 +47,11 @@ START_TEST(access_to_colors)
 {
     hpix_color_t dummy_color = hpix_create_color(red, green, blue);
 
-    TEST_FOR_CLOSENESS(hpix_red_level_from_color(&dummy_color),
+    TEST_FOR_CLOSENESS(hpix_red_from_color(&dummy_color),
 		       red);
-    TEST_FOR_CLOSENESS(hpix_green_level_from_color(&dummy_color),
+    TEST_FOR_CLOSENESS(hpix_green_from_color(&dummy_color),
 		       green);
-    TEST_FOR_CLOSENESS(hpix_blue_level_from_color(&dummy_color),
+    TEST_FOR_CLOSENESS(hpix_blue_from_color(&dummy_color),
 		       blue);
 
 }
@@ -161,13 +156,13 @@ START_TEST(check_interpolation)
     hpix_set_color_for_step_in_palette(palette, 0, color0);
     hpix_set_color_for_step_in_palette(palette, 1, color1);
 
-    hpix_color_t interpolated_color =
-	hpix_get_palette_color(palette, 0.5);
-    TEST_FOR_CLOSENESS(hpix_red_level_from_color(&interpolated_color),
+    hpix_color_t interpolated_color;
+    hpix_palette_color(palette, 0.5, &interpolated_color);
+    TEST_FOR_CLOSENESS(hpix_red_from_color(&interpolated_color),
 	       (color0.red + color1.red) * 0.5);
-    TEST_FOR_CLOSENESS(hpix_green_level_from_color(&interpolated_color),
+    TEST_FOR_CLOSENESS(hpix_green_from_color(&interpolated_color),
 	       (color0.green + color1.green) * 0.5);
-    TEST_FOR_CLOSENESS(hpix_blue_level_from_color(&interpolated_color),
+    TEST_FOR_CLOSENESS(hpix_blue_from_color(&interpolated_color),
 	       (color0.blue + color1.blue) * 0.5);
 
     hpix_free_color_palette(palette);
