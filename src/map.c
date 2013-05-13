@@ -19,6 +19,9 @@
 #include <assert.h>
 #include <memory.h>
 
+/**********************************************************************/
+
+
 void
 hpix_init_resolution_from_nside(hpix_nside_t nside,
 				hpix_resolution_t * resolution)
@@ -37,6 +40,9 @@ hpix_init_resolution_from_nside(hpix_nside_t nside,
     resolution->fact1            = (2 * nside) * resolution->fact2;
 }
 
+/**********************************************************************/
+
+
 hpix_map_t *
 hpix_create_map(hpix_nside_t nside, hpix_ordering_scheme_t scheme)
 {
@@ -53,6 +59,9 @@ hpix_create_map(hpix_nside_t nside, hpix_ordering_scheme_t scheme)
     return map;
 }
 
+/**********************************************************************/
+
+
 hpix_map_t *
 hpix_create_map_from_array(double * array,
 			   size_t num_of_elements,
@@ -71,6 +80,9 @@ hpix_create_map_from_array(double * array,
     return map;
 }
 
+/**********************************************************************/
+
+
 void
 hpix_free_map(hpix_map_t * map)
 {
@@ -83,6 +95,9 @@ hpix_free_map(hpix_map_t * map)
     hpix_free(map);
 }
 
+/**********************************************************************/
+
+
 hpix_map_t *
 hpix_create_copy_of_map(const hpix_map_t * map)
 {
@@ -96,6 +111,9 @@ hpix_create_copy_of_map(const hpix_map_t * map)
     return copy;
 }
 
+/**********************************************************************/
+
+
 hpix_ordering_scheme_t
 hpix_map_ordering_scheme(const hpix_map_t * map)
 {
@@ -103,6 +121,9 @@ hpix_map_ordering_scheme(const hpix_map_t * map)
     return map->scheme;
 }
 
+/**********************************************************************/
+
+
 hpix_coordinates_t
 hpix_map_coordinate_system(const hpix_map_t * map)
 {
@@ -110,6 +131,9 @@ hpix_map_coordinate_system(const hpix_map_t * map)
     return map->coord;
 }
 
+/**********************************************************************/
+
+
 hpix_nside_t
 hpix_map_nside(const hpix_map_t * map)
 {
@@ -117,6 +141,9 @@ hpix_map_nside(const hpix_map_t * map)
     return map->resolution.nside;
 }
 
+/**********************************************************************/
+
+
 double *
 hpix_map_pixels(const hpix_map_t * map)
 {
@@ -124,6 +151,9 @@ hpix_map_pixels(const hpix_map_t * map)
     return map->pixels;
 }
 
+/**********************************************************************/
+
+
 size_t
 hpix_map_num_of_pixels(const hpix_map_t * map)
 {
@@ -131,6 +161,9 @@ hpix_map_num_of_pixels(const hpix_map_t * map)
     return hpix_nside_to_npixel(map->resolution.nside);
 }
 
+/**********************************************************************/
+
+
 const hpix_resolution_t *
 hpix_map_resolution(const hpix_map_t * map)
 {
