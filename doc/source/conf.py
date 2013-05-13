@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# cHealpix documentation build configuration file, created by
+# HPixLib documentation build configuration file, created by
 # sphinx-quickstart on Mon Sep 10 17:20:37 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'cHealpix'
+project = u'HPixLib'
 copyright = u'2012, Maurizio Tomasi'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -164,7 +164,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'cHealpixdoc'
+htmlhelp_basename = 'HPixLibdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -183,7 +183,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'cHealpix.tex', u'cHealpix Documentation',
+  ('index', 'HPixLib.tex', u'HPixLib Documentation',
    u'Maurizio Tomasi', 'manual'),
 ]
 
@@ -213,7 +213,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'chealpix', u'cHealpix Documentation',
+    ('index', 'chealpix', u'HPixLib Documentation',
      [u'Maurizio Tomasi'], 1)
 ]
 
@@ -227,8 +227,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'cHealpix', u'cHealpix Documentation',
-   u'Maurizio Tomasi', 'cHealpix', 'One line description of project.',
+  ('index', 'HPixLib', u'HPixLib Documentation',
+   u'Maurizio Tomasi', 'HPixLib', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -245,7 +245,7 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'cHealpix'
+epub_title = u'HPixLib'
 epub_author = u'Maurizio Tomasi'
 epub_publisher = u'Maurizio Tomasi'
 epub_copyright = u'2012, Maurizio Tomasi'

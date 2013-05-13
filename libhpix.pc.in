@@ -4,7 +4,7 @@ libdir=@libdir@
 sharedlibdir=@sharelibdir@
 includedir=@includedir@
 
-Name: cHealpix
+Name: HPixLib
 Description: C-only implementation of the Healpix spherical pixelization scheme
 Version: @VERSION@
 
