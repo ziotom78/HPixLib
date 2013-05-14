@@ -54,7 +54,7 @@ typedef struct {
     /* The following fields are used to quickly convert between pixel
      * numbers and other representations. */
     unsigned int           order;
-    unsigned int           npface;
+    unsigned int           pixels_per_face;
     unsigned int           ncap;
     double                 fact2;
     double                 fact1;

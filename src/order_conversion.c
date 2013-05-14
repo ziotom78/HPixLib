@@ -157,7 +157,7 @@ nest2xyf(const hpix_resolution_t * resolution,
     unsigned face_num = index >> (2 * resolution->order);
 
     hpix_pixel_num_t masked_index = index;
-    masked_index &= (resolution->npface - 1);
+    masked_index &= (resolution->pixels_per_face - 1);
 
     return (xyf_pixel_t) {
 	.face_num = face_num,
@@ -236,7 +236,7 @@ ring2xyf(const hpix_resolution_t * resolution,
 	face_num = 8 + (iphi - 1) / nr;
     }
     hpix_pixel_num_t masked_index = index;
-    masked_index &= (resolution->npface - 1);
+    masked_index &= (resolution->pixels_per_face - 1);
 
   long irt = iring - (jrll[face_num] * resolution->nside) + 1;
   long ipt = 2*iphi - jpll[face_num] * nr - kshift -1;

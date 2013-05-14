@@ -33,9 +33,9 @@ hpix_init_resolution_from_nside(hpix_nside_t nside,
     resolution->nside_times_four = nside * 4;
 
     resolution->order            = (nside & (nside-1)) ? -1 : hpix_ilog2(nside);
-    resolution->npface           = nside * nside;
-    resolution->num_of_pixels    = 12 * resolution->npface;
-    resolution->ncap             = 2 * (resolution->npface - nside);
+    resolution->pixels_per_face  = nside * nside;
+    resolution->num_of_pixels    = 12 * resolution->pixels_per_face;
+    resolution->ncap             = 2 * (resolution->pixels_per_face - nside);
     resolution->fact2            = 4.0 / resolution->num_of_pixels;
     resolution->fact1            = (2 * nside) * resolution->fact2;
 }
