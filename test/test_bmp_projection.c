@@ -81,6 +81,15 @@ START_TEST(mollweide_projection)
     fail_unless(mollweide_proj_max == 767.0,
 	"hpix_bmp_to_mollweide_proj failed to set the maximum value");
 
+    /* Check that the corners fall outside the projection... */
+    fail_unless(! hpix_mollweide_is_xy_inside(mollweide_proj,  0,  0));
+    fail_unless(! hpix_mollweide_is_xy_inside(mollweide_proj, 63,  0));
+    fail_unless(! hpix_mollweide_is_xy_inside(mollweide_proj,  0, 63));
+    fail_unless(! hpix_mollweide_is_xy_inside(mollweide_proj, 63, 63));
+
+    /* ...and that the center doesn't */
+    fail_unless(hpix_mollweide_is_xy_inside(mollweide_proj,  32,  32));
+
     /* Compare the bitmap with the reference saved in file
      * "reference_map.inc.c" */
     size_t index = 0;

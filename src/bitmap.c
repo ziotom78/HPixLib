@@ -19,10 +19,6 @@
 #include <math.h>
 #include <assert.h>
 
-#include "constants.h"
-
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-
 struct ___hpix_bmp_projection_t {
     unsigned int       width;
     unsigned int       height;
@@ -85,9 +81,6 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
     assert(proj);
     assert(map);
 
-    double center_x = proj->width / 2.0;
-    double center_y = proj->height / 2.0;
-
     hpix_nside_t nside = hpix_map_nside(map);
 
     hpix_angles_to_pixel_fn_t * angles_to_pixel_fn =
@@ -104,23 +97,17 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
 
     double * pixels = hpix_map_pixels(map);
     int minmax_flag = 0;
-    for (unsigned int y = 0; y < proj->height; ++y)
+    for (unsigned int y = 0; y < hpix_bmp_projection_height(proj); ++y)
     {
-	for (unsigned int x = 0; x < proj->width; ++x)
+	for (unsigned int x = 0; x < hpix_bmp_projection_width(proj); ++x)
 	{
-	    double u = 2.0 * (x - center_x) / center_x;
-	    double v = (y - center_y) / center_y;
+	    double theta, phi;
 
-	    if(u*u/4 + v*v >= 1)
+	    if(! hpix_mollweide_xy_to_angles(proj, x, y, &theta, &phi))
 	    {
 		*bitmap_ptr++ = INFINITY; /* Skip the pixel */
 		continue;
 	    }
-
-	    double theta = M_PI_2 - asin(2 / M_PI *
-					 (asin(v) +
-					  v * sqrt((1 - v) * (1 + v))));
-	    double phi = -M_PI_2 * u / MAX(sqrt((1 - v) * (1 + v)), 1e-6);
 
 	    hpix_pixel_num_t pixel_idx =
 		angles_to_pixel_fn(nside, theta, phi);

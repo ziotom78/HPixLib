@@ -146,6 +146,41 @@ The typical usage is to produce a bitmap, then use *min_value* and
 (You can find the source code of this program in the file
 ``examples/map2ppm.c``).
 
+Available projections
+---------------------
+
+HPixLib implements a number of map projections. You can either access
+the low-level projection functions or rely on the library to directly
+produce a map.
+
+The low-level projection functions allow to perform one of the
+following tasks:
+
+1. Convert the coordinate of a 2-D plane into a direction towards the
+   sky and vice-versa. (Example: :c:func:`hpix_mollweide_xy_to_angles`.)
+2. Check if a point on a 2-D plane is visible or not within the
+   bitmap's rectangle. (Example: :c:func:`hpix_mollweide_is_xy_inside`.)
+
+The latter point is important for those projections like the
+Mollweide's, which is enclosed in a shape which is not a rectangle
+like the bitmap's (ellipse).
+
+.. c:function:: _Bool hpix_mollweide_xy_to_angles(const hpix_bmp_projection_t * proj, unsigned int x, unsigned int y, double * theta, double * phi)
+
+   This function calculates the direction towards the sky that
+   corresponds to the (*x*, *y*) point in the 2-D bitmap projection
+   pointed by *proj*. If there is no point which corresponds to (*x*,
+   *y*), i.e., if these coordinates are outside Mollweide's ellipse,
+   then the function returns `FALSE`, otherwise `TRUE`.
+
+.. c:function:: _Bool hpix_mollweide_is_xy_inside(const hpix_bmp_projection_t * proj, unsigned int x, unsigned int y)
+
+   This function checks that the point (*x*, *y*) in the bitmap lies
+   within Mollweide's ellipse. If it does, return `TRUE`. (The return
+   value has therefore the same meaning as
+   :c:func:`hpix_mollweide_xy_to_angles`.)
+
+
 Bitmapped graphics
 ------------------
 

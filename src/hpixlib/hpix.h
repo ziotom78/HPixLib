@@ -342,6 +342,18 @@ void hpix_sort_levels_in_color_palette(hpix_color_palette_t * palette);
 void hpix_palette_color(const hpix_color_palette_t * palette,
 			double level, hpix_color_t * color);
 
+/* Functions implemented in mollweide_projection.c */
+
+_Bool hpix_mollweide_is_xy_inside(const hpix_bmp_projection_t * proj,
+				  unsigned int x,
+				  unsigned int y);
+
+_Bool hpix_mollweide_xy_to_angles(const hpix_bmp_projection_t * proj,
+				  unsigned int x,
+				  unsigned int y,
+				  double * theta,
+				  double * phi);
+
 /* Functions implemented in query_disc.c */
 
 void hpix_query_disc(double theta, double phi, double radius,
