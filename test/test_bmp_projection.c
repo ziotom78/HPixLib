@@ -30,12 +30,6 @@ START_TEST(projection_size)
     ck_assert_int_eq(hpix_bmp_projection_width(proj), 10);
     ck_assert_int_eq(hpix_bmp_projection_height(proj), 20);
 
-    hpix_set_bmp_projection_width(proj, 15);
-    hpix_set_bmp_projection_height(proj, 25);
-
-    ck_assert_int_eq(hpix_bmp_projection_width(proj), 15);
-    ck_assert_int_eq(hpix_bmp_projection_height(proj), 25);
-
     hpix_free_bmp_projection(proj);
 }
 END_TEST

@@ -163,8 +163,7 @@ in this section have their name beginning with ``hpix_bmp_``.
    Healpix map into a bi-dimensional bitmapped projection. It is an
    opaque structure, which means that you are not allowed to directly
    access/modify its members: you need to rely on functions defined in
-   this section, like e.g. :c:func:`hpix_projection_width` and
-   :c:func:`hpix_set_projection_width`.
+   this section, like e.g. :c:func:`hpix_projection_width`.
 
 .. c:function:: hpix_bmp_projection_t * hpix_create_bmp_projection(unsigned int width, unsigned int height)
 
@@ -188,14 +187,6 @@ use the facilities provided by the library.his.
 .. c:function:: unsigned int hpix_projection_height(const hpix_bmp_projection_t * proj)
 
    Return the height of the bitmap, i.e. the number of rows.
-
-.. c:function:: void hpix_set_projection_width(hpix_bmp_projection_t * proj, unsigned int width)
-
-   Change the width of the bitmap.
-
-.. c:function:: void hpix_set_projection_height(hpix_bmp_projection_t * proj, unsigned int height)
-
-   Change the height of the bitmap.
 
 Painting functions
 ------------------

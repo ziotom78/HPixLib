@@ -76,28 +76,6 @@ hpix_bmp_projection_height(const hpix_bmp_projection_t * proj)
 /**********************************************************************/
 
 
-void
-hpix_set_bmp_projection_width(hpix_bmp_projection_t * proj,
-			      unsigned int width)
-{
-    assert(proj);
-    proj->width = width;
-}
-
-/**********************************************************************/
-
-
-void
-hpix_set_bmp_projection_height(hpix_bmp_projection_t * proj,
-			       unsigned int height)
-{
-    assert(proj);
-    proj->height = height;
-}
-
-/**********************************************************************/
-
-
 double *
 hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
 			   const hpix_map_t * map,
