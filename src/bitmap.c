@@ -29,6 +29,9 @@ struct ___hpix_bmp_projection_t {
     hpix_coordinates_t coordsys;
 };
 
+/**********************************************************************/
+
+
 hpix_bmp_projection_t * 
 hpix_create_bmp_projection(unsigned int width, unsigned int height)
 {
@@ -40,6 +43,9 @@ hpix_create_bmp_projection(unsigned int width, unsigned int height)
     return obj;
 }
 
+/**********************************************************************/
+
+
 void
 hpix_free_bmp_projection(hpix_bmp_projection_t * proj)
 {
@@ -47,6 +53,9 @@ hpix_free_bmp_projection(hpix_bmp_projection_t * proj)
 	free(proj);
 }
 
+/**********************************************************************/
+
+
 unsigned int
 hpix_bmp_projection_width(const hpix_bmp_projection_t * proj)
 {
@@ -54,6 +63,9 @@ hpix_bmp_projection_width(const hpix_bmp_projection_t * proj)
     return proj->width;
 }
 
+/**********************************************************************/
+
+
 unsigned int
 hpix_bmp_projection_height(const hpix_bmp_projection_t * proj)
 {
@@ -61,6 +73,9 @@ hpix_bmp_projection_height(const hpix_bmp_projection_t * proj)
     return proj->height;
 }
 
+/**********************************************************************/
+
+
 void
 hpix_set_bmp_projection_width(hpix_bmp_projection_t * proj,
 			      unsigned int width)
@@ -69,6 +84,9 @@ hpix_set_bmp_projection_width(hpix_bmp_projection_t * proj,
     proj->width = width;
 }
 
+/**********************************************************************/
+
+
 void
 hpix_set_bmp_projection_height(hpix_bmp_projection_t * proj,
 			       unsigned int height)
@@ -77,6 +95,9 @@ hpix_set_bmp_projection_height(hpix_bmp_projection_t * proj,
     proj->height = height;
 }
 
+/**********************************************************************/
+
+
 double *
 hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
 			   const hpix_map_t * map,
