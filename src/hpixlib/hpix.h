@@ -69,6 +69,12 @@ typedef struct {
     hpix_resolution_t      resolution;
 } hpix_map_t;
 
+typedef struct {
+    double x;
+    double y;
+    double z;
+} hpix_3d_vector_t;
+
 /* The most basic structure: a RGB color. Following Cairo's
  * conventions, each component is a floating-point number between 0.0
  * and 1.0. */
@@ -208,7 +214,7 @@ hpix_save_fits_pol_map(const char * file_name,
 /* Functions implemented in positions.c */
 
 void hpix_angles_to_3dvec(double theta, double phi,
-			    double * x, double * y, double * z);
+			  hpix_3d_vector_t * vector);
 
 typedef hpix_pixel_num_t hpix_angles_to_pixel_fn_t(hpix_nside_t,
 						       double, double);
@@ -221,17 +227,17 @@ hpix_pixel_num_t hpix_angles_to_nest_pixel(hpix_nside_t nside,
 					       double theta,
 					       double phi);
 
-void hpix_3dvec_to_angles(double x, double y, double z,
-			    double * theta, double * phi);
+void hpix_3dvec_to_angles(const hpix_3d_vector_t * vector,
+			  double * theta, double * phi);
 
 typedef hpix_pixel_num_t hpix_3dvec_to_pixel_fn_t(hpix_nside_t,
-						      double, double, double);
+						  const hpix_3d_vector_t *);
 
 hpix_pixel_num_t hpix_3dvec_to_ring_pixel(hpix_nside_t nside,
-					      double x, double y, double z);
+					  const hpix_3d_vector_t * vector);
 
 hpix_pixel_num_t hpix_3dvec_to_nest_pixel(hpix_nside_t nside,
-					      double x, double y, double z);
+					  const hpix_3d_vector_t * vector);
 
 typedef void hpix_pixel_to_angles(hpix_nside_t, hpix_pixel_num_t,
 				    double *, double *);
@@ -243,13 +249,15 @@ void hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
 				 double * theta, double * phi);
 
 typedef void hpix_pixel_to_3dvec(hpix_nside_t, hpix_pixel_num_t,
-				   double *, double *, double *);
+				 hpix_3d_vector_t * vector);
 
 void hpix_ring_pixel_to_3dvec(hpix_nside_t nside,
-				double * x, double * y, double * z);
+			      hpix_pixel_num_t pixel_index,
+			      hpix_3d_vector_t * vector);
 
 void hpix_nest_pixel_to_3dvec(hpix_nside_t nside,
-				double * x, double * y, double * z);
+			      hpix_pixel_num_t pixel_index,
+			      hpix_3d_vector_t * vector);
 
 /* Functions implemented in bitmap.c */
 
@@ -357,13 +365,19 @@ _Bool hpix_mollweide_xy_to_angles(const hpix_bmp_projection_t * proj,
 /* Functions implemented in query_disc.c */
 
 void hpix_query_disc(double theta, double phi, double radius,
-		       hpix_pixel_num_t ** pixels,
-		       size_t * num_of_matches);
+		     hpix_pixel_num_t ** pixels,
+		     size_t * num_of_matches);
 
 void hpix_query_disc_inclusive(double theta, double phi, double radius,
-				 hpix_pixel_num_t ** pixels,
-				 size_t * num_of_matches);
+			       hpix_pixel_num_t ** pixels,
+			       size_t * num_of_matches);
 
+/* Functions defined in vectors.c */
+
+double hpix_vector_length(const hpix_3d_vector_t * vector);
+
+double hpix_dot_product(const hpix_3d_vector_t * vector1,
+			const hpix_3d_vector_t * vector2);
 
 #ifdef __cplusplus
 };

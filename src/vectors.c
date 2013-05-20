@@ -1,4 +1,4 @@
-/* check_helpers.h -- macros and functions based on the "check" library
+/* vectors.c -- 3D vector functions
  *
  * Copyright 2011-2012 Maurizio Tomasi.
  *
@@ -15,19 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef CHECK_HELPERS_H
-#define CHECK_HELPERS_H
+#include <hpixlib/hpix.h>
+#include <math.h>
+#include <assert.h>
 
-#define TEST_FOR_CLOSENESS(float1, float2)					\
-    {									\
-	fail_unless(fabs(float1 - float2) < 1e-7,			\
-		    "Numbers " #float1 " and " #float2 " are not close."); \
-    }
+
+double 
+hpix_vector_length(const hpix_3d_vector_t * vector)
+{
+    assert(vector);
 
-#define ARE_VECTORS_EQUAL(vec1, vec2) \
-    { \
-	TEST_FOR_CLOSENESS((vec1).x, (vec2).x);	\
-	TEST_FOR_CLOSENESS((vec1).y, (vec2).y);	\
-	TEST_FOR_CLOSENESS((vec1).z, (vec2).z);	\
-    }
-#endif
+    if(vector->x == 0.0 && vector->y == 0.0 && vector->z == 0.0)
+	return 0.0;
+
+    return sqrt(vector->x * vector->x + 
+		vector->y * vector->y + 
+		vector->z * vector->z);
+}
+
+/**********************************************************************/
+
+
+double
+hpix_dot_product(const hpix_3d_vector_t * vector1,
+		 const hpix_3d_vector_t * vector2)
+{
+    assert(vector1);
+    assert(vector2);
+
+    return 
+	vector1->x * vector2->x +
+	vector1->y * vector2->y +
+	vector1->z * vector2->z;
+}

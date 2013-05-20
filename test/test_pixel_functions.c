@@ -108,9 +108,10 @@ START_TEST(nside_to_npixel)
     ck_assert_int_eq(hpix_nside_to_npixel(0),    0);
 }
 END_TEST
+
 /**********************************************************************/
 
-START_TEST(angles_to_pixel)
+START_TEST(angles_to_pixels)
 {
     /* Check for the conversion to the RING scheme */
     ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.1, 0.1),  1861);
@@ -142,7 +143,7 @@ END_TEST
 
 /**********************************************************************/
 
-START_TEST(pixel_to_angles)
+START_TEST(pixels_to_angles)
 {
     double theta, phi;
 
@@ -174,6 +175,107 @@ START_TEST(pixel_to_angles)
     CHECK_ANGLE(256, nest, 65180, 0.09891295, 0.27868967);
     CHECK_ANGLE(256, nest, 64113, 0.19806888, 0.29135738);
     CHECK_ANGLE(256, nest, 60856, 0.29771618, 0.29557995);
+}
+END_TEST
+
+/**********************************************************************/
+
+START_TEST(angles_to_vectors)
+{
+    hpix_3d_vector_t test_vector;
+    hpix_3d_vector_t ref_vector;
+
+    hpix_angles_to_3dvec(0.1, 0.2, &test_vector);
+    ref_vector = (hpix_3d_vector_t) { .x = 0.0978434,
+				      .y = 0.01983384,
+				      .z = 0.99500417 };
+    ARE_VECTORS_EQUAL(test_vector, ref_vector);
+
+    hpix_angles_to_3dvec(0.4, 0.3, &test_vector);
+    ref_vector = (hpix_3d_vector_t) { .x = 0.37202555,
+				      .y = 0.11508099,
+				      .z = 0.92106099 };
+    ARE_VECTORS_EQUAL(test_vector, ref_vector);
+}
+END_TEST
+
+/**********************************************************************/
+
+START_TEST(vectors_to_angles)
+{
+    hpix_3d_vector_t vector;
+    double theta, phi;
+
+    vector = (hpix_3d_vector_t) { .x = 0.1, .y = 0.2, .z = 0.3 };
+    hpix_3dvec_to_angles(&vector, &theta, &phi);
+    TEST_FOR_CLOSENESS(theta, 0.64052231);
+    TEST_FOR_CLOSENESS(phi,   1.10714872);
+
+    vector = (hpix_3d_vector_t) { .x = 0.4, .y = 0.5, .z = 0.6 };
+    hpix_3dvec_to_angles(&vector, &theta, &phi);
+    TEST_FOR_CLOSENESS(theta, 0.81788856);
+    TEST_FOR_CLOSENESS(phi,   0.89605538);
+}
+END_TEST
+
+/**********************************************************************/
+
+START_TEST(vectors_to_pixels)
+{
+#define CHECK_INDEX(nside, scheme, input_x, input_y, input_z, ref_index)	\
+    {									\
+	hpix_3d_vector_t input_vector =					\
+	    (hpix_3d_vector_t) { .x = input_x,				\
+				 .y = input_y,				\
+				 .z = input_z };			\
+	ck_assert_int_eq(hpix_3dvec_to_ ## scheme ## _pixel(nside, &input_vector), \
+			 ref_index);					\
+    }
+
+    CHECK_INDEX( 256, ring, 0.1, 0.2, 0.3,   78151);
+    CHECK_INDEX( 512, ring, 0.1, 0.2, 0.3,  311538);
+    CHECK_INDEX(1024, ring, 0.1, 0.2, 0.3, 1247176);
+
+    CHECK_INDEX( 256, nest, 0.1, 0.2, 0.3,  31281);
+    CHECK_INDEX( 512, nest, 0.1, 0.2, 0.3, 125127);
+    CHECK_INDEX(1024, nest, 0.1, 0.2, 0.3, 500510);
+
+#undef CHECK_INDEX
+}
+END_TEST
+
+/**********************************************************************/
+
+START_TEST(pixels_to_vectors)
+{
+#define CHECK_PIXEL(nside, schema, index, ref_x, ref_y, ref_z)		\
+    {									\
+	hpix_3d_vector_t result_vec;					\
+	hpix_ ## schema ## _pixel_to_3dvec(nside, index, &result_vec);	\
+	    TEST_FOR_CLOSENESS(result_vec.x, ref_x);			\
+	    TEST_FOR_CLOSENESS(result_vec.y, ref_y);			\
+	    TEST_FOR_CLOSENESS(result_vec.z, ref_z);			\
+    }
+
+    CHECK_PIXEL(256, ring,      0, 
+		0.0022552716212903439, 0.0022552716212903435, 0.99999491373697913);
+    CHECK_PIXEL(256, ring,   1653, 
+		-0.0025019940270464042, 0.092360906323387754, 0.99572245279947913);
+    CHECK_PIXEL(256, ring,  37644, 
+		-0.14609170150719039, -0.40058952463088032, 0.90453592936197913);
+    CHECK_PIXEL(256, ring, 588412, 
+	        0.62830151534459699, 0.59819277060018217, -0.49739583333333331);
+
+    CHECK_PIXEL(256, nest,      0, 
+		0.70710438349510052, 0.70710438349510041, 0.0026041666666666665);
+    CHECK_PIXEL(256, nest,   1653, 
+		0.6359637575364262, 0.75112688152914975, 0.17708333333333331);
+    CHECK_PIXEL(256, nest,  37644, 
+		0.66743848329372024, 0.44596813666212065, 0.59635416666666663);
+    CHECK_PIXEL(256, nest, 588412, 
+		0.77898558859132916, 0.60792632009670888, -0.15364583333333331);
+
+#undef CHECK_PIXEL
 }
 END_TEST
 
@@ -288,8 +390,15 @@ add_pixel_tests_to_testcase(TCase * testcase)
     tcase_add_test(testcase, valid_nside);
     tcase_add_test(testcase, npixel_to_nside);
     tcase_add_test(testcase, nside_to_npixel);
-    tcase_add_test(testcase, angles_to_pixel);
-    tcase_add_test(testcase, pixel_to_angles);
+
+    tcase_add_test(testcase, angles_to_pixels);
+    tcase_add_test(testcase, pixels_to_angles);
+
+    tcase_add_test(testcase, angles_to_vectors);
+    tcase_add_test(testcase, vectors_to_angles);
+
+    tcase_add_test(testcase, vectors_to_pixels);
+    tcase_add_test(testcase, pixels_to_vectors);
 }
 
 /**********************************************************************/

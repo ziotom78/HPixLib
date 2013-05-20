@@ -59,6 +59,7 @@ libhpix_la_SOURCES = \
 	positions.c \
 	mollweide_projection.c \
 	query_disc.c \
+	vectors.c \
 	$(ADDITIONAL_SOURCES) \
 	$(LIBPSHT_SOURCES)
 

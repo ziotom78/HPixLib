@@ -26,21 +26,28 @@
 
 #define NORMALIZE_ANGLE(x)					\
     {								\
-	if(x >= 2.0 * M_PI) x = x - 2.0 * M_PI;			\
-	if(x <  0.)         x = x + 2.0 * M_PI;			\
+	while((x) >= 2.0 * M_PI) (x) = (x) - 2.0 * M_PI;	\
+	while((x) <  0.)         (x) = (x) + 2.0 * M_PI;	\
     }
 
+/**********************************************************************/
+
+
 void
 hpix_angles_to_3dvec(double theta, double phi,
-		     double * x, double * y, double * z)
+		     hpix_3d_vector_t * vector)
 {
-    assert(x && y && z);
+    assert(vector);
 
-    *x = 0.0;
-    *y = 0.0;
-    *z = 0.0;
+    const double sin_theta = sin(theta);
+    vector->x = sin_theta * cos(phi);
+    vector->y = sin_theta * sin(phi);
+    vector->z = cos(theta);
 }
 
+/**********************************************************************/
+
+
 hpix_pixel_num_t
 hpix_angles_to_ring_pixel(hpix_nside_t nside,
 			  double theta,
@@ -94,6 +101,9 @@ hpix_angles_to_ring_pixel(hpix_nside_t nside,
     return ipix1 - 1;
 }
 
+/**********************************************************************/
+
+
 hpix_pixel_num_t
 hpix_angles_to_nest_pixel(hpix_nside_t nside,
 			  double theta,
@@ -161,30 +171,49 @@ hpix_angles_to_nest_pixel(hpix_nside_t nside,
     return (hpix_pixel_num_t) (ipf + face_num * nside * nside);
 }
 
+/**********************************************************************/
+
+
 void
-hpix_3dvec_to_angles(double x, double y, double z,
+hpix_3dvec_to_angles(const hpix_3d_vector_t * vector,
 		     double * theta, double * phi)
 {
+    assert(vector);
     assert(theta && phi);
 
-    *theta = 0.0;
-    *phi = 0.0;
+    double vector_len = hpix_vector_length(vector);
+    *theta = acos(vector->z / vector_len);
+    *phi = atan2(vector->y, vector->x);
+    NORMALIZE_ANGLE(*phi);
 }
 
+/**********************************************************************/
+
+
 hpix_pixel_num_t
 hpix_3dvec_to_ring_pixel(hpix_nside_t nside,
-			 double x, double y, double z)
+			 const hpix_3d_vector_t * vector)
 {
-    return 0;
+    double theta, phi;
+    hpix_3dvec_to_angles(vector, &theta, &phi);
+    return hpix_angles_to_ring_pixel(nside, theta, phi);
 }
 
+/**********************************************************************/
+
+
 hpix_pixel_num_t
 hpix_3dvec_to_nest_pixel(hpix_nside_t nside,
-			 double x, double y, double z)
+			 const hpix_3d_vector_t * vector)
 {
-    return 0;
+    double theta, phi;
+    hpix_3dvec_to_angles(vector, &theta, &phi);
+    return hpix_angles_to_nest_pixel(nside, theta, phi);
 }
 
+/**********************************************************************/
+
+
 void
 hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
 			  double * theta, double * phi)
@@ -240,6 +269,9 @@ hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
     }
 }
 
+/**********************************************************************/
+
+
 void
 hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
 			  double * theta, double * phi)
@@ -302,24 +334,32 @@ hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
     *phi = (jp - (kshift+1)*0.5) * (piover2 / nr);
 }
 
+/**********************************************************************/
+
+
 void
 hpix_ring_pixel_to_3dvec(hpix_nside_t nside,
-			 double * x, double * y, double * z)
+			 hpix_pixel_num_t pixel_index,
+			 hpix_3d_vector_t * vector)
 {
-    assert(x && y && z);
+    assert(vector);
 
-    *x = 0.0;
-    *y = 0.0;
-    *z = 0.0;
+    double theta, phi;
+    hpix_ring_pixel_to_angles(nside, pixel_index, &theta, &phi);
+    hpix_angles_to_3dvec(theta, phi, vector);
 }
 
+/**********************************************************************/
+
+
 void
 hpix_nest_pixel_to_3dvec(hpix_nside_t nside,
-			 double * x, double * y, double * z)
+			 hpix_pixel_num_t pixel_index,
+			 hpix_3d_vector_t * vector)
 {
-    assert(x && y && z);
+    assert(vector);
 
-    *x = 0.0;
-    *y = 0.0;
-    *z = 0.0;
+    double theta, phi;
+    hpix_nest_pixel_to_angles(nside, pixel_index, &theta, &phi);
+    hpix_angles_to_3dvec(theta, phi, vector);
 }
