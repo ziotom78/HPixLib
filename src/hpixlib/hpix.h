@@ -379,6 +379,8 @@ double hpix_vector_length(const hpix_3d_vector_t * vector);
 double hpix_dot_product(const hpix_3d_vector_t * vector1,
 			const hpix_3d_vector_t * vector2);
 
+void hpix_normalize_vector(hpix_3d_vector_t * vector);
+
 #ifdef __cplusplus
 };
 #endif /* __cplusplus */

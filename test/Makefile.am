@@ -35,7 +35,8 @@ check_PROGRAMS = \
 	test_bmp_projection \
 	test_io \
 	test_palette \
-	test_pixel_functions
+	test_pixel_functions \
+	test_vector_functions
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 

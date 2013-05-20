@@ -48,3 +48,27 @@ hpix_dot_product(const hpix_3d_vector_t * vector1,
 	vector1->y * vector2->y +
 	vector1->z * vector2->z;
 }
+
+/**********************************************************************/
+
+
+void
+hpix_normalize_vector(hpix_3d_vector_t * vector)
+{
+    assert(vector);
+
+    const double len = hpix_vector_length(vector);
+    if(len > 0.0)
+    {
+	/* Avoid declaring
+	 *
+	 * double inv_len = 1.0 / len 
+	 *
+	 * and then multiplying by inv_len just to optimize the
+	 * calculations: any decent C compiler will already do this
+	 * for you. */
+	vector->x /= len;
+	vector->y /= len;
+	vector->z /= len;
+    }
+}
