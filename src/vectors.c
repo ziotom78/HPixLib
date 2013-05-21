@@ -19,6 +19,20 @@
 #include <math.h>
 #include <assert.h>
 
+/**********************************************************************/
+
+
+void
+hpix_print_vector(FILE * output_file, 
+		  const hpix_3d_vector_t * vector)
+{
+    fprintf(output_file,
+	    "%g\t%g\t%g", 
+	    vector->x, vector->y, vector->z);
+}
+
+/**********************************************************************/
+
 
 double 
 hpix_vector_length(const hpix_3d_vector_t * vector)

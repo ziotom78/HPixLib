@@ -30,4 +30,18 @@
 	TEST_FOR_CLOSENESS((vec1).y, (vec2).y);	\
 	TEST_FOR_CLOSENESS((vec1).z, (vec2).z);	\
     }
+
+#define ARE_MATRICES_EQUAL(test, reference)		   \
+    {							   \
+	size_t __i, __j;				   \
+	for(__i = 0; __i < 3; ++__i)			   \
+	{						   \
+	    for(__j = 0; __j < 3; ++__j)		   \
+	    {						   \
+		TEST_FOR_CLOSENESS(test.m[__i][__j],	   \
+				   reference.m[__i][__j]); \
+	    }						   \
+	}						   \
+    }
+
 #endif

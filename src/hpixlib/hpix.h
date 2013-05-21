@@ -23,6 +23,7 @@ extern "C"{
 #endif /* __cplusplus */
 
 #include <inttypes.h>
+#include <stdio.h>
 #include "config.h"
 #include "fitsio.h"
 
@@ -74,6 +75,10 @@ typedef struct {
     double y;
     double z;
 } hpix_3d_vector_t;
+
+typedef struct {
+    double m[3][3];
+} hpix_matrix_t;
 
 /* The most basic structure: a RGB color. Following Cairo's
  * conventions, each component is a floating-point number between 0.0
@@ -350,6 +355,30 @@ void hpix_sort_levels_in_color_palette(hpix_color_palette_t * palette);
 void hpix_palette_color(const hpix_color_palette_t * palette,
 			double level, hpix_color_t * color);
 
+/* Functions implemented in matrices.c */
+
+void hpix_set_matrix_to_unity(hpix_matrix_t * matrix);
+void hpix_set_matrix_to_zero(hpix_matrix_t * matrix);
+void hpix_set_matrix_to_scale_transform(hpix_matrix_t * matrix,
+					double scale_x,
+					double scale_y,
+					double scale_z);
+
+_Bool hpix_is_matrix_zero(const hpix_matrix_t * matrix);
+void hpix_print_matrix(FILE * output_file, 
+		       const hpix_matrix_t * matrix,
+		       unsigned int num_of_indents,
+		       _Bool indent_first_line);
+void hpix_matrix_3dvec_mul(hpix_3d_vector_t * result,
+			   const hpix_matrix_t * matrix,
+			   const hpix_3d_vector_t * vector);
+void hpix_matrix_mul(hpix_matrix_t * result,
+		     const hpix_matrix_t * matrix1,
+		     const hpix_matrix_t * matrix2);
+double hpix_matrix_determinant(const hpix_matrix_t * matrix);
+void hpix_matrix_inverse(hpix_matrix_t * result,
+			 const hpix_matrix_t * matrix);
+
 /* Functions implemented in mollweide_projection.c */
 
 _Bool hpix_mollweide_is_xy_inside(const hpix_bmp_projection_t * proj,
@@ -374,6 +403,8 @@ void hpix_query_disc_inclusive(double theta, double phi, double radius,
 
 /* Functions defined in vectors.c */
 
+void hpix_print_vector(FILE * output_file, 
+		       const hpix_3d_vector_t * vector);
 double hpix_vector_length(const hpix_3d_vector_t * vector);
 
 double hpix_dot_product(const hpix_3d_vector_t * vector1,

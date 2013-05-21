@@ -57,6 +57,7 @@ libhpix_la_SOURCES = \
 	io.c \
 	palette.c \
 	positions.c \
+	matrices.c \
 	mollweide_projection.c \
 	query_disc.c \
 	vectors.c \
