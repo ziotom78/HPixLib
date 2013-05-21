@@ -112,14 +112,14 @@ Converting angular positions
 The functions described in this paragraph convert angular positions
 (*theta*, *phi*) into some other representation.
 
-.. c:function:: void hpix_angles_to_3dvec(double theta, double phi, double * x, double * y, double * z)
+.. c:function:: void hpix_angles_to_vector(double theta, double phi, double * x, double * y, double * z)
 
   Convert the pair of angles *theta*, *phi* into a versor (one-length
   vector) *x*, *y*, *z*. The function normalizes the angles before
   applying the conversion (e.g. if *phi* is equal to 3pi, it is
   converted into pi).
 
-  See also :c:func:`hpix_3dvec_to_angles`.
+  See also :c:func:`hpix_vector_to_angles`.
 
 .. c:function:: hpix_pixel_num_t hpix_angles_to_ring_pixel(hpix_nside_t nside, double theta, double phi)
 
@@ -177,34 +177,34 @@ Converting 3D vectors
 The functions described in this paragraph convert 3D vectors into some
 other representation. The vector does not need to have length one.
 
-.. c:function:: void hpix_3dvec_to_angles(double x, double y, double z, double * theta, double * phi)
+.. c:function:: void hpix_vector_to_angles(double x, double y, double z, double * theta, double * phi)
 
   Convert the vector *x*, *y*, *z* into the pair of angles *theta*,
   *phi*. It is not necessary for the vector to have length one. The
   two angles will be properly normalized (i.e. *theta* will be within
   0 and pi, and *phi* will be within 0 and 2pi).
 
-  See also :c:func:`hpix_angles_to_3dvec`.
+  See also :c:func:`hpix_angles_to_vector`.
 
-.. c:function:: hpix_pixel_num_t hpix_3dvec_to_ring_pixel(hpix_nside_t nside, double x, double y, double z)
+.. c:function:: hpix_pixel_num_t hpix_vector_to_ring_pixel(hpix_nside_t nside, double x, double y, double z)
 
   Convert the vector *x*, *y*, *z* into the `RING` index of the
   pixel for which the specified direction falls within.
 
-  See also :c:func:`hpix_ring_pixel_to_3dvec`.
+  See also :c:func:`hpix_ring_pixel_to_vector`.
 
-.. c:function:: hpix_pixel_num_t hpix_3dvec_to_nest_pixel(hpix_nside_t nside, double x, double y, double z)
+.. c:function:: hpix_pixel_num_t hpix_vector_to_nest_pixel(hpix_nside_t nside, double x, double y, double z)
 
   Convert the vector *x*, *y*, *z* into the `NESTED` index of the
   pixel for which the specified direction falls within.
 
-  See also :c:func:`hpix_nest_pixel_to_3dvec`.
+  See also :c:func:`hpix_nest_pixel_to_vector`.
 
-.. c:type:: typedef hpix_pixel_num_t hpix_3dvec_to_pixel_fn_t(hpix_nside_t, double, double, double)
+.. c:type:: typedef hpix_pixel_num_t hpix_vector_to_pixel_fn_t(hpix_nside_t, double, double, double)
 
   This defines a name for the prototype of the two functions
-  :c:func:`hpix_3dvec_to_ring_pixel` and
-  :c:func:`hpix_3dvec_to_nest_pixel`. It is useful if you plan to call
+  :c:func:`hpix_vector_to_ring_pixel` and
+  :c:func:`hpix_vector_to_nest_pixel`. It is useful if you plan to call
   many times one of the two functions, but you do not know in advance
   which one you'll use. See :c:type:`hpix_angles_to_pixel_fn_t` for a
   nice example.
@@ -241,27 +241,27 @@ either in `RING` or `NESTED` scheme, into some other representation.
   advance which one you'll use. See
   :c:type:`hpix_angles_to_pixel_fn_t` for a nice example.
 
-.. c:function:: void hpix_ring_pixel_to_3dvec(hpix_nside_t nside, double * x, double * y, double * z)
+.. c:function:: void hpix_ring_pixel_to_vector(hpix_nside_t nside, double * x, double * y, double * z)
 
   Convert the direction of the center of the pixel with `RING` index
   *pixel* into the components of a vector *x*, *y*, *z*. It is
   guaranteed that `x*x + y*y + z*z == 1.0`.
 
-  See also :c:func:`hpix_3dvec_to_ring_pixel`.
+  See also :c:func:`hpix_vector_to_ring_pixel`.
 
-.. c:function:: void hpix_nest_pixel_to_3dvec(hpix_nside_t nside, double * x, double * y, double * z)
+.. c:function:: void hpix_nest_pixel_to_vector(hpix_nside_t nside, double * x, double * y, double * z)
 
   Convert the direction of the center of the pixel with `RING` index
   *pixel* into the components of a vector *x*, *y*, *z*. It is
   guaranteed that `x*x + y*y + z*z == 1.0`.
 
-  See also :c:func:`hpix_3dvec_to_ring_pixel`.
+  See also :c:func:`hpix_vector_to_ring_pixel`.
 
-.. c:type:: typedef void hpix_pixel_to_3dvec(hpix_nside_t, hpix_pixel_num_t, double *, double *, double *)
+.. c:type:: typedef void hpix_pixel_to_vector(hpix_nside_t, hpix_pixel_num_t, double *, double *, double *)
 
   This defines a name for the prototype of the two functions
-  :c:func:`hpix_ring_pixel_to_3dvec` and
-  :c:func:`hpix_nest_pixel_to_3dvec`. It is useful if you plan to call
+  :c:func:`hpix_ring_pixel_to_vector` and
+  :c:func:`hpix_nest_pixel_to_vector`. It is useful if you plan to call
   many times one of the two functions, but you do not know in advance
   which one you'll use. See :c:type:`hpix_angles_to_pixel_fn_t` for a
   nice example.
