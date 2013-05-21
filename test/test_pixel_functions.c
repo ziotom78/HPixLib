@@ -182,17 +182,17 @@ END_TEST
 
 START_TEST(angles_to_vectors)
 {
-    hpix_3d_vector_t test_vector;
-    hpix_3d_vector_t ref_vector;
+    hpix_vector_t test_vector;
+    hpix_vector_t ref_vector;
 
-    hpix_angles_to_3dvec(0.1, 0.2, &test_vector);
-    ref_vector = (hpix_3d_vector_t) { .x = 0.0978434,
+    hpix_angles_to_vector(0.1, 0.2, &test_vector);
+    ref_vector = (hpix_vector_t) { .x = 0.0978434,
 				      .y = 0.01983384,
 				      .z = 0.99500417 };
     ARE_VECTORS_EQUAL(test_vector, ref_vector);
 
-    hpix_angles_to_3dvec(0.4, 0.3, &test_vector);
-    ref_vector = (hpix_3d_vector_t) { .x = 0.37202555,
+    hpix_angles_to_vector(0.4, 0.3, &test_vector);
+    ref_vector = (hpix_vector_t) { .x = 0.37202555,
 				      .y = 0.11508099,
 				      .z = 0.92106099 };
     ARE_VECTORS_EQUAL(test_vector, ref_vector);
@@ -203,16 +203,16 @@ END_TEST
 
 START_TEST(vectors_to_angles)
 {
-    hpix_3d_vector_t vector;
+    hpix_vector_t vector;
     double theta, phi;
 
-    vector = (hpix_3d_vector_t) { .x = 0.1, .y = 0.2, .z = 0.3 };
-    hpix_3dvec_to_angles(&vector, &theta, &phi);
+    vector = (hpix_vector_t) { .x = 0.1, .y = 0.2, .z = 0.3 };
+    hpix_vector_to_angles(&vector, &theta, &phi);
     TEST_FOR_CLOSENESS(theta, 0.64052231);
     TEST_FOR_CLOSENESS(phi,   1.10714872);
 
-    vector = (hpix_3d_vector_t) { .x = 0.4, .y = 0.5, .z = 0.6 };
-    hpix_3dvec_to_angles(&vector, &theta, &phi);
+    vector = (hpix_vector_t) { .x = 0.4, .y = 0.5, .z = 0.6 };
+    hpix_vector_to_angles(&vector, &theta, &phi);
     TEST_FOR_CLOSENESS(theta, 0.81788856);
     TEST_FOR_CLOSENESS(phi,   0.89605538);
 }
@@ -224,11 +224,11 @@ START_TEST(vectors_to_pixels)
 {
 #define CHECK_INDEX(nside, scheme, input_x, input_y, input_z, ref_index)	\
     {									\
-	hpix_3d_vector_t input_vector =					\
-	    (hpix_3d_vector_t) { .x = input_x,				\
+	hpix_vector_t input_vector =					\
+	    (hpix_vector_t) { .x = input_x,				\
 				 .y = input_y,				\
 				 .z = input_z };			\
-	ck_assert_int_eq(hpix_3dvec_to_ ## scheme ## _pixel(nside, &input_vector), \
+	ck_assert_int_eq(hpix_vector_to_ ## scheme ## _pixel(nside, &input_vector), \
 			 ref_index);					\
     }
 
@@ -250,8 +250,8 @@ START_TEST(pixels_to_vectors)
 {
 #define CHECK_PIXEL(nside, schema, index, ref_x, ref_y, ref_z)		\
     {									\
-	hpix_3d_vector_t result_vec;					\
-	hpix_ ## schema ## _pixel_to_3dvec(nside, index, &result_vec);	\
+	hpix_vector_t result_vec;					\
+	hpix_ ## schema ## _pixel_to_vector(nside, index, &result_vec);	\
 	    TEST_FOR_CLOSENESS(result_vec.x, ref_x);			\
 	    TEST_FOR_CLOSENESS(result_vec.y, ref_y);			\
 	    TEST_FOR_CLOSENESS(result_vec.z, ref_z);			\

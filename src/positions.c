@@ -34,8 +34,8 @@
 
 
 void
-hpix_angles_to_3dvec(double theta, double phi,
-		     hpix_3d_vector_t * vector)
+hpix_angles_to_vector(double theta, double phi,
+		     hpix_vector_t * vector)
 {
     assert(vector);
 
@@ -175,7 +175,7 @@ hpix_angles_to_nest_pixel(hpix_nside_t nside,
 
 
 void
-hpix_3dvec_to_angles(const hpix_3d_vector_t * vector,
+hpix_vector_to_angles(const hpix_vector_t * vector,
 		     double * theta, double * phi)
 {
     assert(vector);
@@ -191,11 +191,11 @@ hpix_3dvec_to_angles(const hpix_3d_vector_t * vector,
 
 
 hpix_pixel_num_t
-hpix_3dvec_to_ring_pixel(hpix_nside_t nside,
-			 const hpix_3d_vector_t * vector)
+hpix_vector_to_ring_pixel(hpix_nside_t nside,
+			 const hpix_vector_t * vector)
 {
     double theta, phi;
-    hpix_3dvec_to_angles(vector, &theta, &phi);
+    hpix_vector_to_angles(vector, &theta, &phi);
     return hpix_angles_to_ring_pixel(nside, theta, phi);
 }
 
@@ -203,11 +203,11 @@ hpix_3dvec_to_ring_pixel(hpix_nside_t nside,
 
 
 hpix_pixel_num_t
-hpix_3dvec_to_nest_pixel(hpix_nside_t nside,
-			 const hpix_3d_vector_t * vector)
+hpix_vector_to_nest_pixel(hpix_nside_t nside,
+			 const hpix_vector_t * vector)
 {
     double theta, phi;
-    hpix_3dvec_to_angles(vector, &theta, &phi);
+    hpix_vector_to_angles(vector, &theta, &phi);
     return hpix_angles_to_nest_pixel(nside, theta, phi);
 }
 
@@ -338,28 +338,28 @@ hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
 
 
 void
-hpix_ring_pixel_to_3dvec(hpix_nside_t nside,
+hpix_ring_pixel_to_vector(hpix_nside_t nside,
 			 hpix_pixel_num_t pixel_index,
-			 hpix_3d_vector_t * vector)
+			 hpix_vector_t * vector)
 {
     assert(vector);
 
     double theta, phi;
     hpix_ring_pixel_to_angles(nside, pixel_index, &theta, &phi);
-    hpix_angles_to_3dvec(theta, phi, vector);
+    hpix_angles_to_vector(theta, phi, vector);
 }
 
 /**********************************************************************/
 
 
 void
-hpix_nest_pixel_to_3dvec(hpix_nside_t nside,
+hpix_nest_pixel_to_vector(hpix_nside_t nside,
 			 hpix_pixel_num_t pixel_index,
-			 hpix_3d_vector_t * vector)
+			 hpix_vector_t * vector)
 {
     assert(vector);
 
     double theta, phi;
     hpix_nest_pixel_to_angles(nside, pixel_index, &theta, &phi);
-    hpix_angles_to_3dvec(theta, phi, vector);
+    hpix_angles_to_vector(theta, phi, vector);
 }

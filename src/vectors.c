@@ -24,7 +24,7 @@
 
 void
 hpix_print_vector(FILE * output_file, 
-		  const hpix_3d_vector_t * vector)
+		  const hpix_vector_t * vector)
 {
     fprintf(output_file,
 	    "%g\t%g\t%g", 
@@ -35,7 +35,7 @@ hpix_print_vector(FILE * output_file,
 
 
 double 
-hpix_vector_length(const hpix_3d_vector_t * vector)
+hpix_vector_length(const hpix_vector_t * vector)
 {
     assert(vector);
 
@@ -51,8 +51,8 @@ hpix_vector_length(const hpix_3d_vector_t * vector)
 
 
 double
-hpix_dot_product(const hpix_3d_vector_t * vector1,
-		 const hpix_3d_vector_t * vector2)
+hpix_dot_product(const hpix_vector_t * vector1,
+		 const hpix_vector_t * vector2)
 {
     assert(vector1);
     assert(vector2);
@@ -67,7 +67,7 @@ hpix_dot_product(const hpix_3d_vector_t * vector1,
 
 
 void
-hpix_normalize_vector(hpix_3d_vector_t * vector)
+hpix_normalize_vector(hpix_vector_t * vector)
 {
     assert(vector);
 

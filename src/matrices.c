@@ -106,9 +106,9 @@ hpix_print_matrix(FILE * output_file,
 
 
 void
-hpix_matrix_3dvec_mul(hpix_3d_vector_t * result,
+hpix_matrix_vector_mul(hpix_vector_t * result,
 		      const hpix_matrix_t * matrix,
-		      const hpix_3d_vector_t * vector)
+		      const hpix_vector_t * vector)
 {
     assert(result);
     assert(matrix);

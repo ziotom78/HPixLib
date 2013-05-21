@@ -26,17 +26,17 @@
 
 START_TEST(vector_length)
 {
-    hpix_3d_vector_t vector;
+    hpix_vector_t vector;
 
-    vector = (hpix_3d_vector_t) { .x = 0.1, .y = 0.2, .z = 0.3 };
+    vector = (hpix_vector_t) { .x = 0.1, .y = 0.2, .z = 0.3 };
     TEST_FOR_CLOSENESS(hpix_vector_length(&vector),
 		       0.37416573867739413856);
 
-    vector = (hpix_3d_vector_t) { .x = -0.6, .y = -0.9, .z = 0.4 };
+    vector = (hpix_vector_t) { .x = -0.6, .y = -0.9, .z = 0.4 };
     TEST_FOR_CLOSENESS(hpix_vector_length(&vector),
 		       1.15325625946707958894);
 
-    vector = (hpix_3d_vector_t) { .x = 0.0, .y = 0.0, .z = 0.0 };
+    vector = (hpix_vector_t) { .x = 0.0, .y = 0.0, .z = 0.0 };
     TEST_FOR_CLOSENESS(hpix_vector_length(&vector), 0.0);
 }
 END_TEST
@@ -45,30 +45,30 @@ END_TEST
 
 START_TEST(dot_product)
 {
-    hpix_3d_vector_t vec1, vec2;
+    hpix_vector_t vec1, vec2;
 
-    vec1 = (hpix_3d_vector_t) { .x = 1.0, .y = 0.0, .z = 0.0 };
-    vec2 = (hpix_3d_vector_t) { .x = 0.0, .y = 1.0, .z = 0.0 };
-
-    fail_unless(hpix_dot_product(&vec1, &vec2) == 0.0);
-
-    vec1 = (hpix_3d_vector_t) { .x = 0.0, .y = 1.0, .z = 0.0 };
-    vec2 = (hpix_3d_vector_t) { .x = 0.0, .y = 0.0, .z = 1.0 };
+    vec1 = (hpix_vector_t) { .x = 1.0, .y = 0.0, .z = 0.0 };
+    vec2 = (hpix_vector_t) { .x = 0.0, .y = 1.0, .z = 0.0 };
 
     fail_unless(hpix_dot_product(&vec1, &vec2) == 0.0);
 
-    vec1 = (hpix_3d_vector_t) { .x = 1.0, .y = 0.0, .z = 0.0 };
-    vec2 = (hpix_3d_vector_t) { .x = 0.0, .y = 0.0, .z = 1.0 };
+    vec1 = (hpix_vector_t) { .x = 0.0, .y = 1.0, .z = 0.0 };
+    vec2 = (hpix_vector_t) { .x = 0.0, .y = 0.0, .z = 1.0 };
 
     fail_unless(hpix_dot_product(&vec1, &vec2) == 0.0);
 
-    vec1 = (hpix_3d_vector_t) { .x = 0.1, .y = 0.2, .z = 0.3 };
-    vec2 = (hpix_3d_vector_t) { .x = -0.4, .y = 0.5, .z = -0.6 };
+    vec1 = (hpix_vector_t) { .x = 1.0, .y = 0.0, .z = 0.0 };
+    vec2 = (hpix_vector_t) { .x = 0.0, .y = 0.0, .z = 1.0 };
+
+    fail_unless(hpix_dot_product(&vec1, &vec2) == 0.0);
+
+    vec1 = (hpix_vector_t) { .x = 0.1, .y = 0.2, .z = 0.3 };
+    vec2 = (hpix_vector_t) { .x = -0.4, .y = 0.5, .z = -0.6 };
 
     TEST_FOR_CLOSENESS(hpix_dot_product(&vec1, &vec2), -0.12);
 
-    vec1 = (hpix_3d_vector_t) { .x = 0.1, .y = 0.2, .z = -0.3 };
-    vec2 = (hpix_3d_vector_t) { .x = 0.4, .y = -0.5, .z = 0.6 };
+    vec1 = (hpix_vector_t) { .x = 0.1, .y = 0.2, .z = -0.3 };
+    vec2 = (hpix_vector_t) { .x = 0.4, .y = -0.5, .z = 0.6 };
 
     TEST_FOR_CLOSENESS(hpix_dot_product(&vec1, &vec2), -0.24);
 }
@@ -78,27 +78,27 @@ END_TEST
 
 START_TEST(vector_to_versor)
 {
-    hpix_3d_vector_t test_vector;
-    hpix_3d_vector_t ref_vector;
+    hpix_vector_t test_vector;
+    hpix_vector_t ref_vector;
 
-    test_vector = (hpix_3d_vector_t) { .x = 0.3, .y = 0.0, .z = 0.0 };
+    test_vector = (hpix_vector_t) { .x = 0.3, .y = 0.0, .z = 0.0 };
     hpix_normalize_vector(&test_vector);
-    ref_vector = (hpix_3d_vector_t) { .x = 1.0, .y = 0.0, .z = 0.0 };
+    ref_vector = (hpix_vector_t) { .x = 1.0, .y = 0.0, .z = 0.0 };
     ARE_VECTORS_EQUAL(test_vector, ref_vector);
 
-    test_vector = (hpix_3d_vector_t) { .x = 0.0, .y = 0.3, .z = 0.0 };
+    test_vector = (hpix_vector_t) { .x = 0.0, .y = 0.3, .z = 0.0 };
     hpix_normalize_vector(&test_vector);
-    ref_vector = (hpix_3d_vector_t) { .x = 0.0, .y = 1.0, .z = 0.0 };
+    ref_vector = (hpix_vector_t) { .x = 0.0, .y = 1.0, .z = 0.0 };
     ARE_VECTORS_EQUAL(test_vector, ref_vector);
 
-    test_vector = (hpix_3d_vector_t) { .x = 0.0, .y = 0.0, .z = 0.3 };
+    test_vector = (hpix_vector_t) { .x = 0.0, .y = 0.0, .z = 0.3 };
     hpix_normalize_vector(&test_vector);
-    ref_vector = (hpix_3d_vector_t) { .x = 0.0, .y = 0.0, .z = 1.0 };
+    ref_vector = (hpix_vector_t) { .x = 0.0, .y = 0.0, .z = 1.0 };
     ARE_VECTORS_EQUAL(test_vector, ref_vector);
 
-    test_vector = (hpix_3d_vector_t) { .x = 0.1, .y = 0.2, .z = 0.3 };
+    test_vector = (hpix_vector_t) { .x = 0.1, .y = 0.2, .z = 0.3 };
     hpix_normalize_vector(&test_vector);
-    ref_vector = (hpix_3d_vector_t) { .x = 0.26726124191242438468, 
+    ref_vector = (hpix_vector_t) { .x = 0.26726124191242438468, 
 				      .y = 0.53452248382484876937, 
 				      .z = 0.80178372573727315405 };
     ARE_VECTORS_EQUAL(test_vector, ref_vector);
@@ -151,11 +151,11 @@ START_TEST(matrix_vector_multiplication)
 	(hpix_matrix_t) { .m = { { 1, -2, 3 },
 				 { -4, 5, -6 },
 				 { 7, -8, 9 } } };
-    const hpix_3d_vector_t vector = { 10, -11, 12 };
-    const hpix_3d_vector_t reference = { 68, -167, 266 };
-    hpix_3d_vector_t result;
+    const hpix_vector_t vector = { 10, -11, 12 };
+    const hpix_vector_t reference = { 68, -167, 266 };
+    hpix_vector_t result;
 
-    hpix_matrix_3dvec_mul(&result, &matrix, &vector);
+    hpix_matrix_vector_mul(&result, &matrix, &vector);
     ARE_VECTORS_EQUAL(result, reference);
 }
 END_TEST
@@ -227,8 +227,8 @@ int
 main(void)
 {
     int number_failed;
-    Suite * palette_suite = create_hpix_test_suite();
-    SRunner * runner = srunner_create(palette_suite);
+    Suite * suite = create_hpix_test_suite();
+    SRunner * runner = srunner_create(suite);
     srunner_run_all(runner, CK_VERBOSE);
     number_failed = srunner_ntests_failed(runner);
     srunner_free(runner);

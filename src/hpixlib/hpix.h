@@ -74,7 +74,7 @@ typedef struct {
     double x;
     double y;
     double z;
-} hpix_3d_vector_t;
+} hpix_vector_t;
 
 typedef struct {
     double m[3][3];
@@ -218,8 +218,8 @@ hpix_save_fits_pol_map(const char * file_name,
 
 /* Functions implemented in positions.c */
 
-void hpix_angles_to_3dvec(double theta, double phi,
-			  hpix_3d_vector_t * vector);
+void hpix_angles_to_vector(double theta, double phi,
+			  hpix_vector_t * vector);
 
 typedef hpix_pixel_num_t hpix_angles_to_pixel_fn_t(hpix_nside_t,
 						       double, double);
@@ -232,17 +232,17 @@ hpix_pixel_num_t hpix_angles_to_nest_pixel(hpix_nside_t nside,
 					       double theta,
 					       double phi);
 
-void hpix_3dvec_to_angles(const hpix_3d_vector_t * vector,
+void hpix_vector_to_angles(const hpix_vector_t * vector,
 			  double * theta, double * phi);
 
-typedef hpix_pixel_num_t hpix_3dvec_to_pixel_fn_t(hpix_nside_t,
-						  const hpix_3d_vector_t *);
+typedef hpix_pixel_num_t hpix_vector_to_pixel_fn_t(hpix_nside_t,
+						  const hpix_vector_t *);
 
-hpix_pixel_num_t hpix_3dvec_to_ring_pixel(hpix_nside_t nside,
-					  const hpix_3d_vector_t * vector);
+hpix_pixel_num_t hpix_vector_to_ring_pixel(hpix_nside_t nside,
+					  const hpix_vector_t * vector);
 
-hpix_pixel_num_t hpix_3dvec_to_nest_pixel(hpix_nside_t nside,
-					  const hpix_3d_vector_t * vector);
+hpix_pixel_num_t hpix_vector_to_nest_pixel(hpix_nside_t nside,
+					  const hpix_vector_t * vector);
 
 typedef void hpix_pixel_to_angles(hpix_nside_t, hpix_pixel_num_t,
 				    double *, double *);
@@ -253,16 +253,16 @@ void hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
 void hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
 				 double * theta, double * phi);
 
-typedef void hpix_pixel_to_3dvec(hpix_nside_t, hpix_pixel_num_t,
-				 hpix_3d_vector_t * vector);
+typedef void hpix_pixel_to_vector(hpix_nside_t, hpix_pixel_num_t,
+				 hpix_vector_t * vector);
 
-void hpix_ring_pixel_to_3dvec(hpix_nside_t nside,
+void hpix_ring_pixel_to_vector(hpix_nside_t nside,
 			      hpix_pixel_num_t pixel_index,
-			      hpix_3d_vector_t * vector);
+			      hpix_vector_t * vector);
 
-void hpix_nest_pixel_to_3dvec(hpix_nside_t nside,
+void hpix_nest_pixel_to_vector(hpix_nside_t nside,
 			      hpix_pixel_num_t pixel_index,
-			      hpix_3d_vector_t * vector);
+			      hpix_vector_t * vector);
 
 /* Functions implemented in bitmap.c */
 
@@ -369,9 +369,9 @@ void hpix_print_matrix(FILE * output_file,
 		       const hpix_matrix_t * matrix,
 		       unsigned int num_of_indents,
 		       _Bool indent_first_line);
-void hpix_matrix_3dvec_mul(hpix_3d_vector_t * result,
+void hpix_matrix_vector_mul(hpix_vector_t * result,
 			   const hpix_matrix_t * matrix,
-			   const hpix_3d_vector_t * vector);
+			   const hpix_vector_t * vector);
 void hpix_matrix_mul(hpix_matrix_t * result,
 		     const hpix_matrix_t * matrix1,
 		     const hpix_matrix_t * matrix2);
@@ -404,13 +404,13 @@ void hpix_query_disc_inclusive(double theta, double phi, double radius,
 /* Functions defined in vectors.c */
 
 void hpix_print_vector(FILE * output_file, 
-		       const hpix_3d_vector_t * vector);
-double hpix_vector_length(const hpix_3d_vector_t * vector);
+		       const hpix_vector_t * vector);
+double hpix_vector_length(const hpix_vector_t * vector);
 
-double hpix_dot_product(const hpix_3d_vector_t * vector1,
-			const hpix_3d_vector_t * vector2);
+double hpix_dot_product(const hpix_vector_t * vector1,
+			const hpix_vector_t * vector2);
 
-void hpix_normalize_vector(hpix_3d_vector_t * vector);
+void hpix_normalize_vector(hpix_vector_t * vector);
 
 #ifdef __cplusplus
 };
