@@ -5,20 +5,21 @@ In this section we introduce the :c:type:`hpix_map_t` type, which is
 used to hold information about a map, as well as a number of ancillary
 types and functions.
 
-The following example is a program which shows information about a set
-of FITS temperature maps specified from the command line. It is a good
-example of the way HPixLib functions are meant to be used in a real
-program (albeit as simple as this is). In the rest of this section a
-detailed documentation of every function used in the example will be
-provided.
+The following example (`examples/mapinfo.c`) is a program which shows
+information about a set of FITS temperature maps specified from the
+command line. It is a good example of the way HPixLib functions are
+meant to be used in a real program (albeit as simple as this is). In
+the rest of this section a detailed documentation of every function
+used in the example will be provided.
 
 .. code-block:: c
 
+  #include <hpixlib/hpix.h>
   #include <stdio.h>
   #include <stdlib.h>
   #include <math.h>
-  #include <hpixlib/hpix.h>
-
+  #include <assert.h>
+  
   /* Compute the peak-to-peak difference of the value of the
      pixels in the map */
   double peak_to_peak_amplitude(const hpix_map_t * map)
@@ -26,56 +27,63 @@ provided.
     size_t idx;
     double min, max;
     double * pixels;
-
+  
     assert(map);
-
+  
     pixels = hpix_map_pixels(map);
     min = max = pixels[0];
     for(int idx = 1; idx < hpix_map_num_of_pixels(map); ++idx)
     {
       if(isnan(pixels[idx])) /* Skip unseen pixels */
         continue;
-
+  
       if(min > pixels[idx])
         min = pixels[idx];
-
+  
       if(max < pixels[idx])
         max = pixels[idx];
     }
-
+  
     return max - min;
   }
-
+  
   int main(int argc, char ** argv)
   {
     char * error_message = NULL;
-
+  
     /* Skip the program name */
     ++argv; --argc;
-
-    while(argc--)
-    {
-      hpix_map_t * map = hpix_load_map(*argv, 1, &error_message);
-
-      if(map)
-      {
-        printf("File name: %s\n", *argv);
-        printf("NSIDE: %ud\n", hpix_map_nside(map));
-        printf("Ordering: %s\n\n",
-               hpix_map_ordering(map) == HPIX_ORDER_SCHEME_RING ?
-               "RING" : "NEST");
-        printf("Peak-to-peak variation: %.4g\n",
-               peak_to_peak_amplitude(map));
-
-        hpix_free_map(map);
-      } else {
-        fprintf(stderr, "Error: %s\n", error_message);
-        hpix_free(error_message);
-      }
-
-      ++argv;
+  
+    if(argc == 0) {
+        fputs("Usage: mapinfo FILE1 [FILE2...]\n", stderr);
+        return EXIT_SUCCESS;
     }
-
+  
+    while(argc--) {
+        int cfitsio_status = 0;
+        hpix_map_t * map;
+  
+        hpix_load_fits_component_from_file(argv[0], 1, &map, &cfitsio_status);
+  
+        if(map)
+        {
+  	  printf("File name: %s\n", *argv);
+  	  printf("NSIDE: %u\n", hpix_map_nside(map));
+  	  printf("Ordering: %s\n",
+  		 hpix_map_ordering_scheme(map) == HPIX_ORDER_SCHEME_RING ?
+  		 "RING" : "NEST");
+  	  printf("Peak-to-peak variation: %.4g\n",
+  		 peak_to_peak_amplitude(map));
+  	  
+  	  hpix_free_map(map);
+        } else {
+  	  fprintf(stderr, "Error: %s\n", error_message);
+  	  hpix_free(error_message);
+        }
+        
+        ++argv;
+    }
+    
     return EXIT_SUCCESS;
   }
 

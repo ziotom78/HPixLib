@@ -32,7 +32,7 @@
 
 AM_CFLAGS = -std=c99
 
-bin_PROGRAMS = map2ppm
+bin_PROGRAMS = map2ppm mapinfo
 
 INCLUDES = -I$(top_srcdir)/src
 
@@ -42,3 +42,5 @@ LIBS += $(cairo_LIBS) -lcfitsio
 map2ppm_SOURCES = map2ppm.c
 map2ppm_LDADD = ../src/libhpix.la
 
+mapinfo_SOURCES = mapinfo.c
+mapinfo_LDADD = ../src/libhpix.la
