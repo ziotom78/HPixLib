@@ -22,8 +22,6 @@
 
 #include "constants.h"
 
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-
 /**********************************************************************/
 
 
@@ -89,6 +87,6 @@ hpix_mollweide_xy_to_angles(const hpix_bmp_projection_t * proj,
     *theta = M_PI_2 - asin(2 / M_PI *
 			   (asin(v) +
 			    v * sqrt((1 - v) * (1 + v))));
-    *phi = -M_PI_2 * u / MAX(sqrt((1 - v) * (1 + v)), 1e-6);
+    *phi = -M_PI_2 * u / fmax(sqrt((1 - v) * (1 + v)), 1e-6);
     return TRUE;
 }

@@ -18,9 +18,11 @@
 #ifndef CHECK_HELPERS_H
 #define CHECK_HELPERS_H
 
-#define TEST_FOR_CLOSENESS(float1, float2)					\
+#include <float.h>
+
+#define TEST_FOR_CLOSENESS(float1, float2)				\
     {									\
-	fail_unless(fabs(float1 - float2) < 1e-7,			\
+	fail_unless(fabs(float1 - float2) < FLT_EPSILON,		\
 		    "Numbers " #float1 " and " #float2 " are not close."); \
     }
 
