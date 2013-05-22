@@ -36,6 +36,7 @@ check_PROGRAMS = \
 	test_io \
 	test_palette \
 	test_pixel_functions \
+	test_projections \
 	test_vector_functions
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
