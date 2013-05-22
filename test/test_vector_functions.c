@@ -185,6 +185,38 @@ END_TEST
 
 /**********************************************************************/
 
+
+START_TEST(matrix_inverse)
+{
+    const hpix_matrix_t matrix1 = 
+	(hpix_matrix_t) { .m = { { 1, 0, 0 },
+				 { 0, 1, 1 },
+				 { 0, 0, 1 } } };
+    const hpix_matrix_t reference1 =
+	(hpix_matrix_t) { .m = { { 1, 0, 0 },
+				 { 0, 1, -1 },
+				 { 0, 0, 1 } } };
+
+    hpix_matrix_t inverse;
+    fail_unless(hpix_matrix_inverse(&inverse, &matrix1));
+    ARE_MATRICES_EQUAL(reference1, inverse);
+
+    const hpix_matrix_t matrix2 = 
+	(hpix_matrix_t) { .m = { { 0, 1, 3 }, 
+				 { -6, 2, 2 }, 
+				 { 1, 2, 5 }} };
+    const hpix_matrix_t reference2 = 
+	(hpix_matrix_t) { .m = { { -0.6, -0.1, 0.4 },
+				 { -3.2, 0.3, 1.8 },
+				 { 1.4, -0.1, -0.6 } } };
+
+    fail_unless(hpix_matrix_inverse(&inverse, &matrix2));
+    ARE_MATRICES_EQUAL(reference2, inverse);
+}
+END_TEST
+
+/**********************************************************************/
+
 START_TEST(matrix_euler_rotations)
 {
 }
@@ -213,6 +245,7 @@ create_hpix_test_suite(void)
     tc_core = tcase_create("Operations with matrices");
     tcase_add_test(tc_core, matrix_initialization);
     tcase_add_test(tc_core, matrix_determinant);
+    tcase_add_test(tc_core, matrix_inverse);
     tcase_add_test(tc_core, matrix_vector_multiplication);
     tcase_add_test(tc_core, matrix_matrix_multiplication);
     tcase_add_test(tc_core, matrix_euler_rotations);

@@ -376,8 +376,8 @@ void hpix_matrix_mul(hpix_matrix_t * result,
 		     const hpix_matrix_t * matrix1,
 		     const hpix_matrix_t * matrix2);
 double hpix_matrix_determinant(const hpix_matrix_t * matrix);
-void hpix_matrix_inverse(hpix_matrix_t * result,
-			 const hpix_matrix_t * matrix);
+_Bool hpix_matrix_inverse(hpix_matrix_t * result,
+			  const hpix_matrix_t * matrix);
 
 /* Functions implemented in mollweide_projection.c */
 
