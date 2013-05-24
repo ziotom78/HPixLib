@@ -96,8 +96,6 @@ END_TEST
 
 START_TEST(access_to_palettes)
 {
-    hpix_color_t dummy_color = hpix_create_color(red, green, blue);
-
     hpix_color_t black_color = (hpix_color_t) { 0.0, 0.0, 0.0 };
     hpix_color_t red_color = (hpix_color_t) { 1.0, 0.0, 0.0 };
     hpix_color_t green_color = (hpix_color_t) { 0.0, 1.0, 0.0 };

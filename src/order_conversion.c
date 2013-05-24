@@ -186,7 +186,6 @@ ring2xyf(const hpix_resolution_t * resolution,
 	 hpix_pixel_num_t index)
 {
     assert(resolution != NULL);
-    hpix_nside_t nside_times_two = resolution->nside * 2;
     unsigned face_num;
     long iring, iphi, kshift, nr;
 
@@ -235,13 +234,11 @@ ring2xyf(const hpix_resolution_t * resolution,
 	iring = 2 * resolution->nside_times_two - iring;
 	face_num = 8 + (iphi - 1) / nr;
     }
-    hpix_pixel_num_t masked_index = index;
-    masked_index &= (resolution->pixels_per_face - 1);
 
-  long irt = iring - (jrll[face_num] * resolution->nside) + 1;
-  long ipt = 2*iphi - jpll[face_num] * nr - kshift -1;
-  if (ipt >= resolution->nside_times_two)
-      ipt -= 8*resolution->nside;
+    long irt = iring - (jrll[face_num] * resolution->nside) + 1;
+    long ipt = 2*iphi - jpll[face_num] * nr - kshift -1;
+    if (ipt >= resolution->nside_times_two)
+	ipt -= 8*resolution->nside;
 
     return (xyf_pixel_t) {
 	.face_num = face_num,
@@ -293,7 +290,6 @@ static hpix_pixel_num_t
 xyf2ring(const hpix_resolution_t * resolution,
 	 xyf_pixel_t xyf)
 {
-    unsigned nside_times_four = 4 * resolution->nside;
     unsigned jr = (jrll[xyf.face_num]*resolution->nside) - xyf.ix - xyf.iy  - 1;
 
     hpix_pixel_num_t nr, kshift, n_before;
