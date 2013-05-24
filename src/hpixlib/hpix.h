@@ -401,6 +401,14 @@ void hpix_query_disc_inclusive(double theta, double phi, double radius,
 			       hpix_pixel_num_t ** pixels,
 			       size_t * num_of_matches);
 
+/* Functions defined in rotate.c */
+
+double hpix_calc_angular_distance_from_vectors(const hpix_vector_t * vector1,
+					       const hpix_vector_t * vector2);
+double hpix_calc_angular_distance_from_angles(double theta1_rad, double phi1_rad,
+					      double theta2_rad, double phi2_rad);
+
+
 /* Functions defined in vectors.c */
 
 void hpix_print_vector(FILE * output_file, 
