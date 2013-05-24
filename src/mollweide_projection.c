@@ -49,7 +49,7 @@ mollweide_xy_to_uv(const hpix_bmp_projection_t * proj,
 /**********************************************************************/
 
 
-inline _Bool
+static inline _Bool
 mollweide_is_uv_inside(double u, double v)
 {
     return u*u/4 + v*v < 1;

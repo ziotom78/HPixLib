@@ -84,7 +84,6 @@ END_TEST
 
 START_TEST(npixel_to_nside)
 {
-    int result = 1;
     unsigned short nside;
 
     for(nside = 1; nside < 1024; nside *= 2)

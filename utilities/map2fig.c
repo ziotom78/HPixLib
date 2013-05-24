@@ -697,6 +697,9 @@ draw_aligned_text(cairo_t * context, const char * label,
     case HALIGN_CENTER:
 	text_pos_x -= te.width * 0.5;
 	break;
+    case HALIGN_RIGHT:
+	/* No operation needed */
+	break;
     }
 
     switch(v_align)
@@ -818,7 +821,6 @@ paint_map(cairo_t * context, const rect_t * map_rect,
 {
     hpix_bmp_projection_t * projection;
     cairo_surface_t * map_surface;
-    const double reduce_factor = 1.02;
 
     /* First produce a cairo image surface with the map in it */
     projection = hpix_create_bmp_projection((int) (bitmap_columns + .5),

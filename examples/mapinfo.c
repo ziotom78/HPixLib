@@ -25,7 +25,6 @@
    pixels in the map */
 double peak_to_peak_amplitude(const hpix_map_t * map)
 {
-  size_t idx;
   double min, max;
   double * pixels;
 

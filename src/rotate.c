@@ -23,6 +23,7 @@ double
 hpix_calc_angular_distance_from_vectors(const hpix_vector_t * vector1,
 					const hpix_vector_t * vector2)
 {
+    return 0.0;
 }
 
 /**********************************************************************/
@@ -32,7 +33,7 @@ double
 hpix_calc_angular_distance_from_angles(double theta1_rad, double phi1_rad,
 				       double theta2_rad, double phi2_rad)
 {
-//hpix_angles_to_vector    
+    return 0.0;
 }
 
 /**********************************************************************/

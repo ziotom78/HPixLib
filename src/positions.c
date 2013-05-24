@@ -220,10 +220,8 @@ hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
 {
     assert(theta && phi);
 
-    int nl2, nl4, npix, ncap, iring, iphi, ip, ipix1;
+    int nl2, nl4, ncap, iring, iphi, ip, ipix1;
     double  fact1, fact2, fodd, hip, fihip;
-
-    int ns_max=8192;
 
     ipix1 = pixel + 1; // in {1, npix}
     nl2 = 2*nside;
@@ -281,7 +279,6 @@ hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
     int ix, iy, jrt, jr, nr, jpt, jp, kshift;
     double z;
     double piover2=0.5*M_PI;
-    int ns_max=8192;
 
     int jrll[12] = { 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4 };
     int jpll[12] = { 1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7 };
