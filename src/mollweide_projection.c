@@ -42,6 +42,7 @@ mollweide_xy_to_uv(const hpix_bmp_projection_t * proj,
     assert(center_x > 0.0);
     assert(center_y > 0.0);
 
+    /* (u,v) coordinates cover the range [-1,1]x[-1/2,1/2] */
     *u = 2.0 * (x - center_x) / center_x;
     *v = (y - center_y) / center_y;
 }
