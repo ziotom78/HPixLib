@@ -85,9 +85,10 @@ a file and then outputs to stdout a bitmap in PPM format
   
       hpix_bmp_projection_t * proj = 
   	hpix_create_bmp_projection(640, 320);
+      hpix_set_mollweide_projection(proj);
   
       double min, max;
-      double * bitmap = hpix_bmp_to_mollweide_proj(proj, map, &min, &max);
+      double * bitmap = hpix_bmp_projection_trace(proj, map, &min, &max);
   
       /* Write the PPM header */
       fprintf(out, "P3\n%u %u\n%u\n",
@@ -149,9 +150,9 @@ The typical usage is to produce a bitmap, then use *min_value* and
 Available projections
 ---------------------
 
-HPixLib implements a number of map projections. You can either access
-the low-level projection functions or rely on the library to directly
-produce a map.
+HPixLib implements a number of cartographic projections. You can
+either access the low-level projection functions or rely on the
+library to directly produce a map.
 
 The low-level projection functions allow to perform one of the
 following tasks:
@@ -164,6 +165,9 @@ following tasks:
 The latter point is important for those projections like the
 Mollweide's, which is enclosed in a shape which is not a rectangle
 like the bitmap's (ellipse).
+
+The cartographic projections implemented by HPixLib are listed in the
+enumerated type :c:type:`hpix_projection_type_t`.
 
 .. c:function:: _Bool hpix_mollweide_xy_to_angles(const hpix_bmp_projection_t * proj, unsigned int x, unsigned int y, double * theta, double * phi)
 
@@ -179,6 +183,22 @@ like the bitmap's (ellipse).
    within Mollweide's ellipse. If it does, return `TRUE`. (The return
    value has therefore the same meaning as
    :c:func:`hpix_mollweide_xy_to_angles`.)
+
+.. c:function:: _Bool hpix_equirectangular_xy_to_angles(const hpix_bmp_projection_t * proj, unsigned int x, unsigned int y, double * theta, double * phi)
+
+   This function calculates the direction towards the sky that
+   corresponds to the (*x*, *y*) point in the 2-D bitmap projection
+   pointed by *proj*. If there is no point which corresponds to (*x*,
+   *y*), then the function returns `FALSE`, otherwise `TRUE`. This
+   happens only if *x* or *y* fall outside the rectangle enclosing the
+   bitmap.
+
+.. c:function:: _Bool hpix_equirectangular_is_xy_inside(const hpix_bmp_projection_t * proj, unsigned int x, unsigned int y)
+
+   This function checks that the point (*x*, *y*) in the bitmap lies
+   within the bitmap's region. If it does, return `TRUE`. (The return
+   value has therefore the same meaning as
+   :c:func:`hpix_equirectangular_xy_to_angles`.)
 
 
 Bitmapped graphics
@@ -200,13 +220,71 @@ in this section have their name beginning with ``hpix_bmp_``.
    access/modify its members: you need to rely on functions defined in
    this section, like e.g. :c:func:`hpix_projection_width`.
 
+   +-----------------------------+-------------------------------+
+   | Projection type             | Enumeration constant          |
+   +=============================+===============================+
+   | No projection               | ``HPIX_PROJ_NULL``            |
+   +-----------------------------+-------------------------------+
+   | Mollweide (equal area)      | ``HPIX_PROJ_MOLLWEIDE``       |
+   +-----------------------------+-------------------------------+
+   | Equirectangular             | ``HPIX_PROJ_EQUIRECTANGULAR`` |
+   +-----------------------------+-------------------------------+
+   
+   You can retrieve the cartographic projection used by a
+   :c:type:`hpix_bmp_projection_t` variable using the function
+   :c:func:`hpix_bmp_projection_type`.
+
 .. c:function:: hpix_bmp_projection_t * hpix_create_bmp_projection(unsigned int width, unsigned int height)
 
    Create a new :c:type:`hpix_bmp_projection_t` object and initialize
    its width and height. This object must be deallocated using
    :c:func:`hpix_free_bmp_projection`.
 
+   Once this function is called, there is no cartographic projection
+   associated with it. You must call one of the
+   ``hpix_set_*_projection`` functions listed below (e.g.,
+   :c:func:`hpix_set_mollweide_projection`) in order to effectively
+   trace bitmaps.
+
 .. c:function:: void hpix_free_bmp_projection(hpix_bmp_projection_t * proj)
+
+   Free all the memory associated with *proj*, which therefore can no
+   longer be used.
+
+.. c:function:: hpix_projection_type_t hpix_bmp_projection_type(const hpix_bmp_projection_t * proj)
+
+   Return the code identifying the cartographic projection associated
+   with *proj*.
+
+.. c:function:: void hpix_set_equirectangular_projection(hpix_bmp_projection_t * proj)
+
+   Configure *proj* to use an equirectangular cartographic projection.
+   This kind of projection is very useful if you plan to wrap the
+   bitmap around a 3D sphere, e.g., using a ray-tracing program.
+
+.. c:function:: void hpix_set_mollweide_projection(hpix_bmp_projection_t * proj)
+
+   Configure *proj* to use a Mollweide cartographic projection. Most
+   of the full-sky CMB maps are usually produced using this kind of
+   projection.
+
+.. c:function:: _Bool hpix_bmp_projection_is_xy_inside(const hpix_bmp_projection_t * proj, unsigned int x, unsigned int y)
+
+   Determine if the bitmap coordinates (*x*, *y*) fall within the map
+   or not. The function internally calls the appropriate function for
+   the cartographic projection associated with *proj*. For instance,
+   if you called :c:func:`hpix_set_mollweide_projection`, it acts as a
+   wrapper to :c:func:`hpix_mollweide_is_xy_inside`.
+
+.. c:function:: _Bool hpix_bmp_projection_xy_to_angles(const hpix_bmp_projection_t * proj, unsigned int x, unsigned int y, double * theta, double * phi)
+
+   Convert the bitmap coordinates (*x*, *y*) into a par (*theta*,
+   *phi*), that is, colatitude and longitude. The function internally
+   calls the appropriate function for the cartographic projection
+   associated with *proj*. For instance, if you called
+   :c:func:`hpix_set_mollweide_projection`, it acts as a wrapper to
+   :c:func:`hpix_mollweide_xy_to_angles`.
+
 
 Projection properties
 ---------------------
@@ -226,7 +304,7 @@ use the facilities provided by the library.his.
 Painting functions
 ------------------
 
-.. c:function:: double * hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj, const hpix_map_t * map, double * min_value, double * max_value)
+.. c:function:: double * hpix_bmp_projection_trace(const hpix_bmp_projection_t * proj, const hpix_map_t * map, double * min_value, double * max_value)
 
    This function creates a bitmap (rectangular array of numbers)
    containing a Mollweide projection of *map*. The details of the
@@ -252,7 +330,7 @@ Painting functions
 Color palettes
 --------------
 
-Functions like :c:func:`hpix_bmp_to_mollweide_proj` create a bitmapped
+Functions like :c:func:`hpix_bmp_projection_trace` create a bitmapped
 representation of a map in which each matrix element of the bitmap is
 expressed in the same units as the map (e.g., if a map represents some
 measured sky flux in Jy, then the matrix elements of the bitmap will
@@ -516,7 +594,7 @@ above would have been the following::
 Before using a palette in a
 call to :c:func:`hpix_get_color_palette` or any function that
 implicitly calls it (e.g.,
-:c:func:`hpix_bmp_mollweide_proj_to_cairo_surface`), you must ensure
+:c:func:`hpix_bmp_projection_to_cairo_surface`), you must ensure
 these rules apply:
 
     #. The first color step in the palette has level 0.

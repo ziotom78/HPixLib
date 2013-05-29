@@ -19,10 +19,24 @@
 #include <math.h>
 #include <assert.h>
 
+typedef _Bool inside_test_t (const hpix_bmp_projection_t * proj,
+			     unsigned int x,
+			     unsigned int y);
+typedef _Bool xy_to_angles_t (const hpix_bmp_projection_t * proj,
+			      unsigned int x,
+			      unsigned int y,
+			      double * theta,
+			      double * phi);
+
 struct ___hpix_bmp_projection_t {
-    unsigned int       width;
-    unsigned int       height;
-    hpix_coordinates_t coordsys;
+    unsigned int           width;
+    unsigned int           height;
+    hpix_coordinates_t     coordsys;
+
+    hpix_projection_type_t type;
+    xy_to_angles_t         * xy_to_angles_fn;
+    void                   * angle_to_xy_fn;
+    inside_test_t          * inside_test_fn;
 };
 
 /**********************************************************************/
@@ -35,6 +49,10 @@ hpix_create_bmp_projection(unsigned int width, unsigned int height)
     obj = malloc(sizeof(hpix_bmp_projection_t));
     obj->width = width;
     obj->height = height;
+    obj->xy_to_angles_fn = NULL;
+    obj->angle_to_xy_fn = NULL;
+    obj->inside_test_fn = NULL;
+    obj->type = HPIX_PROJ_NULL;
 
     return obj;
 }
@@ -72,11 +90,78 @@ hpix_bmp_projection_height(const hpix_bmp_projection_t * proj)
 /**********************************************************************/
 
 
+hpix_projection_type_t
+hpix_bmp_projection_type(const hpix_bmp_projection_t * proj)
+{
+    assert(proj);
+    return proj->type;
+}
+
+/**********************************************************************/
+
+
+void
+hpix_set_equirectangular_projection(hpix_bmp_projection_t * proj)
+{
+    assert(proj);
+
+    proj->xy_to_angles_fn = hpix_equirectangular_xy_to_angles;
+    proj->angle_to_xy_fn = NULL;
+    proj->inside_test_fn = hpix_equirectangular_is_xy_inside;
+    proj->type = HPIX_PROJ_EQUIRECTANGULAR;
+}
+
+/**********************************************************************/
+
+
+void
+hpix_set_mollweide_projection(hpix_bmp_projection_t * proj)
+{
+    assert(proj);
+
+    proj->xy_to_angles_fn = hpix_mollweide_xy_to_angles;
+    proj->angle_to_xy_fn = NULL;
+    proj->inside_test_fn = hpix_mollweide_is_xy_inside;
+    proj->type = HPIX_PROJ_MOLLWEIDE;
+}
+
+/**********************************************************************/
+
+_Bool
+hpix_bmp_projection_is_xy_inside(const hpix_bmp_projection_t * proj,
+				 unsigned int x,
+				 unsigned int y)
+{
+    assert(proj);
+    assert(proj->inside_test_fn);
+
+    return proj->inside_test_fn(proj, x, y);
+}
+
+/**********************************************************************/
+
+
+_Bool
+hpix_bmp_projection_xy_to_angles(const hpix_bmp_projection_t * proj,
+				 unsigned int x,
+				 unsigned int y,
+				 double * theta,
+				 double * phi)
+{
+    assert(proj);
+    assert(proj->inside_test_fn);
+
+    return proj->xy_to_angles_fn(proj, x, y, theta, phi);
+}
+
+/**********************************************************************/
+
+
 double *
-hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
-			   const hpix_map_t * map,
-			   double * min_value,
-			   double * max_value)
+hpix_bmp_projection_trace(const hpix_bmp_projection_t * proj,
+			  const hpix_map_t * map,
+			  double * min_value,
+			  double * max_value)
 {
     assert(proj);
     assert(map);
@@ -103,7 +188,7 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
 	{
 	    double theta, phi;
 
-	    if(! hpix_mollweide_xy_to_angles(proj, x, y, &theta, &phi))
+	    if(! hpix_bmp_projection_xy_to_angles(proj, x, y, &theta, &phi))
 	    {
 		*bitmap_ptr++ = INFINITY; /* Skip the pixel */
 		continue;

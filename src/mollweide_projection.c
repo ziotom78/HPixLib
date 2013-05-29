@@ -80,6 +80,10 @@ hpix_mollweide_xy_to_angles(const hpix_bmp_projection_t * proj,
 			    double * theta,
 			    double * phi)
 {
+    assert(proj);
+    assert(theta);
+    assert(phi);
+
     double u, v;
     mollweide_xy_to_uv(proj, x, y, &u, &v);
     if (! mollweide_is_uv_inside(u, v))

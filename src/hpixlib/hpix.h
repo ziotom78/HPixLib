@@ -96,6 +96,11 @@ typedef struct hpix_color_palette_t hpix_color_palette_t;
     (*((double *) (((char *) map->pixels)			\
 		   + (index) * sizeof(map->pixels[0]))))
 
+typedef enum { HPIX_PROJ_NULL, 
+	       HPIX_PROJ_MOLLWEIDE, 
+	       HPIX_PROJ_EQUIRECTANGULAR }
+    hpix_projection_type_t;
+
 struct ___hpix_bmp_projection_t;
 typedef struct ___hpix_bmp_projection_t hpix_bmp_projection_t;
 
@@ -286,11 +291,22 @@ void
 hpix_set_bmp_projection_height(hpix_bmp_projection_t * proj,
 				 unsigned int height);
 
+hpix_projection_type_t hpix_bmp_projection_type(const hpix_bmp_projection_t * proj);
+void hpix_set_equirectangular_projection(hpix_bmp_projection_t * proj);
+void hpix_set_mollweide_projection(hpix_bmp_projection_t * proj);
+_Bool hpix_bmp_projection_is_xy_inside(const hpix_bmp_projection_t * proj,
+				       unsigned int x,
+				       unsigned int y);
+_Bool hpix_bmp_projection_xy_to_angles(const hpix_bmp_projection_t * proj,
+				       unsigned int x,
+				       unsigned int y,
+				       double * theta,
+				       double * phi);
 double *
-hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
-			   const hpix_map_t * map,
-			   double * min_value,
-			   double * max_value);
+hpix_bmp_projection_trace(const hpix_bmp_projection_t * proj,
+			  const hpix_map_t * map,
+			  double * min_value,
+			  double * max_value);
 
 /* Functions implemented in cairo_interface.c */
 
@@ -299,10 +315,10 @@ hpix_bmp_to_mollweide_proj(const hpix_bmp_projection_t * proj,
 #include <cairo/cairo.h>
 
 cairo_surface_t *
-hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
-					 const hpix_color_palette_t * palette,
-					 const hpix_map_t * map,
-					 double map_min, double map_max);
+hpix_bmp_projection_to_cairo_surface(const hpix_bmp_projection_t * proj,
+				     const hpix_color_palette_t * palette,
+				     const hpix_map_t * map,
+				     double map_min, double map_max);
 
 void
 hpix_bmp_configure_linear_gradient(cairo_pattern_t * pattern, 
@@ -378,6 +394,18 @@ void hpix_matrix_mul(hpix_matrix_t * result,
 double hpix_matrix_determinant(const hpix_matrix_t * matrix);
 _Bool hpix_matrix_inverse(hpix_matrix_t * result,
 			  const hpix_matrix_t * matrix);
+
+/* Functions implemented in equirectangular_projection.c */
+
+_Bool hpix_equirectangular_is_xy_inside(const hpix_bmp_projection_t * proj,
+					unsigned int x,
+					unsigned int y);
+
+_Bool hpix_equirectangular_xy_to_angles(const hpix_bmp_projection_t * proj,
+					unsigned int x,
+					unsigned int y,
+					double * theta,
+					double * phi);
 
 /* Functions implemented in mollweide_projection.c */
 

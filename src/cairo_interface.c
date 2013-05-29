@@ -23,19 +23,18 @@
 /******************************************************************************/
 
 
-/* This function creates a Cairo image surface that contains the
- * Mollweide projection of the map. The values `map_min` and `map_max`
- * are used to rescale every value in the map (i.e. to convert every
- * pixel value in the map into a number in [0.0, 1.0]). The value of
+/* This function creates a Cairo image surface that contains a
+ * projection of the map. The values `map_min` and `map_max` are used
+ * to rescale every value in the map (i.e. to convert every pixel
+ * value in the map into a number in [0.0, 1.0]). The value of
  * `bitmap` is the return value of `hpix_bmp_trace_bitmap`. Finally,
  * `width` and `height` give the resolution (in pixel) of the image
- * surface. The Mollweide plot fits into the largest ellipse that can
- * be enclosed in the rectangle (0,0) - (width, height). */
+ * surface. */
 cairo_surface_t *
-hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
-					 const hpix_color_palette_t * palette,
-					 const hpix_map_t * map,
-					 double map_min, double map_max)
+hpix_bmp_projection_to_cairo_surface(const hpix_bmp_projection_t * proj,
+				     const hpix_color_palette_t * palette,
+				     const hpix_map_t * map,
+				     double map_min, double map_max)
 {
     const double dynamic_range = map_max - map_min;
     double * map_bitmap;
@@ -53,7 +52,7 @@ hpix_bmp_mollweide_proj_to_cairo_surface(const hpix_bmp_projection_t * proj,
 
     assert(map);
 
-    map_bitmap = hpix_bmp_to_mollweide_proj(proj, map, NULL, NULL);
+    map_bitmap = hpix_bmp_projection_trace(proj, map, NULL, NULL);
     assert(map_bitmap);
 
     cur_pixel = map_bitmap;

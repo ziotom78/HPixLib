@@ -27,9 +27,10 @@ void output_map_to_file(const hpix_map_t * map,
 
     hpix_bmp_projection_t * proj = 
 	hpix_create_bmp_projection(640, 320);
+    hpix_set_mollweide_projection(proj);
 
     double min, max;
-    double * bitmap = hpix_bmp_to_mollweide_proj(proj, map, &min, &max);
+    double * bitmap = hpix_bmp_projection_trace(proj, map, &min, &max);
 
     /* Write the PPM header */
     fprintf(out, "P3\n%u %u\n%u\n",

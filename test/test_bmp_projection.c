@@ -57,9 +57,10 @@ setup_mollweide_test(void)
     }
 
     mollweide_proj = hpix_create_bmp_projection(64, 64);
-    mollweide_bmp = hpix_bmp_to_mollweide_proj(mollweide_proj, map,
-					       &mollweide_proj_min,
-					       &mollweide_proj_max);
+    hpix_set_mollweide_projection(mollweide_proj);
+    mollweide_bmp = hpix_bmp_projection_trace(mollweide_proj, map,
+					      &mollweide_proj_min,
+					      &mollweide_proj_max);
 }
 
 /**********************************************************************/

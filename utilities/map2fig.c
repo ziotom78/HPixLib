@@ -183,7 +183,27 @@ palette_type_t list_of_palette_types[] = {
     { NULL, NULL, PAL_NULL }
 };
 
+/* This structure holds information about one map projection. It is
+ * only used to parse the `--projection` command-line flag and to
+ * implement the `--list-projection` command. */
+typedef struct {
+    /* Short name, used to parse the keyword after `--projection` */
+    const char * name;
+    /* Description, used by `--list-projection` */
+    const char * description;
+    /* Code, used to initialize the global variable `palette_type_code` */
+    hpix_projection_type_t code;
+} projection_type_t;
+
+/* Here is the list of the palettes supported by the program. */
+projection_type_t list_of_projection_types[] = {
+    { "mollweide", "Equal-area (Mollweide) projection", HPIX_PROJ_MOLLWEIDE },
+    { "equirectangular", "Equirectangular projection", HPIX_PROJ_EQUIRECTANGULAR },
+    { NULL, NULL, HPIX_PROJ_NULL }
+};
+
 palette_type_code_t palette_type_code = PAL_HEALPIX;
+hpix_projection_type_t projection_type_code = HPIX_PROJ_MOLLWEIDE;
 
 /******************************************************************************/
 
@@ -216,9 +236,12 @@ print_usage(const char * program_name)
     puts("  -t, --title=TITLE         Title to be written on top of the image");
     puts("  -b, --draw-color-bar      Draw a color bar");
     puts("  -m, --measure-unit=STRING Measure unit to display in the color bar");
-    puts("  --palette=NAME            Color palette to use");
+    puts("  -p, --palette=NAME        Color palette to use");
     puts("  --list-palettes           Print a list of the palettes that can");
     puts("                            be specified with --palette");
+    puts("  -j, --projection=NAME     Select the projection type to use");
+    puts("  --list-projections        Print a list of the projection types that");
+    puts("                            can be specified with --projection");
     puts("  --no-background           Do not paint the background. Useful");
     puts("                            if you want to put your image in a");
     puts("                            larger figure with other elements.");
@@ -262,7 +285,32 @@ print_list_of_palette_types(void)
     {
 	palette_type_t * type = &list_of_palette_types[idx];
 	assert(type != NULL);
-	printf("%s\t%s\n", type->name, type->description);
+	printf("%s\t%s", type->name, type->description);
+
+	if(type->code == palette_type_code)
+	    fputs(" (default)", stdout);
+
+	putchar('\n');
+    }
+}
+
+/******************************************************************************/
+
+
+void
+print_list_of_projection_types(void)
+{
+    int idx;
+    for(idx = 0; list_of_projection_types[idx].name != NULL; ++idx)
+    {
+	projection_type_t * proj = &list_of_projection_types[idx];
+	assert(proj != NULL);
+	printf("%s\t%s", proj->name, proj->description);
+
+	if(proj->code == projection_type_code)
+	    fputs(" (default)", stdout);
+
+	putchar('\n');
     }
 }
 
@@ -317,6 +365,30 @@ parse_palette_specification(const char * type_str)
 /******************************************************************************/
 
 
+void
+parse_projection_specification(const char * type_str)
+{
+    int idx;
+    for(idx = 0; list_of_projection_types[idx].name != NULL; ++idx)
+    {
+	projection_type_t * type = &list_of_projection_types[idx];
+	assert(type != NULL);
+	if(strcmp(type->name, type_str) == 0)
+	{
+	    projection_type_code = type->code;
+	    return;
+	}
+    }
+
+    fprintf(stderr,
+	    MSG_HEADER "unknown projection `%s', get a list of the available\n"
+	    MSG_HEADER "palettes using `--list-palettes'\n",
+	    type_str);
+}
+
+/******************************************************************************/
+
+
 hpix_color_palette_t *
 create_palette(void)
 {
@@ -326,6 +398,22 @@ create_palette(void)
     case PAL_GRAYSCALE: return hpix_create_grayscale_color_palette();
     case PAL_PLANCK:    return hpix_create_planck_color_palette();
     case PAL_NULL:
+    default:
+	abort();
+    }
+}
+
+/******************************************************************************/
+
+
+void
+configure_projection(hpix_bmp_projection_t * proj)
+{
+    switch(projection_type_code)
+    {
+    case HPIX_PROJ_EQUIRECTANGULAR: hpix_set_equirectangular_projection(proj); break;
+    case HPIX_PROJ_MOLLWEIDE: hpix_set_mollweide_projection(proj); break;
+    case HPIX_PROJ_NULL:
     default:
 	abort();
     }
@@ -387,6 +475,7 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('B', 0, gopt_shorts(0), gopt_longs("no-background")),
 		      gopt_option('F', 0, gopt_shorts(0), gopt_longs("list-formats")),
 		      gopt_option('P', 0, gopt_shorts(0), gopt_longs("list-palettes")),
+		      gopt_option('J', 0, gopt_shorts(0), gopt_longs("list-projections")),
 		      gopt_option('c', GOPT_ARG, gopt_shorts('c'), gopt_longs("column")),	
 		      gopt_option('m', GOPT_ARG, gopt_shorts('m'), gopt_longs("measure-unit")),
 		      gopt_option('o', GOPT_ARG, gopt_shorts('o'), gopt_longs("output")),
@@ -399,7 +488,8 @@ parse_command_line(int argc, const char ** argv)
 		      gopt_option('1', GOPT_ARG, gopt_shorts(0), gopt_longs("tick-font-size")),
 		      gopt_option('2', GOPT_ARG, gopt_shorts(0), gopt_longs("title-font-size")),
 		      gopt_option('f', GOPT_ARG, gopt_shorts('f'), gopt_longs("format")),
-		      gopt_option('p', GOPT_ARG, gopt_shorts('p'), gopt_longs("palette"))));
+		      gopt_option('p', GOPT_ARG, gopt_shorts('p'), gopt_longs("palette")),
+		      gopt_option('j', GOPT_ARG, gopt_shorts('j'), gopt_longs("projection"))));
 
     /* --help */
     if(gopt(options, 'h'))
@@ -437,6 +527,13 @@ parse_command_line(int argc, const char ** argv)
 	exit(EXIT_SUCCESS);
     }
 
+    /* --list-projections */
+    if(gopt(options, 'J'))
+    {
+	print_list_of_projection_types();
+	exit(EXIT_SUCCESS);
+    }
+
     /* --verbose */
     if(gopt(options, 'V'))
 	verbose_flag = 1;
@@ -468,9 +565,13 @@ parse_command_line(int argc, const char ** argv)
     if(gopt_arg(options, 'f', &value_str))
 	parse_format_specification(value_str);
 
-    /* --format STRING */
+    /* --palette STRING */
     if(gopt_arg(options, 'p', &value_str))
 	parse_palette_specification(value_str);
+
+    /* --projection STRING */
+    if(gopt_arg(options, 'j', &value_str))
+	parse_projection_specification(value_str);
 
     /* Here we parse all those options of the form --name VALUE, with
      * VALUE being a floating-point number. */
@@ -825,9 +926,11 @@ paint_map(cairo_t * context, const rect_t * map_rect,
     /* First produce a cairo image surface with the map in it */
     projection = hpix_create_bmp_projection((int) (bitmap_columns + .5),
 					    (int) (bitmap_rows + .5));
+    configure_projection(projection);
+
     map_surface =
-	hpix_bmp_mollweide_proj_to_cairo_surface(projection, palette,
-						 map, min, max);
+	hpix_bmp_projection_to_cairo_surface(projection, palette,
+					     map, min, max);
 
     /* Now copy the cairo surface into the surface we're currently
      * using to draw the figure */
@@ -841,7 +944,7 @@ paint_map(cairo_t * context, const rect_t * map_rect,
 		map_rect->height  / cairo_image_surface_get_height(map_surface));
     cairo_set_source_surface(context, map_surface,
 			     0.0, 0.0);
-    
+
     /* Now we need two more transformations in order to draw an
      * ellipse out of `cairo_arc'. */
     cairo_translate(context,
@@ -851,8 +954,13 @@ paint_map(cairo_t * context, const rect_t * map_rect,
 		cairo_image_surface_get_width(map_surface) / 2.0,
 		cairo_image_surface_get_height(map_surface) / 2.0);
     
-    /* Fill an ellipse with the content of `map_surface'. */
-    cairo_arc(context, 0.0, 0.0, 1.0, 0.0, 2 * M_PI);
+    if(hpix_bmp_projection_type(projection) == HPIX_PROJ_MOLLWEIDE)
+    {
+	/* Fill an ellipse with the content of `map_surface'. */
+	cairo_arc(context, 0.0, 0.0, 1.0, 0.0, 2 * M_PI);
+    } else {
+	cairo_rectangle(context, -1.0, -1.0, 2.0, 2.0);
+    }
     cairo_fill_preserve(context);
 
     cairo_set_line_width(context, 0.001);

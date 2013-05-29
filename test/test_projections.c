@@ -24,6 +24,7 @@
 #define PROJ_WIDTH 1000
 #define PROJ_HEIGHT 500
 hpix_bmp_projection_t * mollweide_proj = NULL;
+hpix_bmp_projection_t * equirectangular_proj = NULL;
 
 /**********************************************************************/
 
@@ -32,6 +33,7 @@ void
 setup_mollweide(void)
 {
     mollweide_proj = hpix_create_bmp_projection(PROJ_WIDTH, PROJ_HEIGHT);
+    hpix_set_mollweide_projection(mollweide_proj);
 }
 
 /**********************************************************************/
@@ -93,6 +95,70 @@ END_TEST
 
 /**********************************************************************/
 
+
+void
+setup_equirectangular(void)
+{
+    equirectangular_proj = hpix_create_bmp_projection(PROJ_WIDTH, PROJ_HEIGHT);
+    hpix_set_equirectangular_projection(equirectangular_proj);
+}
+
+/**********************************************************************/
+
+
+void
+teardown_equirectangular(void)
+{
+    hpix_free_bmp_projection(equirectangular_proj);
+}
+
+/**********************************************************************/
+
+START_TEST(equirectangular_xy_to_angles)
+{
+    double theta, phi;
+
+    /* These points are clearly outside the projection rectangle */
+    fail_unless(! hpix_equirectangular_xy_to_angles(equirectangular_proj,
+						    PROJ_WIDTH, 0,
+						    &theta, &phi));
+    fail_unless(! hpix_equirectangular_xy_to_angles(equirectangular_proj,
+						    0, PROJ_HEIGHT,
+						    &theta, &phi));
+    fail_unless(! hpix_equirectangular_xy_to_angles(equirectangular_proj,
+						    PROJ_WIDTH, PROJ_HEIGHT,
+						    &theta, &phi));
+
+    /* Middle point */
+    hpix_equirectangular_xy_to_angles(equirectangular_proj,
+				      PROJ_WIDTH/2, PROJ_HEIGHT/2,
+				      &theta, &phi);
+    TEST_FOR_CLOSENESS(theta, 1.5707963267948966);
+    TEST_FOR_CLOSENESS(phi, 3.14159265358979323848);
+
+    hpix_equirectangular_xy_to_angles(equirectangular_proj,
+				      PROJ_WIDTH/4, PROJ_HEIGHT/4,
+				      &theta, &phi);
+    TEST_FOR_CLOSENESS(theta, 0.78539816339744830962);
+    TEST_FOR_CLOSENESS(phi, 1.57079632679489661924);
+
+    hpix_equirectangular_xy_to_angles(equirectangular_proj,
+				      PROJ_WIDTH/3 * 2, PROJ_HEIGHT/5 * 3,
+				      &theta, &phi);
+    TEST_FOR_CLOSENESS(theta, 1.8849555922);
+    TEST_FOR_CLOSENESS(phi, 4.1846014146);
+}
+END_TEST
+
+/**********************************************************************/
+
+START_TEST(equirectangular_angles_to_xy)
+{
+}
+END_TEST
+
+/**********************************************************************/
+
 Suite *
 create_hpix_test_suite(void)
 {
@@ -105,6 +171,14 @@ create_hpix_test_suite(void)
 			      teardown_mollweide);
     tcase_add_test(tc_core, mollweide_xy_to_angles);
     tcase_add_test(tc_core, mollweide_angles_to_xy);
+    suite_add_tcase(suite, tc_core);
+
+    tc_core = tcase_create("Equirectangular");
+    tcase_add_checked_fixture(tc_core,
+			      setup_equirectangular,
+			      teardown_equirectangular);
+    tcase_add_test(tc_core, equirectangular_xy_to_angles);
+    tcase_add_test(tc_core, equirectangular_angles_to_xy);
     suite_add_tcase(suite, tc_core);
 
     return suite;
