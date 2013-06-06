@@ -981,15 +981,24 @@ void
 format_number(char * buf, size_t size, double number,
 	      const char * measure_unit)
 {
-    buf[0] = 0;
+    /* Here we're playing dangerously, as we're using ASCII functions
+     * like "snprintf" and "strncat" with Unicode strings. But the
+     * only Unicode char here is the minus sign, whose encoding does
+     * not contain any NULL. A sounder approach would require using
+     * some dedicated Unicode library, like ICU or libutf8. */
+#define UNICODE_MINUS_SIGN "\u2212"
+    if(number < 0.0)
+	snprintf(buf, size, UNICODE_MINUS_SIGN "%.4g", -number);
+    else
+	snprintf(buf, size, "%.4g", number);
 
     if(measure_unit != NULL
        && measure_unit[0] != '\0')
     {
-	snprintf(buf, size, "%.4g %s", number, measure_unit);
-    } else {
-	snprintf(buf, size, "%.4g", number);
+	strncat(buf, " ", size);
+	strncat(buf, measure_unit, size);
     }
+
     buf[size - 1] = 0;
 }
 
