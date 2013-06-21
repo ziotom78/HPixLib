@@ -46,6 +46,6 @@ AM_CFLAGS += $(cairo_CFLAGS)
 LIBS += $(cairo_LIBS) -lcfitsio
 
 map2fig_SOURCES = map2fig.c gopt.c
-map2fig_LDADD = ../src/libhpix.la
+map2fig_LDADD = ../src/libhpix.la ../src/libhpix_cairo.la
 
 noinst_HEADERS = gopt.h

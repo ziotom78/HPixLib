@@ -12,14 +12,9 @@ To compile the library, you can use pkg-config::
 
   cc my_program.c `pkg-config --cflags --libs libhpix`
 
-Some parts of HPixLib can take advantage of the Cairo library. To
-determine if HPixLib was compiled with the Cairo support enable or
-not, use `pkg-config` with `--variable=havecairo`::
-
-  pkg-config --variable=havecairo libhpix
-
-It returns ``no`` if HPixLib does not provide Cairo support, ``yes``
-otherwise. In the latter case, you must include the header file
+Some parts of HPixLib can take advantage of the Cairo library. To use
+them, you need to refer to the pkg-config file ``libhpix_cairo``
+(instead of just ``libhpix``) and include the header file
 ``hpixlib/hpix-cairo.h`` as well:
 
 .. code-block:: c

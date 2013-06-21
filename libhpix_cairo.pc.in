@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+sharedlibdir=@libdir@
+includedir=@includedir@
+
+Name: HPixLib (with Cairo bindings)
+Description: C-only implementation of the Healpix spherical pixelization scheme (with Cairo functions)
+Version: @VERSION@
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lhpix -lhpix_cairo
+Cflags: -I${includedir}

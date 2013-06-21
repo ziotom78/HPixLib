@@ -3,12 +3,11 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 sharedlibdir=@libdir@
 includedir=@includedir@
-havecairo=@havecairo@
 
 Name: HPixLib
 Description: C-only implementation of the Healpix spherical pixelization scheme
 Version: @VERSION@
 
 Requires:
-Libs: -L${libdir} -L${sharedlibdir} -lchealpix
+Libs: -L${libdir} -L${sharedlibdir} -lhpix
 Cflags: -I${includedir}

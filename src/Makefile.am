@@ -32,11 +32,12 @@
 
 AM_CFLAGS = -std=c99
 
+LIBRARIES_TO_BUILD = libhpix.la
 if CAIRO_PRESENT
-ADDITIONAL_SOURCES = cairo_interface.c
+LIBRARIES_TO_BUILD += libhpix_cairo.la
 endif
 
-lib_LTLIBRARIES = libhpix.la
+lib_LTLIBRARIES = $(LIBRARIES_TO_BUILD)
 
 LIBPSHT_SOURCES = \
 	psht.c \
@@ -63,13 +64,15 @@ libhpix_la_SOURCES = \
 	query_disc.c \
 	rotate.c \
 	vectors.c \
-	$(ADDITIONAL_SOURCES) \
 	$(LIBPSHT_SOURCES)
 
 libhpix_la_LDFLAGS = -version-info 0:0:0
 
-HEADERS_TO_INSTALL = hpixlib/hpix.h
+libhpix_cairo_la_SOURCES = \
+	cairo_interface.c
+libhpix_cairo_la_LDFLAGS = -version-info 0:0:0
 
+HEADERS_TO_INSTALL = hpixlib/hpix.h
 if CAIRO_PRESENT
 HEADERS_TO_INSTALL += hpixlib/hpix-cairo.h
 endif

@@ -36,4 +36,8 @@ ACLOCAL_AMFLAGS=-I m4
 SUBDIRS = src test utilities examples
 
 pkgconfigdir = $(libdir)/pkgconfig
-nodist_pkgconfig_DATA = libhpix.pc
+PKGCONFIG_FILES = libhpix.pc
+if CAIRO_PRESENT
+PKGCONFIG_FILES += libhpix_cairo.pc
+endif
+nodist_pkgconfig_DATA = $(PKGCONFIG_FILES)

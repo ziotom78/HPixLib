@@ -28,7 +28,8 @@ AC_OUTPUT(Makefile
 	test/Makefile
 	examples/Makefile
 	utilities/Makefile
-	libhpix.pc)
+	libhpix.pc
+	libhpix_cairo.pc)
 
 echo ""
 echo "  HPixLib will be compiled with the following options:"
