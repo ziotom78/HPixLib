@@ -24,8 +24,7 @@ extern "C"{
 
 #include <inttypes.h>
 #include <stdio.h>
-#include "config.h"
-#include "fitsio.h"
+#include <fitsio.h>
 
 #define CHEALPIX_VERSION "0.1"
 

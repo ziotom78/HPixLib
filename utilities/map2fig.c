@@ -30,7 +30,10 @@
  * as representing official policies, either expressed or implied, of
  * Maurizio Tomasi. */
 
+#include "config.h"
+
 #include <hpixlib/hpix.h>
+#include <hpixlib/hpix-cairo.h>
 #include <assert.h>
 #include <math.h>
 #include <memory.h>

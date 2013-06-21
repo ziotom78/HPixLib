@@ -29,6 +29,8 @@
  *  \author Martin Reinecke
  */
 
+#include "config.h"
+
 #include <math.h>
 #include "ls_fft.h"
 #include "sse_utils.h"

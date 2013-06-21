@@ -23,6 +23,7 @@ PKG_CHECK_MODULES([cairo], [cairo],
 AC_CHECK_LIB(cfitsio, ffopen,, AC_MSG_ERROR(Cannot find the CFITSIO library.))
 
 AM_CONDITIONAL([CAIRO_PRESENT], [test x$cairo = xyes])
+AC_SUBST(havecairo, $cairo)
 
 AC_OUTPUT(Makefile
 	src/Makefile

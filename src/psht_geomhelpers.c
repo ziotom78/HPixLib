@@ -29,6 +29,8 @@
  *  \author Martin Reinecke
  */
 
+#include "config.h"
+
 #include <math.h>
 #include "psht_geomhelpers.h"
 #include "c_utils.h"

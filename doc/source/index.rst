@@ -15,6 +15,7 @@ Contents:
 
    introduction.rst
    installation.rst
+   usage.rst
    pixel-funcs.rst
    map-type.rst
    mathematics.rst

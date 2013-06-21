@@ -30,6 +30,8 @@
   C port by Martin Reinecke (2010)
  */
 
+#include "config.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

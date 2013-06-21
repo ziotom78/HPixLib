@@ -50,6 +50,8 @@
     \author Martin Reinecke
 */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <string.h>
 #include "psht.h"

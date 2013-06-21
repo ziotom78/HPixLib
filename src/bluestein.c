@@ -27,6 +27,8 @@
  *  \author Martin Reinecke
  */
 
+#include "config.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include "fftpack.h"

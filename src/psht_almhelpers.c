@@ -29,6 +29,8 @@
  *  \author Martin Reinecke
  */
 
+#include "config.h"
+
 #include "psht_almhelpers.h"
 #include "c_utils.h"
 

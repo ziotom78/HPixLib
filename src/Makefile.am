@@ -68,5 +68,10 @@ libhpix_la_SOURCES = \
 
 libhpix_la_LDFLAGS = -version-info 0:0:0
 
-nobase_include_HEADERS = hpixlib/hpix.h
+HEADERS_TO_INSTALL = hpixlib/hpix.h
 
+if CAIRO_PRESENT
+HEADERS_TO_INSTALL += hpixlib/hpix-cairo.h
+endif
+
+nobase_include_HEADERS = $(HEADERS_TO_INSTALL)

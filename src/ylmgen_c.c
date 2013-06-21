@@ -29,6 +29,8 @@
  *  Author: Martin Reinecke
  */
 
+#include "config.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include "ylmgen_c.h"

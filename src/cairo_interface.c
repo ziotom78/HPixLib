@@ -15,7 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+
 #include <hpixlib/hpix.h>
+#include <hpixlib/hpix-cairo.h>
 #include <assert.h>
 #include <string.h>
 #include <math.h>
