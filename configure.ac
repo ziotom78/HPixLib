@@ -3,8 +3,6 @@ AC_CONFIG_SRCDIR([src/map.c])
 AM_INIT_AUTOMAKE
 AC_CONFIG_MACRO_DIR([m4])
 
-m4_include([m4/pkg.m4])
-
 LT_INIT
 
 AC_PROG_INSTALL
