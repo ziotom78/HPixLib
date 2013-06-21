@@ -61,7 +61,7 @@ mollweide_is_uv_inside(double u, double v)
 /**********************************************************************/
 
 
-_Bool
+int
 hpix_mollweide_is_xy_inside(const hpix_bmp_projection_t * proj,
 			    unsigned int x,
 			    unsigned int y)
@@ -75,7 +75,7 @@ hpix_mollweide_is_xy_inside(const hpix_bmp_projection_t * proj,
 /**********************************************************************/
 
 
-_Bool
+int
 hpix_mollweide_xy_to_angles(const hpix_bmp_projection_t * proj,
 			    unsigned int x,
 			    unsigned int y,

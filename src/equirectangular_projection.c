@@ -27,7 +27,7 @@
 /**********************************************************************/
 
 
-_Bool
+int
 hpix_equirectangular_is_xy_inside(const hpix_bmp_projection_t * proj,
 				  unsigned int x,
 				  unsigned int y)
@@ -39,7 +39,7 @@ hpix_equirectangular_is_xy_inside(const hpix_bmp_projection_t * proj,
 /**********************************************************************/
 
 
-_Bool
+int
 hpix_equirectangular_xy_to_angles(const hpix_bmp_projection_t * proj,
 				  unsigned int x,
 				  unsigned int y,

@@ -67,7 +67,7 @@ hpix_set_matrix_to_scale_transform(hpix_matrix_t * matrix,
 /**********************************************************************/
 
 
-_Bool
+int
 hpix_is_matrix_zero(const hpix_matrix_t * matrix)
 {
     assert(matrix);
@@ -85,7 +85,7 @@ void
 hpix_print_matrix(FILE * output_file, 
 		  const hpix_matrix_t * matrix,
 		  unsigned int num_of_indents,
-		  _Bool indent_first_line)
+		  int indent_first_line)
 {
     assert(output_file);
     assert(matrix);
@@ -206,7 +206,7 @@ hpix_matrix_determinant(const hpix_matrix_t * matrix)
 /**********************************************************************/
 
 
-_Bool
+int
 hpix_matrix_inverse(hpix_matrix_t * result,
 		    const hpix_matrix_t * matrix)
 {

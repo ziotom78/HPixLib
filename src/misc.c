@@ -20,7 +20,7 @@
 #include <hpixlib/hpix.h>
 #include <math.h>
 
-_Bool
+int
 hpix_valid_nside(hpix_nside_t nside)
 {
     return nside > 0 && (! (nside & (nside - 1)));

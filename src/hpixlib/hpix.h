@@ -64,7 +64,7 @@ typedef struct {
     hpix_ordering_scheme_t scheme;
     hpix_coordinates_t     coord;
     double               * pixels;
-    _Bool                  free_pixels_flag;
+    int                    free_pixels_flag;
 
     hpix_resolution_t      resolution;
 } hpix_map_t;
@@ -119,7 +119,7 @@ void hpix_free(void * ptr);
 
 /* Functions implemented in misc.c */
 
-_Bool hpix_valid_nside(hpix_nside_t nside);
+int hpix_valid_nside(hpix_nside_t nside);
 hpix_pixel_num_t hpix_nside_to_npixel(hpix_nside_t);
 hpix_nside_t hpix_npixel_to_nside(hpix_pixel_num_t);
 double hpix_max_pixel_radius(hpix_nside_t);
@@ -293,14 +293,14 @@ hpix_set_bmp_projection_height(hpix_bmp_projection_t * proj,
 hpix_projection_type_t hpix_bmp_projection_type(const hpix_bmp_projection_t * proj);
 void hpix_set_equirectangular_projection(hpix_bmp_projection_t * proj);
 void hpix_set_mollweide_projection(hpix_bmp_projection_t * proj);
-_Bool hpix_bmp_projection_is_xy_inside(const hpix_bmp_projection_t * proj,
-				       unsigned int x,
-				       unsigned int y);
-_Bool hpix_bmp_projection_xy_to_angles(const hpix_bmp_projection_t * proj,
-				       unsigned int x,
-				       unsigned int y,
-				       double * theta,
-				       double * phi);
+int hpix_bmp_projection_is_xy_inside(const hpix_bmp_projection_t * proj,
+				     unsigned int x,
+				     unsigned int y);
+int hpix_bmp_projection_xy_to_angles(const hpix_bmp_projection_t * proj,
+				     unsigned int x,
+				     unsigned int y,
+				     double * theta,
+				     double * phi);
 double *
 hpix_bmp_projection_trace(const hpix_bmp_projection_t * proj,
 			  const hpix_map_t * map,
@@ -379,11 +379,11 @@ void hpix_set_matrix_to_scale_transform(hpix_matrix_t * matrix,
 					double scale_y,
 					double scale_z);
 
-_Bool hpix_is_matrix_zero(const hpix_matrix_t * matrix);
+int hpix_is_matrix_zero(const hpix_matrix_t * matrix);
 void hpix_print_matrix(FILE * output_file, 
 		       const hpix_matrix_t * matrix,
 		       unsigned int num_of_indents,
-		       _Bool indent_first_line);
+		       int indent_first_line);
 void hpix_matrix_vector_mul(hpix_vector_t * result,
 			   const hpix_matrix_t * matrix,
 			   const hpix_vector_t * vector);
@@ -391,32 +391,32 @@ void hpix_matrix_mul(hpix_matrix_t * result,
 		     const hpix_matrix_t * matrix1,
 		     const hpix_matrix_t * matrix2);
 double hpix_matrix_determinant(const hpix_matrix_t * matrix);
-_Bool hpix_matrix_inverse(hpix_matrix_t * result,
-			  const hpix_matrix_t * matrix);
+int hpix_matrix_inverse(hpix_matrix_t * result,
+			const hpix_matrix_t * matrix);
 
 /* Functions implemented in equirectangular_projection.c */
 
-_Bool hpix_equirectangular_is_xy_inside(const hpix_bmp_projection_t * proj,
-					unsigned int x,
-					unsigned int y);
+int hpix_equirectangular_is_xy_inside(const hpix_bmp_projection_t * proj,
+				      unsigned int x,
+				      unsigned int y);
 
-_Bool hpix_equirectangular_xy_to_angles(const hpix_bmp_projection_t * proj,
-					unsigned int x,
-					unsigned int y,
-					double * theta,
-					double * phi);
+int hpix_equirectangular_xy_to_angles(const hpix_bmp_projection_t * proj,
+				      unsigned int x,
+				      unsigned int y,
+				      double * theta,
+				      double * phi);
 
 /* Functions implemented in mollweide_projection.c */
 
-_Bool hpix_mollweide_is_xy_inside(const hpix_bmp_projection_t * proj,
-				  unsigned int x,
-				  unsigned int y);
+int hpix_mollweide_is_xy_inside(const hpix_bmp_projection_t * proj,
+				unsigned int x,
+				unsigned int y);
 
-_Bool hpix_mollweide_xy_to_angles(const hpix_bmp_projection_t * proj,
-				  unsigned int x,
-				  unsigned int y,
-				  double * theta,
-				  double * phi);
+int hpix_mollweide_xy_to_angles(const hpix_bmp_projection_t * proj,
+				unsigned int x,
+				unsigned int y,
+				double * theta,
+				double * phi);
 
 /* Functions implemented in query_disc.c */
 

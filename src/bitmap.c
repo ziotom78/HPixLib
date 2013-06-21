@@ -21,14 +21,14 @@
 #include <math.h>
 #include <assert.h>
 
-typedef _Bool inside_test_t (const hpix_bmp_projection_t * proj,
-			     unsigned int x,
-			     unsigned int y);
-typedef _Bool xy_to_angles_t (const hpix_bmp_projection_t * proj,
-			      unsigned int x,
-			      unsigned int y,
-			      double * theta,
-			      double * phi);
+typedef int inside_test_t (const hpix_bmp_projection_t * proj,
+			   unsigned int x,
+			   unsigned int y);
+typedef int xy_to_angles_t (const hpix_bmp_projection_t * proj,
+			    unsigned int x,
+			    unsigned int y,
+			    double * theta,
+			    double * phi);
 
 struct ___hpix_bmp_projection_t {
     unsigned int           width;
@@ -129,7 +129,7 @@ hpix_set_mollweide_projection(hpix_bmp_projection_t * proj)
 
 /**********************************************************************/
 
-_Bool
+int
 hpix_bmp_projection_is_xy_inside(const hpix_bmp_projection_t * proj,
 				 unsigned int x,
 				 unsigned int y)
@@ -143,7 +143,7 @@ hpix_bmp_projection_is_xy_inside(const hpix_bmp_projection_t * proj,
 /**********************************************************************/
 
 
-_Bool
+int
 hpix_bmp_projection_xy_to_angles(const hpix_bmp_projection_t * proj,
 				 unsigned int x,
 				 unsigned int y,
