@@ -34,7 +34,7 @@ AM_CFLAGS = -std=c99
 
 bin_PROGRAMS = map2ppm mapinfo
 
-INCLUDES = -I$(top_srcdir)/src
+AM_CPPFLAGS = -I$(top_srcdir)/src
 
 AM_CFLAGS += $(cairo_CFLAGS)
 LIBS += $(cairo_LIBS) -lcfitsio

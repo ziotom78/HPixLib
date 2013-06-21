@@ -40,7 +40,7 @@ endif
 
 bin_PROGRAMS = $(PROGRAMS_TO_BUILD)
 
-INCLUDES = -I$(top_srcdir)/src
+AM_CPPFLAGS = -I$(top_srcdir)/src
 
 AM_CFLAGS += $(cairo_CFLAGS)
 LIBS += $(cairo_LIBS) -lcfitsio
