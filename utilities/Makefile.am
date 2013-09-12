@@ -43,7 +43,7 @@ bin_PROGRAMS = $(PROGRAMS_TO_BUILD)
 AM_CPPFLAGS = -I$(top_srcdir)/src
 
 AM_CFLAGS += $(cairo_CFLAGS)
-LIBS += $(cairo_LIBS) -lcfitsio
+LIBS += $(cairo_LIBS) -lcfitsio -lm
 
 map2fig_SOURCES = map2fig.c gopt.c
 map2fig_LDADD = ../src/libhpix.la ../src/libhpix_cairo.la
