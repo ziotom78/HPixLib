@@ -32,13 +32,11 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
 				      int * status)
 {
     /* Local Declarations */
-    long row_idx;
     long num_of_rows;
     char coord_sys_key[FLEN_KEYWORD] = "";
     char ordering_key[FLEN_KEYWORD] = "";
     double * pixels;
     long nside;
-    long elements_per_row;
     hpix_ordering_scheme_t ordering;
 
     assert(fptr);
@@ -49,22 +47,8 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
     if(fits_get_num_rows(fptr, &num_of_rows, status))
 	return 0;
 
-    /* Usually one row contains many elements (this is for
-     * efficiency), so we must read the repeat count as well. */
-    if(fits_get_bcolparms(fptr, column_number,
-			  NULL, NULL, /* ttype, tunit */
-			  NULL, /* typechar */
-			  &elements_per_row,
-			  NULL, NULL, /* scale, zero */
-			  NULL, NULL, /* nulval, disp */
-			  status))
-	return 0;
-
     if(fits_read_key_lng(fptr, "NSIDE", &nside, NULL, status))
 	return 0;
-
-    assert(hpix_nside_to_npixel((hpix_nside_t) nside)
-	   == num_of_rows * elements_per_row);
 
     if(fits_read_key(fptr, TSTRING, "COORDSYS", &coord_sys_key[0], NULL, status))
 	*status = 0;
@@ -81,18 +65,14 @@ hpix_load_fits_component_from_fitsptr(fitsfile * fptr,
 
     *map = hpix_create_map(nside, ordering);
     pixels = hpix_map_pixels(*map);
-    for (row_idx = 0; row_idx < num_of_rows; ++row_idx)
+    int anynul = 0;
+    if(fits_read_col_dbl(fptr, column_number, 1, 1, 
+			 hpix_map_num_of_pixels(*map), NAN, 
+			 pixels, &anynul, status))
     {
-	if(fits_read_col_dbl(fptr, column_number,
-			     row_idx + 1, 1,
-			     elements_per_row, NAN,
-			     &pixels[row_idx * elements_per_row],
-			     NULL, status))
-	{
-	    hpix_free_map(*map);
-	    map = NULL;
-	    return 0;
-	}
+	hpix_free_map(*map);
+	map = NULL;
+	return 0;
     }
 
     /* Later */
