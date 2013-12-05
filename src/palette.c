@@ -376,13 +376,13 @@ hpix_palette_color(const hpix_color_palette_t * palette,
 
     /* Perform a linear interpolation for each of the three color
      * components */
-#define INTERPOLATE_COMPONENT(level, comp_function) \
-    (  comp_function(&color0) * (level1 - level) / (level1 - level0) \
-     + comp_function(&color1) * (level - level0) / (level1 - level0))
+#define INTERPOLATE_COMPONENT(level, comp) \
+    (  color0.comp * (level1 - level) / (level1 - level0) \
+     + color1.comp * (level - level0) / (level1 - level0))
 
-    *color = hpix_create_color(INTERPOLATE_COMPONENT(level, hpix_red_from_color),
-			       INTERPOLATE_COMPONENT(level, hpix_green_from_color),
-			       INTERPOLATE_COMPONENT(level, hpix_blue_from_color));
+    *color = hpix_create_color(INTERPOLATE_COMPONENT(level, red),
+			       INTERPOLATE_COMPONENT(level, green),
+			       INTERPOLATE_COMPONENT(level, blue));
 
 #undef INTERPOLATE_COMPONENT
 }
