@@ -34,7 +34,7 @@ bin_PROGRAMS = map2ppm mapinfo
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 
-AM_CFLAGS += $(cairo_CFLAGS)
+AM_CFLAGS = $(cairo_CFLAGS)
 LIBS += $(cairo_LIBS) -lcfitsio -lm
 
 map2ppm_SOURCES = map2ppm.c
