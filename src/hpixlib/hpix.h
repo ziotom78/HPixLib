@@ -242,7 +242,7 @@ hpix_pixel_num_t hpix_angles_to_nest_pixel(const hpix_resolution_t * resolution,
 void hpix_vector_to_angles(const hpix_vector_t * vector,
 			  double * theta, double * phi);
 
-typedef hpix_pixel_num_t hpix_vector_to_pixel_fn_t(hpix_nside_t,
+typedef hpix_pixel_num_t hpix_vector_to_pixel_fn_t(const hpix_resolution_t *,
 						  const hpix_vector_t *);
 
 hpix_pixel_num_t hpix_vector_to_ring_pixel(const hpix_resolution_t * resolution,
@@ -251,8 +251,9 @@ hpix_pixel_num_t hpix_vector_to_ring_pixel(const hpix_resolution_t * resolution,
 hpix_pixel_num_t hpix_vector_to_nest_pixel(const hpix_resolution_t * resolution,
 					  const hpix_vector_t * vector);
 
-typedef void hpix_pixel_to_angles(hpix_nside_t, hpix_pixel_num_t,
-				    double *, double *);
+typedef void hpix_pixel_to_angles(const hpix_resolution_t *,
+				  hpix_pixel_num_t,
+				  double *, double *);
 
 void hpix_ring_pixel_to_angles(const hpix_resolution_t * resolution,
 			       hpix_pixel_num_t pixel,
@@ -262,8 +263,9 @@ void hpix_nest_pixel_to_angles(const hpix_resolution_t * resolution,
 			       hpix_pixel_num_t pixel,
 			       double * theta, double * phi);
 
-typedef void hpix_pixel_to_vector(hpix_nside_t, hpix_pixel_num_t,
-				 hpix_vector_t * vector);
+typedef void hpix_pixel_to_vector(const hpix_resolution_t *,
+				  hpix_pixel_num_t,
+				  hpix_vector_t * vector);
 
 void hpix_ring_pixel_to_vector(const hpix_resolution_t * resolution,
 			       hpix_pixel_num_t pixel_index,
