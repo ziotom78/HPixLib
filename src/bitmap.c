@@ -201,7 +201,7 @@ hpix_bmp_projection_trace(const hpix_bmp_projection_t * proj,
 	    }
 
 	    hpix_pixel_num_t pixel_idx =
-		angles_to_pixel_fn(nside, theta, phi);
+		angles_to_pixel_fn(hpix_map_resolution(map), theta, phi);
 	    if(pixels[pixel_idx] > -1.6e+30)
 		*line_ptr = pixels[pixel_idx];
 	    else
@@ -214,14 +214,17 @@ hpix_bmp_projection_trace(const hpix_bmp_projection_t * proj,
     if(min_value || max_value) 
     {
 	if(min_value)
-	    *min_value = FLT_MAX;
+	    *min_value = DBL_MAX;
 
 	if(max_value)
-	    *max_value = FLT_MIN;
+	    *max_value = -DBL_MAX;
 
 	double * bitmap_ptr = bitmap;
 	for(size_t idx = 0; idx < num_of_pixels; ++idx, ++bitmap_ptr) 
 	{
+	    if(isnan(*bitmap_ptr) || isinf(*bitmap_ptr))
+		continue;
+
 	    if(min_value && *min_value > *bitmap_ptr)
 		*min_value = *bitmap_ptr;
 	    if(max_value && *max_value < *bitmap_ptr)

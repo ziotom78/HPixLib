@@ -37,7 +37,7 @@
 
 void
 hpix_angles_to_vector(double theta, double phi,
-		     hpix_vector_t * vector)
+		      hpix_vector_t * vector)
 {
     assert(vector);
 
@@ -51,16 +51,19 @@ hpix_angles_to_vector(double theta, double phi,
 
 
 hpix_pixel_num_t
-hpix_angles_to_ring_pixel(hpix_nside_t nside,
+hpix_angles_to_ring_pixel(const hpix_resolution_t * resolution,
 			  double theta,
 			  double phi)
 {
+    assert(resolution != NULL);
+
     int jp, jm, ipix1;
     int ir, ip;
 
-    int nl2 = 2*nside;
-    int nl4 = 4*nside;
-    int ncap  = nl2*(nside-1);
+    hpix_nside_t nside = resolution->nside;
+    hpix_nside_t nl2 = resolution->nside_times_two;
+    hpix_nside_t nl4 = resolution->nside_times_four;
+    unsigned int ncap  = resolution->ncap;
 
     double z = cos(theta);
     double z_abs = fabs(z);
@@ -97,7 +100,7 @@ hpix_angles_to_ring_pixel(hpix_nside_t nside,
 	ipix1 = 2 * ir * (ir - 1) + ip;
 	if (z <= 0.)
 	{
-	    ipix1 = 12 * nside * nside - 2 * ir * (ir + 1) + ip;
+	    ipix1 = resolution->num_of_pixels - 2 * ir * (ir + 1) + ip;
 	}
     }
     return ipix1 - 1;
@@ -107,10 +110,13 @@ hpix_angles_to_ring_pixel(hpix_nside_t nside,
 
 
 hpix_pixel_num_t
-hpix_angles_to_nest_pixel(hpix_nside_t nside,
+hpix_angles_to_nest_pixel(const hpix_resolution_t * resolution,
 			  double theta,
 			  double phi)
 {
+    assert(resolution != NULL);
+
+    hpix_nside_t nside = resolution->nside;
     double z, z_abs, tt, tp, tmp;
     int    face_num,jp,jm;
     long   ifp, ifm;
@@ -193,44 +199,47 @@ hpix_vector_to_angles(const hpix_vector_t * vector,
 
 
 hpix_pixel_num_t
-hpix_vector_to_ring_pixel(hpix_nside_t nside,
-			 const hpix_vector_t * vector)
+hpix_vector_to_ring_pixel(const hpix_resolution_t * resolution,
+			  const hpix_vector_t * vector)
 {
     double theta, phi;
     hpix_vector_to_angles(vector, &theta, &phi);
-    return hpix_angles_to_ring_pixel(nside, theta, phi);
+    return hpix_angles_to_ring_pixel(resolution, theta, phi);
 }
 
 /**********************************************************************/
 
 
 hpix_pixel_num_t
-hpix_vector_to_nest_pixel(hpix_nside_t nside,
-			 const hpix_vector_t * vector)
+hpix_vector_to_nest_pixel(const hpix_resolution_t * resolution,
+			  const hpix_vector_t * vector)
 {
     double theta, phi;
     hpix_vector_to_angles(vector, &theta, &phi);
-    return hpix_angles_to_nest_pixel(nside, theta, phi);
+    return hpix_angles_to_nest_pixel(resolution, theta, phi);
 }
 
 /**********************************************************************/
 
 
 void
-hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
+hpix_ring_pixel_to_angles(const hpix_resolution_t * resolution, 
+			  hpix_pixel_num_t pixel,
 			  double * theta, double * phi)
 {
+    assert(resolution);
     assert(theta && phi);
 
-    int nl2, nl4, ncap, iring, iphi, ip, ipix1;
-    double  fact1, fact2, fodd, hip, fihip;
+    hpix_nside_t nside = resolution->nside;
+    hpix_nside_t nl2 = resolution->nside_times_two;
+    hpix_nside_t nl4 = resolution->nside_times_four;
+    unsigned int ncap = resolution->ncap;
+    int iring, iphi, ip, ipix1;
+    double fact1, fact2, fodd, hip, fihip;
 
     ipix1 = pixel + 1; // in {1, npix}
-    nl2 = 2*nside;
-    nl4 = 4*nside;
-    ncap = 2*nside*(nside-1);
-    fact1 = 1.5*nside;
-    fact2 = 3.0*nside*nside;
+    fact1 = 1.5 * nside;
+    fact2 = 3.0 * resolution->pixels_per_face;
 
     if(ipix1 <= ncap)
     {
@@ -257,7 +266,7 @@ hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
     }
     else {//! South Polar cap -----------------------------------
 
-	ip = 12 * nside * nside - ipix1 + 1;
+	ip = resolution->num_of_pixels - ipix1 + 1;
 	hip = ip / 2.;
 /* bug corrige floor instead of 1.* */
 	fihip = floor(hip);
@@ -273,9 +282,11 @@ hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
 
 
 void
-hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
+hpix_nest_pixel_to_angles(const hpix_resolution_t * resolution,
+			  hpix_pixel_num_t pixel,
 			  double * theta, double * phi)
 {
+    assert(resolution);
     assert(theta && phi);
 
     int ix, iy, jrt, jr, nr, jpt, jp, kshift;
@@ -285,12 +296,13 @@ hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
     int jrll[12] = { 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4 };
     int jpll[12] = { 1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7 };
 
+    hpix_nside_t nside = resolution->nside;
     double fn = 1.*nside;
     double fact1 = 1./(3.*fn*fn);
     double fact2 = 2./(3.*fn);
-    int nl4 = 4*nside;
+    hpix_nside_t nl4 = resolution->nside_times_four;
 
-    int npface = nside*nside;
+    unsigned int npface = resolution->pixels_per_face;
 
     int face_num = pixel/npface; // face number in {0,11}
     int ipf = (int)fmod(pixel,npface); // pixel number in the face {0,npface-1}
@@ -337,14 +349,14 @@ hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
 
 
 void
-hpix_ring_pixel_to_vector(hpix_nside_t nside,
-			 hpix_pixel_num_t pixel_index,
-			 hpix_vector_t * vector)
+hpix_ring_pixel_to_vector(const hpix_resolution_t * resolution,
+			  hpix_pixel_num_t pixel_index,
+			  hpix_vector_t * vector)
 {
     assert(vector);
 
     double theta, phi;
-    hpix_ring_pixel_to_angles(nside, pixel_index, &theta, &phi);
+    hpix_ring_pixel_to_angles(resolution, pixel_index, &theta, &phi);
     hpix_angles_to_vector(theta, phi, vector);
 }
 
@@ -352,13 +364,13 @@ hpix_ring_pixel_to_vector(hpix_nside_t nside,
 
 
 void
-hpix_nest_pixel_to_vector(hpix_nside_t nside,
-			 hpix_pixel_num_t pixel_index,
-			 hpix_vector_t * vector)
+hpix_nest_pixel_to_vector(const hpix_resolution_t * resolution,
+			  hpix_pixel_num_t pixel_index,
+			  hpix_vector_t * vector)
 {
     assert(vector);
 
     double theta, phi;
-    hpix_nest_pixel_to_angles(nside, pixel_index, &theta, &phi);
+    hpix_nest_pixel_to_angles(resolution, pixel_index, &theta, &phi);
     hpix_angles_to_vector(theta, phi, vector);
 }

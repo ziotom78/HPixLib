@@ -147,6 +147,9 @@ double * hpix_map_pixels(const hpix_map_t * map);
 
 size_t hpix_map_num_of_pixels(const hpix_map_t * map);
 
+void hpix_init_resolution_from_nside(hpix_nside_t nside,
+				     hpix_resolution_t * resolution);
+
 const hpix_resolution_t * hpix_map_resolution(const hpix_map_t * map);
 
 /* Functions implemented in integer_functions.c */
@@ -225,16 +228,16 @@ hpix_save_fits_pol_map(const char * file_name,
 void hpix_angles_to_vector(double theta, double phi,
 			  hpix_vector_t * vector);
 
-typedef hpix_pixel_num_t hpix_angles_to_pixel_fn_t(hpix_nside_t,
-						       double, double);
+typedef hpix_pixel_num_t hpix_angles_to_pixel_fn_t(const hpix_resolution_t *,
+						   double, double);
 
-hpix_pixel_num_t hpix_angles_to_ring_pixel(hpix_nside_t nside,
-					       double theta,
-					       double phi);
+hpix_pixel_num_t hpix_angles_to_ring_pixel(const hpix_resolution_t * resolution,
+					   double theta,
+					   double phi);
 
-hpix_pixel_num_t hpix_angles_to_nest_pixel(hpix_nside_t nside,
-					       double theta,
-					       double phi);
+hpix_pixel_num_t hpix_angles_to_nest_pixel(const hpix_resolution_t * resolution,
+					   double theta,
+					   double phi);
 
 void hpix_vector_to_angles(const hpix_vector_t * vector,
 			  double * theta, double * phi);
@@ -242,31 +245,33 @@ void hpix_vector_to_angles(const hpix_vector_t * vector,
 typedef hpix_pixel_num_t hpix_vector_to_pixel_fn_t(hpix_nside_t,
 						  const hpix_vector_t *);
 
-hpix_pixel_num_t hpix_vector_to_ring_pixel(hpix_nside_t nside,
+hpix_pixel_num_t hpix_vector_to_ring_pixel(const hpix_resolution_t * resolution,
 					  const hpix_vector_t * vector);
 
-hpix_pixel_num_t hpix_vector_to_nest_pixel(hpix_nside_t nside,
+hpix_pixel_num_t hpix_vector_to_nest_pixel(const hpix_resolution_t * resolution,
 					  const hpix_vector_t * vector);
 
 typedef void hpix_pixel_to_angles(hpix_nside_t, hpix_pixel_num_t,
 				    double *, double *);
 
-void hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
-				 double * theta, double * phi);
+void hpix_ring_pixel_to_angles(const hpix_resolution_t * resolution,
+			       hpix_pixel_num_t pixel,
+			       double * theta, double * phi);
 
-void hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel,
-				 double * theta, double * phi);
+void hpix_nest_pixel_to_angles(const hpix_resolution_t * resolution,
+			       hpix_pixel_num_t pixel,
+			       double * theta, double * phi);
 
 typedef void hpix_pixel_to_vector(hpix_nside_t, hpix_pixel_num_t,
 				 hpix_vector_t * vector);
 
-void hpix_ring_pixel_to_vector(hpix_nside_t nside,
-			      hpix_pixel_num_t pixel_index,
-			      hpix_vector_t * vector);
+void hpix_ring_pixel_to_vector(const hpix_resolution_t * resolution,
+			       hpix_pixel_num_t pixel_index,
+			       hpix_vector_t * vector);
 
-void hpix_nest_pixel_to_vector(hpix_nside_t nside,
-			      hpix_pixel_num_t pixel_index,
-			      hpix_vector_t * vector);
+void hpix_nest_pixel_to_vector(const hpix_resolution_t * resolution,
+			       hpix_pixel_num_t pixel_index,
+			       hpix_vector_t * vector);
 
 /* Functions implemented in bitmap.c */
 

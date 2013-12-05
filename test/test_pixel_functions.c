@@ -112,31 +112,34 @@ END_TEST
 
 START_TEST(angles_to_pixels)
 {
+    hpix_resolution_t resol;
+    hpix_init_resolution_from_nside(256, &resol);
+
     /* Check for the conversion to the RING scheme */
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.1, 0.1),  1861);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.2, 0.1),  7567);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.3, 0.1), 17117);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.1, 0.1),  1861);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.2, 0.1),  7567);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.3, 0.1), 17117);
 
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.1, 0.2),  1863);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.2, 0.2),  7571);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.3, 0.2), 17123);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.1, 0.2),  1863);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.2, 0.2),  7571);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.3, 0.2), 17123);
 
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.1, 0.3),  1865);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.2, 0.3),  7575);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(256, 0.3, 0.3), 17129);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.1, 0.3),  1865);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.2, 0.3),  7575);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.3, 0.3), 17129);
 
     /* Check for the conversion to the NEST scheme */
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(256, 0.1, 0.1), 65196);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(256, 0.2, 0.1), 64177);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(256, 0.3, 0.1), 61128);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.1, 0.1), 65196);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.2, 0.1), 64177);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.3, 0.1), 61128);
 
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(256, 0.1, 0.2), 65200);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(256, 0.2, 0.2), 64193);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(256, 0.3, 0.2), 61044);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.1, 0.2), 65200);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.2, 0.2), 64193);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.3, 0.2), 61044);
 
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(256, 0.1, 0.3), 65180);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(256, 0.2, 0.3), 64113);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(256, 0.3, 0.3), 60856);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.1, 0.3), 65180);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.2, 0.3), 64113);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.3, 0.3), 60856);
 }
 END_TEST
 
@@ -146,34 +149,37 @@ START_TEST(pixels_to_angles)
 {
     double theta, phi;
 
+    hpix_resolution_t resol;
+    hpix_init_resolution_from_nside(256, &resol);
+
 #define CHECK_ANGLE(nside, schema, pixel, target_theta, target_phi)	\
     hpix_ ## schema ## _pixel_to_angles(nside, pixel, &theta, &phi);	\
     TEST_FOR_CLOSENESS(theta, target_theta);					\
     TEST_FOR_CLOSENESS(phi, target_phi);
 
-    CHECK_ANGLE(256, ring,  1861, 0.09891295, 0.07600627);
-    CHECK_ANGLE(256, ring,  7567, 0.19806888, 0.08867399);
-    CHECK_ANGLE(256, ring, 17117, 0.29771618, 0.09289656);
+    CHECK_ANGLE(&resol, ring,  1861, 0.09891295, 0.07600627);
+    CHECK_ANGLE(&resol, ring,  7567, 0.19806888, 0.08867399);
+    CHECK_ANGLE(&resol, ring, 17117, 0.29771618, 0.09289656);
 
-    CHECK_ANGLE(256, ring,  1863, 0.09891295, 0.17734797);
-    CHECK_ANGLE(256, ring,  7571, 0.19806888, 0.19001568);
-    CHECK_ANGLE(256, ring, 17123, 0.29771618, 0.19423826);
+    CHECK_ANGLE(&resol, ring,  1863, 0.09891295, 0.17734797);
+    CHECK_ANGLE(&resol, ring,  7571, 0.19806888, 0.19001568);
+    CHECK_ANGLE(&resol, ring, 17123, 0.29771618, 0.19423826);
 
-    CHECK_ANGLE(256, ring,  1865, 0.09891295, 0.27868967);
-    CHECK_ANGLE(256, ring,  7575, 0.19806888, 0.29135738);
-    CHECK_ANGLE(256, ring, 17129, 0.29771618, 0.29557995);
+    CHECK_ANGLE(&resol, ring,  1865, 0.09891295, 0.27868967);
+    CHECK_ANGLE(&resol, ring,  7575, 0.19806888, 0.29135738);
+    CHECK_ANGLE(&resol, ring, 17129, 0.29771618, 0.29557995);
 
-    CHECK_ANGLE(256, nest, 65196, 0.09891295, 0.07600627);
-    CHECK_ANGLE(256, nest, 64177, 0.19806888, 0.08867399);
-    CHECK_ANGLE(256, nest, 61128, 0.29771618, 0.09289656);
+    CHECK_ANGLE(&resol, nest, 65196, 0.09891295, 0.07600627);
+    CHECK_ANGLE(&resol, nest, 64177, 0.19806888, 0.08867399);
+    CHECK_ANGLE(&resol, nest, 61128, 0.29771618, 0.09289656);
 
-    CHECK_ANGLE(256, nest, 65200, 0.09891295, 0.17734797);
-    CHECK_ANGLE(256, nest, 64193, 0.19806888, 0.19001568);
-    CHECK_ANGLE(256, nest, 61044, 0.29771618, 0.19423826);
+    CHECK_ANGLE(&resol, nest, 65200, 0.09891295, 0.17734797);
+    CHECK_ANGLE(&resol, nest, 64193, 0.19806888, 0.19001568);
+    CHECK_ANGLE(&resol, nest, 61044, 0.29771618, 0.19423826);
 
-    CHECK_ANGLE(256, nest, 65180, 0.09891295, 0.27868967);
-    CHECK_ANGLE(256, nest, 64113, 0.19806888, 0.29135738);
-    CHECK_ANGLE(256, nest, 60856, 0.29771618, 0.29557995);
+    CHECK_ANGLE(&resol, nest, 65180, 0.09891295, 0.27868967);
+    CHECK_ANGLE(&resol, nest, 64113, 0.19806888, 0.29135738);
+    CHECK_ANGLE(&resol, nest, 60856, 0.29771618, 0.29557995);
 }
 END_TEST
 
@@ -221,23 +227,28 @@ END_TEST
 
 START_TEST(vectors_to_pixels)
 {
-#define CHECK_INDEX(nside, scheme, input_x, input_y, input_z, ref_index)	\
+    hpix_resolution_t resol256, resol512, resol1024;
+    hpix_init_resolution_from_nside( 256, &resol256);
+    hpix_init_resolution_from_nside( 512, &resol512);
+    hpix_init_resolution_from_nside(1024, &resol1024);
+
+#define CHECK_INDEX(resol, scheme, input_x, input_y, input_z, ref_index)	\
     {									\
 	hpix_vector_t input_vector =					\
 	    (hpix_vector_t) { .x = input_x,				\
 				 .y = input_y,				\
 				 .z = input_z };			\
-	ck_assert_int_eq(hpix_vector_to_ ## scheme ## _pixel(nside, &input_vector), \
+	ck_assert_int_eq(hpix_vector_to_ ## scheme ## _pixel(&resol, &input_vector), \
 			 ref_index);					\
     }
 
-    CHECK_INDEX( 256, ring, 0.1, 0.2, 0.3,   78151);
-    CHECK_INDEX( 512, ring, 0.1, 0.2, 0.3,  311538);
-    CHECK_INDEX(1024, ring, 0.1, 0.2, 0.3, 1247176);
+    CHECK_INDEX(resol256,  ring, 0.1, 0.2, 0.3,   78151);
+    CHECK_INDEX(resol512,  ring, 0.1, 0.2, 0.3,  311538);
+    CHECK_INDEX(resol1024, ring, 0.1, 0.2, 0.3, 1247176);
 
-    CHECK_INDEX( 256, nest, 0.1, 0.2, 0.3,  31281);
-    CHECK_INDEX( 512, nest, 0.1, 0.2, 0.3, 125127);
-    CHECK_INDEX(1024, nest, 0.1, 0.2, 0.3, 500510);
+    CHECK_INDEX(resol256,  nest, 0.1, 0.2, 0.3,  31281);
+    CHECK_INDEX(resol512,  nest, 0.1, 0.2, 0.3, 125127);
+    CHECK_INDEX(resol1024, nest, 0.1, 0.2, 0.3, 500510);
 
 #undef CHECK_INDEX
 }
@@ -247,31 +258,34 @@ END_TEST
 
 START_TEST(pixels_to_vectors)
 {
-#define CHECK_PIXEL(nside, schema, index, ref_x, ref_y, ref_z)		\
+    hpix_resolution_t resol;
+    hpix_init_resolution_from_nside(256, &resol);
+
+#define CHECK_PIXEL(resol, schema, index, ref_x, ref_y, ref_z)		\
     {									\
 	hpix_vector_t result_vec;					\
-	hpix_ ## schema ## _pixel_to_vector(nside, index, &result_vec);	\
+	hpix_ ## schema ## _pixel_to_vector(&resol, index, &result_vec); \
 	    TEST_FOR_CLOSENESS(result_vec.x, ref_x);			\
 	    TEST_FOR_CLOSENESS(result_vec.y, ref_y);			\
 	    TEST_FOR_CLOSENESS(result_vec.z, ref_z);			\
     }
 
-    CHECK_PIXEL(256, ring,      0, 
+    CHECK_PIXEL(resol, ring,      0, 
 		0.0022552716212903439, 0.0022552716212903435, 0.99999491373697913);
-    CHECK_PIXEL(256, ring,   1653, 
+    CHECK_PIXEL(resol, ring,   1653, 
 		-0.0025019940270464042, 0.092360906323387754, 0.99572245279947913);
-    CHECK_PIXEL(256, ring,  37644, 
+    CHECK_PIXEL(resol, ring,  37644, 
 		-0.14609170150719039, -0.40058952463088032, 0.90453592936197913);
-    CHECK_PIXEL(256, ring, 588412, 
+    CHECK_PIXEL(resol, ring, 588412, 
 	        0.62830151534459699, 0.59819277060018217, -0.49739583333333331);
 
-    CHECK_PIXEL(256, nest,      0, 
+    CHECK_PIXEL(resol, nest,      0, 
 		0.70710438349510052, 0.70710438349510041, 0.0026041666666666665);
-    CHECK_PIXEL(256, nest,   1653, 
+    CHECK_PIXEL(resol, nest,   1653, 
 		0.6359637575364262, 0.75112688152914975, 0.17708333333333331);
-    CHECK_PIXEL(256, nest,  37644, 
+    CHECK_PIXEL(resol, nest,  37644, 
 		0.66743848329372024, 0.44596813666212065, 0.59635416666666663);
-    CHECK_PIXEL(256, nest, 588412, 
+    CHECK_PIXEL(resol, nest, 588412, 
 		0.77898558859132916, 0.60792632009670888, -0.15364583333333331);
 
 #undef CHECK_PIXEL

@@ -79,6 +79,7 @@ START_TEST(mollweide_projection)
 {
     fail_unless(mollweide_proj_min == 0.0,
 	"hpix_bmp_to_mollweide_proj failed to set the minimum value");
+    fprintf(stderr, "***************** maximum = %f\n", mollweide_proj_max);
     fail_unless(mollweide_proj_max == 767.0,
 	"hpix_bmp_to_mollweide_proj failed to set the maximum value");
 
