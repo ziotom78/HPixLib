@@ -93,6 +93,7 @@ using this coordinate system as well.
 
   const hpix_nside_t NSIDE = 64;
   const double DEG2RAD = 0.01745;
+  hpix_resolution_t resol;
 
   /* Position of OriA in Galactic coordinates (degrees) */
   double M42_position[] = { 209.01, -19.38 };
@@ -101,10 +102,23 @@ using this coordinate system as well.
   M42_position[0] = M42_position[0] - 180.0;
 
   /* Here we assume to work with maps in RING order */
+  hpix_init_resolution_from_nside(NSIDE, &resol);
   hpix_pixel_num_t pixel_index = 
-      hpix_angles_to_ring_pixel(NSIDE,
+      hpix_angles_to_ring_pixel(&resol,
                                 M42_position[0] * DEG2RAD,
                                 M42_position[1] * DEG2RAD);
+
+The key data structure is :c:type:`hpix_resolution_t`, which contains
+the value of NSIDE as well as a number of other values derived from it
+and useful in the calculations.
+
+.. c:function:: void hpix_init_resolution_from_nside(hpix_nside_t nside, hpix_resolution_t * resolution)
+
+   Initialize the fields of *resolution* with values corresponding to
+   the NSIDE parameter specified by *nside*. The object *resolution*
+   can be allocated either on the stack or on the heap. (In the latter
+   case, you must free it by yourself.)
+
 
 Converting angular positions
 ............................
@@ -121,21 +135,21 @@ The functions described in this paragraph convert angular positions
 
   See also :c:func:`hpix_vector_to_angles`.
 
-.. c:function:: hpix_pixel_num_t hpix_angles_to_ring_pixel(hpix_nside_t nside, double theta, double phi)
+.. c:function:: hpix_pixel_num_t hpix_angles_to_ring_pixel(const hpix_resolution_t * resolution, double theta, double phi)
 
   Convert the pair of angles *theta*, *phi* into the `RING` index of the
   pixel for which the specified direction falls within.
 
   See also :c:func:`hpix_angles_to_nest_pixel`.
 
-.. c:function:: hpix_pixel_num_t hpix_angles_to_nest_pixel(hpix_nside_t nside, double theta, double phi)
+.. c:function:: hpix_pixel_num_t hpix_angles_to_nest_pixel(const hpix_resolution_t * resolution, double theta, double phi)
 
   Convert the pair of angles *theta*, *phi* into the `NESTED` index of
   the pixel for which the specified direction falls within.
 
   See also :c:func:`hpix_angles_to_ring_pixel`.
  
-.. c:type:: typedef hpix_pixel_num_t hpix_angles_to_pixel_fn_t(hpix_nside_t, double, double)
+.. c:type:: typedef hpix_pixel_num_t hpix_angles_to_pixel_fn_t(const hpix_resolution_t *, double, double)
 
   This defines a name for the prototype of the two functions
   :c:func:`hpix_angles_to_ring_pixel` and
@@ -146,7 +160,7 @@ The functions described in this paragraph convert angular positions
 .. code-block:: c
 
   void
-  function(hpix_nside_t nside,
+  function(const hpix_resolution_t * resolution,
            hpix_ordering_t order,
            const double * thetas,
            const double * phis,
@@ -165,7 +179,7 @@ The functions described in this paragraph convert angular positions
           /* Since ang2pix_fn has already been assigned, we
            * avoid using a `if` within the `for` cycle.
            */
-          pix_num = ang2pix_fn(nside, thetas[idx], phis[idx]);
+          pix_num = ang2pix_fn(resolution, thetas[idx], phis[idx]);
 
           /* Here you use `pix_num` */
       }
@@ -186,14 +200,14 @@ other representation. The vector does not need to have length one.
 
   See also :c:func:`hpix_angles_to_vector`.
 
-.. c:function:: hpix_pixel_num_t hpix_vector_to_ring_pixel(hpix_nside_t nside, double x, double y, double z)
+.. c:function:: hpix_pixel_num_t hpix_vector_to_ring_pixel(const hpix_resolution_t * resolution, double x, double y, double z)
 
   Convert the vector *x*, *y*, *z* into the `RING` index of the
   pixel for which the specified direction falls within.
 
   See also :c:func:`hpix_ring_pixel_to_vector`.
 
-.. c:function:: hpix_pixel_num_t hpix_vector_to_nest_pixel(hpix_nside_t nside, double x, double y, double z)
+.. c:function:: hpix_pixel_num_t hpix_vector_to_nest_pixel(const hpix_resolution_t * resolution, double x, double y, double z)
 
   Convert the vector *x*, *y*, *z* into the `NESTED` index of the
   pixel for which the specified direction falls within.
@@ -216,7 +230,7 @@ The functions described in this paragraph convert pixel indices,
 either in `RING` or `NESTED` scheme, into some other representation.
 
 
-.. c:function:: void hpix_ring_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel, double * theta, double * phi)
+.. c:function:: void hpix_ring_pixel_to_angles(const hpix_resolution_t * resolution, hpix_pixel_num_t pixel, double * theta, double * phi)
 
   Convert the direction of the center of the pixel with `RING` index
   *pixel* into the two angles *theta* (colatitude) and *phi*
@@ -224,7 +238,7 @@ either in `RING` or `NESTED` scheme, into some other representation.
 
   See also :c:func:`hpix_angles_to_ring_pixel`.
 
-.. c:function:: void hpix_nest_pixel_to_angles(hpix_nside_t nside, hpix_pixel_num_t pixel, double * theta, double * phi)
+.. c:function:: void hpix_nest_pixel_to_angles(const hpix_resolution_t * resolution, hpix_pixel_num_t pixel, double * theta, double * phi)
 
   Convert the direction of the center of the pixel with `NESTED` index
   *pixel* into the two angles *theta* (colatitude) and *phi*
@@ -232,7 +246,7 @@ either in `RING` or `NESTED` scheme, into some other representation.
 
   See also :c:func:`hpix_angles_to_nest_pixel`.
 
-.. c:type:: typedef void hpix_pixel_to_angles(hpix_nside_t, hpix_pixel_num_t, double *, double *)
+.. c:type:: typedef void hpix_pixel_to_angles(const hpix_resolution_t *, hpix_pixel_num_t, double *, double *)
 
   This defines a name for the prototype of the two functions
   :c:func:`hpix_ring_pixel_to_angles` and
@@ -241,7 +255,7 @@ either in `RING` or `NESTED` scheme, into some other representation.
   advance which one you'll use. See
   :c:type:`hpix_angles_to_pixel_fn_t` for a nice example.
 
-.. c:function:: void hpix_ring_pixel_to_vector(hpix_nside_t nside, double * x, double * y, double * z)
+.. c:function:: void hpix_ring_pixel_to_vector(const hpix_resolution_t * resolution, double * x, double * y, double * z)
 
   Convert the direction of the center of the pixel with `RING` index
   *pixel* into the components of a vector *x*, *y*, *z*. It is
@@ -249,7 +263,7 @@ either in `RING` or `NESTED` scheme, into some other representation.
 
   See also :c:func:`hpix_vector_to_ring_pixel`.
 
-.. c:function:: void hpix_nest_pixel_to_vector(hpix_nside_t nside, double * x, double * y, double * z)
+.. c:function:: void hpix_nest_pixel_to_vector(const hpix_resolution_t * resolution, double * x, double * y, double * z)
 
   Convert the direction of the center of the pixel with `RING` index
   *pixel* into the components of a vector *x*, *y*, *z*. It is
@@ -257,7 +271,7 @@ either in `RING` or `NESTED` scheme, into some other representation.
 
   See also :c:func:`hpix_vector_to_ring_pixel`.
 
-.. c:type:: typedef void hpix_pixel_to_vector(hpix_nside_t, hpix_pixel_num_t, double *, double *, double *)
+.. c:type:: typedef void hpix_pixel_to_vector(const hpix_resolution_t *, hpix_pixel_num_t, double *, double *, double *)
 
   This defines a name for the prototype of the two functions
   :c:func:`hpix_ring_pixel_to_vector` and
@@ -276,11 +290,11 @@ pixels on the same latitude are contiguous), `NESTED` is useful if you
 apply wavelet transforms or are looking for point sources (neighbour
 points are easy to find with this scheme).
 
-.. c:function:: hpix_pixel_num_t hpix_nest_to_ring_idx(hpix_nside_t nside, hpix_pixel_num_t nest_index)
+.. c:function:: hpix_pixel_num_t hpix_nest_to_ring_idx(const hpix_resolution_t * resolution, hpix_pixel_num_t nest_index)
 
 Convert the index of pixel *nest_index* from `NESTED` to `RING`.
 
-.. c:function:: hpix_pixel_num_t hpix_ring_to_nest_idx(hpix_nside_t nside, hpix_pixel_num_t ring_index)
+.. c:function:: hpix_pixel_num_t hpix_ring_to_nest_idx(const hpix_resolution_t * resolution, hpix_pixel_num_t ring_index)
 
 Convert the index of pixel *nest_index* from `NESTED` to `RING`.
 
