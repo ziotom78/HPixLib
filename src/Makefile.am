@@ -30,8 +30,6 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
-AM_CFLAGS = -std=c99
-
 LIBRARIES_TO_BUILD = libhpix.la
 if CAIRO_PRESENT
 LIBRARIES_TO_BUILD += libhpix_cairo.la

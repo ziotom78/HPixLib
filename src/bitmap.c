@@ -18,6 +18,7 @@
 #include "config.h"
 
 #include <hpixlib/hpix.h>
+#include <float.h>
 #include <math.h>
 #include <assert.h>
 
@@ -175,49 +176,56 @@ hpix_bmp_projection_trace(const hpix_bmp_projection_t * proj,
 	? hpix_angles_to_nest_pixel
 	: hpix_angles_to_ring_pixel;
 
+    size_t num_of_pixels = proj->width * proj->height;
     double *restrict bitmap =
-	hpix_malloc(sizeof(bitmap[0]), proj->width * proj->height);
-    /* Although the two pointers point to the same area, only one of
-     * them (bitmap_ptr) will be used for writing. So we're justified
-     * in using "restricted" for them. */
-    double *restrict bitmap_ptr = bitmap;
+	hpix_malloc(sizeof(bitmap[0]), num_of_pixels);
 
     double * pixels = hpix_map_pixels(map);
-    int minmax_flag = 0;
+
+    /* First step: render the bitmap */
+#pragma omp parallel for default(shared)
     for (unsigned int y = 0; y < hpix_bmp_projection_height(proj); ++y)
     {
-	for (unsigned int x = 0; x < hpix_bmp_projection_width(proj); ++x)
+	double * line_ptr = bitmap + y * hpix_bmp_projection_width(proj);
+
+	for (unsigned int x = 0; 
+	     x < hpix_bmp_projection_width(proj); 
+	     ++x, ++line_ptr)
 	{
 	    double theta, phi;
 
 	    if(! hpix_bmp_projection_xy_to_angles(proj, x, y, &theta, &phi))
 	    {
-		*bitmap_ptr++ = INFINITY; /* Skip the pixel */
+		*line_ptr = INFINITY; /* Skip the pixel */
 		continue;
 	    }
 
 	    hpix_pixel_num_t pixel_idx =
 		angles_to_pixel_fn(nside, theta, phi);
 	    if(pixels[pixel_idx] > -1.6e+30)
-		*bitmap_ptr = pixels[pixel_idx];
+		*line_ptr = pixels[pixel_idx];
 	    else
-		*bitmap_ptr = NAN;
+		*line_ptr = NAN;
+	}
+    }
 
-	    if(! minmax_flag)
-	    {
-		minmax_flag = 1;
-		if(min_value)
-		    *min_value = *bitmap_ptr;
-		if(max_value)
-		    *max_value = *bitmap_ptr;
-	    } else {
-		if(min_value && *min_value > *bitmap_ptr)
-		    *min_value = *bitmap_ptr;
-		if(max_value && *max_value < *bitmap_ptr)
-		    *max_value = *bitmap_ptr;
-	    }
+    /* Second step: if the user asked for them, compute the maximum
+     * and/or minimum values in the bitmap */
+    if(min_value || max_value) 
+    {
+	if(min_value)
+	    *min_value = FLT_MAX;
 
-	    bitmap_ptr++;
+	if(max_value)
+	    *max_value = FLT_MIN;
+
+	double * bitmap_ptr = bitmap;
+	for(size_t idx = 0; idx < num_of_pixels; ++idx, ++bitmap_ptr) 
+	{
+	    if(min_value && *min_value > *bitmap_ptr)
+		*min_value = *bitmap_ptr;
+	    if(max_value && *max_value < *bitmap_ptr)
+		*max_value = *bitmap_ptr;
 	}
     }
 

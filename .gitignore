@@ -11,6 +11,6 @@ configure
 depcomp
 install-sh
 ltmain.sh
-m4/
+m4/l*
 missing
 src/config.h.in

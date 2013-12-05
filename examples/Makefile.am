@@ -30,14 +30,12 @@
 # as representing official policies, either expressed or implied, of
 # Maurizio Tomasi.
 
-AM_CFLAGS = -std=c99
-
 bin_PROGRAMS = map2ppm mapinfo
 
 AM_CPPFLAGS = -I$(top_srcdir)/src
 
 AM_CFLAGS += $(cairo_CFLAGS)
-LIBS += $(cairo_LIBS) -lcfitsio
+LIBS += $(cairo_LIBS) -lcfitsio -lm
 
 map2ppm_SOURCES = map2ppm.c
 map2ppm_LDADD = ../src/libhpix.la
