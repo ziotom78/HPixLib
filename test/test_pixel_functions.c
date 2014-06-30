@@ -112,94 +112,94 @@ END_TEST
 
 START_TEST(angles_to_pixels)
 {
-    hpix_resolution_t resol;
-    hpix_init_resolution_from_nside(256, &resol);
+    hpix_resolution_t * resol;
+    resol = hpix_create_resolution(256);
 
     /* Check for the conversion to the RING scheme */
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.000000000000000, 0.000000000000000),      0);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.000000000000000, 1.256637061435917),      0);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.000000000000000, 2.513274122871834),      1);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.000000000000000, 3.769911184307752),      2);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.000000000000000, 5.026548245743669),      3);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.000000000000000, 6.283185307179586),      0);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.000000000000000, 0.000000000000000),      0);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.000000000000000, 1.256637061435917),      0);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.000000000000000, 2.513274122871834),      1);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.000000000000000, 3.769911184307752),      2);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.000000000000000, 5.026548245743669),      3);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.000000000000000, 6.283185307179586),      0);
 
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.628318530717959, 0.000000000000000),  74884);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.628318530717959, 1.256637061435917),  75039);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.628318530717959, 2.513274122871834),  75194);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.628318530717959, 3.769911184307752),  75349);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.628318530717959, 5.026548245743669),  75504);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 0.628318530717959, 6.283185307179586),  74884);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.628318530717959, 0.000000000000000),  74884);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.628318530717959, 1.256637061435917),  75039);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.628318530717959, 2.513274122871834),  75194);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.628318530717959, 3.769911184307752),  75349);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.628318530717959, 5.026548245743669),  75504);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 0.628318530717959, 6.283185307179586),  74884);
 
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.256637061435917, 0.000000000000000), 270848);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.256637061435917, 1.256637061435917), 271053);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.256637061435917, 2.513274122871834), 272281);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.256637061435917, 3.769911184307752), 272486);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.256637061435917, 5.026548245743669), 271667);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.256637061435917, 6.283185307179586), 270848);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.256637061435917, 0.000000000000000), 270848);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.256637061435917, 1.256637061435917), 271053);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.256637061435917, 2.513274122871834), 272281);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.256637061435917, 3.769911184307752), 272486);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.256637061435917, 5.026548245743669), 271667);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.256637061435917, 6.283185307179586), 270848);
 
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.884955592153876, 0.000000000000000), 514560);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.884955592153876, 1.256637061435917), 514765);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.884955592153876, 2.513274122871834), 513945);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.884955592153876, 3.769911184307752), 514150);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.884955592153876, 5.026548245743669), 515379);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 1.884955592153876, 6.283185307179586), 514560);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.884955592153876, 0.000000000000000), 514560);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.884955592153876, 1.256637061435917), 514765);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.884955592153876, 2.513274122871834), 513945);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.884955592153876, 3.769911184307752), 514150);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.884955592153876, 5.026548245743669), 515379);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 1.884955592153876, 6.283185307179586), 514560);
 
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 2.513274122871834, 0.000000000000000), 710772);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 2.513274122871834, 1.256637061435917), 710927);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 2.513274122871834, 2.513274122871834), 711082);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 2.513274122871834, 3.769911184307752), 711237);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 2.513274122871834, 5.026548245743669), 711392);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 2.513274122871834, 6.283185307179586), 710772);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 2.513274122871834, 0.000000000000000), 710772);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 2.513274122871834, 1.256637061435917), 710927);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 2.513274122871834, 2.513274122871834), 711082);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 2.513274122871834, 3.769911184307752), 711237);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 2.513274122871834, 5.026548245743669), 711392);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 2.513274122871834, 6.283185307179586), 710772);
 
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 3.141592653589793, 0.000000000000000), 786428);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 3.141592653589793, 1.256637061435917), 786428);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 3.141592653589793, 2.513274122871834), 786429);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 3.141592653589793, 3.769911184307752), 786430);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 3.141592653589793, 5.026548245743669), 786431);
-    ck_assert_int_eq(hpix_angles_to_ring_pixel(&resol, 3.141592653589793, 6.283185307179586), 786428);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 3.141592653589793, 0.000000000000000), 786428);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 3.141592653589793, 1.256637061435917), 786428);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 3.141592653589793, 2.513274122871834), 786429);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 3.141592653589793, 3.769911184307752), 786430);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 3.141592653589793, 5.026548245743669), 786431);
+    ck_assert_int_eq(hpix_angles_to_ring_pixel(resol, 3.141592653589793, 6.283185307179586), 786428);
 
     /* Check for the conversion to the NEST scheme */
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.000000000000000, 0.000000000000000),  65535);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.000000000000000, 1.256637061435917),  65535);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.000000000000000, 2.513274122871834), 131071);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.000000000000000, 3.769911184307752), 196607);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.000000000000000, 5.026548245743669), 262143);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.000000000000000, 6.283185307179586),  65535);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.000000000000000, 0.000000000000000),  65535);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.000000000000000, 1.256637061435917),  65535);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.000000000000000, 2.513274122871834), 131071);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.000000000000000, 3.769911184307752), 196607);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.000000000000000, 5.026548245743669), 262143);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.000000000000000, 6.283185307179586),  65535);
 
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.628318530717959, 0.000000000000000),  45054);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.628318530717959, 1.256637061435917),  31073);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.628318530717959, 2.513274122871834), 116110);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.628318530717959, 3.769911184307752), 182861);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.628318530717959, 5.026548245743669), 243346);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 0.628318530717959, 6.283185307179586),  45054);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.628318530717959, 0.000000000000000),  45054);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.628318530717959, 1.256637061435917),  31073);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.628318530717959, 2.513274122871834), 116110);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.628318530717959, 3.769911184307752), 182861);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.628318530717959, 5.026548245743669), 243346);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 0.628318530717959, 6.283185307179586),  45054);
 
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.256637061435917, 0.000000000000000), 315343);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.256637061435917, 1.256637061435917), 387304);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.256637061435917, 2.513274122871834),  71954);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.256637061435917, 3.769911184307752), 140833);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.256637061435917, 5.026548245743669), 513236);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.256637061435917, 6.283185307179586), 315343);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.256637061435917, 0.000000000000000), 315343);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.256637061435917, 1.256637061435917), 387304);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.256637061435917, 2.513274122871834),  71954);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.256637061435917, 3.769911184307752), 140833);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.256637061435917, 5.026548245743669), 513236);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.256637061435917, 6.283185307179586), 315343);
 
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.884955592153876, 0.000000000000000), 274480);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.884955592153876, 1.256637061435917), 338731);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.884955592153876, 2.513274122871834), 645598);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.884955592153876, 3.769911184307752), 714477);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.884955592153876, 5.026548245743669), 464663);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 1.884955592153876, 6.283185307179586), 274480);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.884955592153876, 0.000000000000000), 274480);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.884955592153876, 1.256637061435917), 338731);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.884955592153876, 2.513274122871834), 645598);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.884955592153876, 3.769911184307752), 714477);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.884955592153876, 5.026548245743669), 464663);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 1.884955592153876, 6.283185307179586), 274480);
 
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 2.513274122871834, 0.000000000000000), 565250);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 2.513274122871834, 1.256637061435917), 543085);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 2.513274122871834, 2.513274122871834), 603570);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 2.513274122871834, 3.769911184307752), 670321);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 2.513274122871834, 5.026548245743669), 755358);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 2.513274122871834, 6.283185307179586), 565250);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 2.513274122871834, 0.000000000000000), 565250);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 2.513274122871834, 1.256637061435917), 543085);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 2.513274122871834, 2.513274122871834), 603570);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 2.513274122871834, 3.769911184307752), 670321);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 2.513274122871834, 5.026548245743669), 755358);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 2.513274122871834, 6.283185307179586), 565250);
 
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 3.141592653589793, 0.000000000000000), 524288);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 3.141592653589793, 1.256637061435917), 524288);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 3.141592653589793, 2.513274122871834), 589824);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 3.141592653589793, 3.769911184307752), 655360);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 3.141592653589793, 5.026548245743669), 720896);
-    ck_assert_int_eq(hpix_angles_to_nest_pixel(&resol, 3.141592653589793, 6.283185307179586), 524288);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 3.141592653589793, 0.000000000000000), 524288);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 3.141592653589793, 1.256637061435917), 524288);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 3.141592653589793, 2.513274122871834), 589824);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 3.141592653589793, 3.769911184307752), 655360);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 3.141592653589793, 5.026548245743669), 720896);
+    ck_assert_int_eq(hpix_angles_to_nest_pixel(resol, 3.141592653589793, 6.283185307179586), 524288);
 }
 END_TEST
 
@@ -209,37 +209,37 @@ START_TEST(pixels_to_angles)
 {
     double theta, phi;
 
-    hpix_resolution_t resol;
-    hpix_init_resolution_from_nside(256, &resol);
+    hpix_resolution_t * resol;
+    resol = hpix_create_resolution(256);
 
-#define CHECK_ANGLE(nside, schema, pixel, target_theta, target_phi)	\
-    hpix_ ## schema ## _pixel_to_angles(nside, pixel, &theta, &phi);	\
+#define CHECK_ANGLE(resol, schema, pixel, target_theta, target_phi)	\
+    hpix_ ## schema ## _pixel_to_angles(resol, pixel, &theta, &phi);	\
     TEST_FOR_CLOSENESS(theta, target_theta);					\
     TEST_FOR_CLOSENESS(phi, target_phi);
 
-    CHECK_ANGLE(&resol, ring,  1861, 0.09891295, 0.07600627);
-    CHECK_ANGLE(&resol, ring,  7567, 0.19806888, 0.08867399);
-    CHECK_ANGLE(&resol, ring, 17117, 0.29771618, 0.09289656);
+    CHECK_ANGLE(resol, ring,  1861, 0.09891295, 0.07600627);
+    CHECK_ANGLE(resol, ring,  7567, 0.19806888, 0.08867399);
+    CHECK_ANGLE(resol, ring, 17117, 0.29771618, 0.09289656);
 
-    CHECK_ANGLE(&resol, ring,  1863, 0.09891295, 0.17734797);
-    CHECK_ANGLE(&resol, ring,  7571, 0.19806888, 0.19001568);
-    CHECK_ANGLE(&resol, ring, 17123, 0.29771618, 0.19423826);
+    CHECK_ANGLE(resol, ring,  1863, 0.09891295, 0.17734797);
+    CHECK_ANGLE(resol, ring,  7571, 0.19806888, 0.19001568);
+    CHECK_ANGLE(resol, ring, 17123, 0.29771618, 0.19423826);
 
-    CHECK_ANGLE(&resol, ring,  1865, 0.09891295, 0.27868967);
-    CHECK_ANGLE(&resol, ring,  7575, 0.19806888, 0.29135738);
-    CHECK_ANGLE(&resol, ring, 17129, 0.29771618, 0.29557995);
+    CHECK_ANGLE(resol, ring,  1865, 0.09891295, 0.27868967);
+    CHECK_ANGLE(resol, ring,  7575, 0.19806888, 0.29135738);
+    CHECK_ANGLE(resol, ring, 17129, 0.29771618, 0.29557995);
 
-    CHECK_ANGLE(&resol, nest, 65196, 0.09891295, 0.07600627);
-    CHECK_ANGLE(&resol, nest, 64177, 0.19806888, 0.08867399);
-    CHECK_ANGLE(&resol, nest, 61128, 0.29771618, 0.09289656);
+    CHECK_ANGLE(resol, nest, 65196, 0.09891295, 0.07600627);
+    CHECK_ANGLE(resol, nest, 64177, 0.19806888, 0.08867399);
+    CHECK_ANGLE(resol, nest, 61128, 0.29771618, 0.09289656);
 
-    CHECK_ANGLE(&resol, nest, 65200, 0.09891295, 0.17734797);
-    CHECK_ANGLE(&resol, nest, 64193, 0.19806888, 0.19001568);
-    CHECK_ANGLE(&resol, nest, 61044, 0.29771618, 0.19423826);
+    CHECK_ANGLE(resol, nest, 65200, 0.09891295, 0.17734797);
+    CHECK_ANGLE(resol, nest, 64193, 0.19806888, 0.19001568);
+    CHECK_ANGLE(resol, nest, 61044, 0.29771618, 0.19423826);
 
-    CHECK_ANGLE(&resol, nest, 65180, 0.09891295, 0.27868967);
-    CHECK_ANGLE(&resol, nest, 64113, 0.19806888, 0.29135738);
-    CHECK_ANGLE(&resol, nest, 60856, 0.29771618, 0.29557995);
+    CHECK_ANGLE(resol, nest, 65180, 0.09891295, 0.27868967);
+    CHECK_ANGLE(resol, nest, 64113, 0.19806888, 0.29135738);
+    CHECK_ANGLE(resol, nest, 60856, 0.29771618, 0.29557995);
 }
 END_TEST
 
@@ -287,10 +287,10 @@ END_TEST
 
 START_TEST(vectors_to_pixels)
 {
-    hpix_resolution_t resol256, resol512, resol1024;
-    hpix_init_resolution_from_nside( 256, &resol256);
-    hpix_init_resolution_from_nside( 512, &resol512);
-    hpix_init_resolution_from_nside(1024, &resol1024);
+    hpix_resolution_t * resol256, * resol512, * resol1024;
+    resol256  = hpix_create_resolution( 256);
+    resol512  = hpix_create_resolution( 512);
+    resol1024 = hpix_create_resolution(1024);
 
 #define CHECK_INDEX(resol, scheme, input_x, input_y, input_z, ref_index)	\
     {									\
@@ -298,7 +298,7 @@ START_TEST(vectors_to_pixels)
 	    (hpix_vector_t) { .x = input_x,				\
 				 .y = input_y,				\
 				 .z = input_z };			\
-	ck_assert_int_eq(hpix_vector_to_ ## scheme ## _pixel(&resol, &input_vector), \
+	ck_assert_int_eq(hpix_vector_to_ ## scheme ## _pixel(resol, &input_vector), \
 			 ref_index);					\
     }
 
@@ -318,13 +318,13 @@ END_TEST
 
 START_TEST(pixels_to_vectors)
 {
-    hpix_resolution_t resol;
-    hpix_init_resolution_from_nside(256, &resol);
+    hpix_resolution_t * resol;
+    resol = hpix_create_resolution(256);
 
 #define CHECK_PIXEL(resol, schema, index, ref_x, ref_y, ref_z)		\
     {									\
 	hpix_vector_t result_vec;					\
-	hpix_ ## schema ## _pixel_to_vector(&resol, index, &result_vec); \
+	hpix_ ## schema ## _pixel_to_vector(resol, index, &result_vec); \
 	    TEST_FOR_CLOSENESS(result_vec.x, ref_x);			\
 	    TEST_FOR_CLOSENESS(result_vec.y, ref_y);			\
 	    TEST_FOR_CLOSENESS(result_vec.z, ref_z);			\

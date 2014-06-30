@@ -373,18 +373,18 @@ hpix_switch_order(hpix_map_t * map)
 
     size_t num_of_cycles;
     const int *restrict array_of_cycles = 
-	cycles_for_swapping(&map->resolution, &num_of_cycles);
+	cycles_for_swapping(map->resolution, &num_of_cycles);
     for(size_t m = 0; m < num_of_cycles; ++m)
     {
         hpix_pixel_num_t istart = array_of_cycles[m];
         double pixbuf = map->pixels[istart];
         hpix_pixel_num_t iold = istart;
-	hpix_pixel_num_t inew = conversion_fn(&map->resolution, istart);
+	hpix_pixel_num_t inew = conversion_fn(map->resolution, istart);
         while (inew != istart)
 	{
 	    map->pixels[iold] = map->pixels[inew];
 	    iold = inew;
-	    inew = conversion_fn(&map->resolution, inew);
+	    inew = conversion_fn(map->resolution, inew);
 	}
         map->pixels[iold] = pixbuf;
     }

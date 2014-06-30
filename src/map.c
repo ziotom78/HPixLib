@@ -24,11 +24,11 @@
 /**********************************************************************/
 
 
-void
-hpix_init_resolution_from_nside(hpix_nside_t nside,
-				hpix_resolution_t * resolution)
+hpix_resolution_t *
+hpix_create_resolution(hpix_nside_t nside)
 {
-    assert(resolution != NULL);
+    hpix_resolution_t * resolution =
+	(hpix_resolution_t *) hpix_malloc(sizeof(hpix_resolution_t), 1);
 
     resolution->nside            = nside;
     resolution->nside_times_two  = nside * 2;
@@ -40,6 +40,33 @@ hpix_init_resolution_from_nside(hpix_nside_t nside,
     resolution->ncap             = 2 * (resolution->pixels_per_face - nside);
     resolution->fact2            = 4.0 / resolution->num_of_pixels;
     resolution->fact1            = (2 * nside) * resolution->fact2;
+    
+    return resolution;
+}
+
+/**********************************************************************/
+
+void
+hpix_free_resolution(hpix_resolution_t * resolution)
+{
+    assert(resolution != NULL);
+    hpix_free(resolution);
+}
+
+/**********************************************************************/
+
+hpix_nside_t
+hpix_nside(const hpix_resolution_t * resolution)
+{
+    return resolution->nside;
+}
+
+/**********************************************************************/
+
+size_t
+hpix_num_of_pixels(const hpix_resolution_t * resolution)
+{
+    return resolution->num_of_pixels;
 }
 
 /**********************************************************************/
@@ -57,7 +84,8 @@ hpix_create_map(hpix_nside_t nside, hpix_ordering_scheme_t scheme)
 			      hpix_nside_to_npixel(nside));
     map->free_pixels_flag = TRUE;
 
-    hpix_init_resolution_from_nside(nside, &map->resolution);
+    map->resolution = hpix_create_resolution(nside);
+
     return map;
 }
 
@@ -77,8 +105,8 @@ hpix_create_map_from_array(double * array,
     map->pixels = array;
     map->free_pixels_flag = FALSE;
 
-    hpix_init_resolution_from_nside(hpix_npixel_to_nside(num_of_elements),
-				    &map->resolution);
+    map->resolution =
+	hpix_create_resolution(hpix_npixel_to_nside(num_of_elements));
     return map;
 }
 
@@ -93,6 +121,9 @@ hpix_free_map(hpix_map_t * map)
 
     if(map->free_pixels_flag)
 	hpix_free(map->pixels);
+
+    if(map->resolution != NULL)
+	hpix_free(map->resolution);
 
     hpix_free(map);
 }
@@ -140,7 +171,9 @@ hpix_nside_t
 hpix_map_nside(const hpix_map_t * map)
 {
     assert(map);
-    return map->resolution.nside;
+    assert(map->resolution != NULL);
+
+    return map->resolution->nside;
 }
 
 /**********************************************************************/
@@ -160,7 +193,9 @@ size_t
 hpix_map_num_of_pixels(const hpix_map_t * map)
 {
     assert(map);
-    return hpix_nside_to_npixel(map->resolution.nside);
+    assert(map->resolution != NULL);
+
+    return hpix_nside_to_npixel(map->resolution->nside);
 }
 
 /**********************************************************************/
@@ -170,5 +205,5 @@ const hpix_resolution_t *
 hpix_map_resolution(const hpix_map_t * map)
 {
     assert(map);
-    return &map->resolution;
+    return map->resolution;
 }

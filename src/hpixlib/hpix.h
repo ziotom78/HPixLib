@@ -66,7 +66,7 @@ typedef struct {
     double               * pixels;
     int                    free_pixels_flag;
 
-    hpix_resolution_t      resolution;
+    hpix_resolution_t    * resolution;
 } hpix_map_t;
 
 typedef struct {
@@ -147,10 +147,15 @@ double * hpix_map_pixels(const hpix_map_t * map);
 
 size_t hpix_map_num_of_pixels(const hpix_map_t * map);
 
-void hpix_init_resolution_from_nside(hpix_nside_t nside,
-				     hpix_resolution_t * resolution);
+hpix_resolution_t * hpix_create_resolution(hpix_nside_t nside);
 
 const hpix_resolution_t * hpix_map_resolution(const hpix_map_t * map);
+
+void hpix_free_resolution(hpix_resolution_t * resolution);
+
+hpix_nside_t hpix_nside(const hpix_resolution_t * resolution);
+
+size_t hpix_num_of_pixels(const hpix_resolution_t * resolution);
 
 /* Functions implemented in integer_functions.c */
 
