@@ -17,3 +17,5 @@ Links:
 
    * http://ziotom78.github.com/HPixLib (home page)
    * http://hpixlib.readthedocs.org (documentation)
+
+**Warning**: This repository is currently archived.
